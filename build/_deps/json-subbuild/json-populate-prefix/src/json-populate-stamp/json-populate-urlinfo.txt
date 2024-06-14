@@ -1,0 +1,11 @@
+# This is a generated file and its contents are an internal implementation detail.
+# The download step will be re-executed if anything in this file changes.
+# No other meaning or use of this file is supported.
+
+method=url
+command=C:/Program Files/CMake/bin/cmake.exe;-E;rm;-rf;C:/develop/skill_project/build/_deps/json-src;COMMAND;C:/Program Files/CMake/bin/cmake.exe;-E;copy_directory;C:/develop/nlohmann_json;C:/develop/skill_project/build/_deps/json-src
+source_dir=C:/develop/skill_project/build/_deps/json-src
+work_dir=C:/develop/skill_project/build/_deps
+url(s)=C:/develop/nlohmann_json
+hash=
+

@@ -1,0 +1,20 @@
+[
+{
+  "directory": "C:/develop/skill_project/build/src",
+  "command": "C:\\mingw64\\bin\\g++.exe -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64 @CMakeFiles/SkillboxSearchEngine.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\SkillboxSearchEngine.dir\\main.cpp.obj -c C:\\develop\\skill_project\\src\\main.cpp",
+  "file": "C:/develop/skill_project/src/main.cpp",
+  "output": "src/CMakeFiles/SkillboxSearchEngine.dir/main.cpp.obj"
+},
+{
+  "directory": "C:/develop/skill_project/build/src",
+  "command": "C:\\mingw64\\bin\\g++.exe -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64 @CMakeFiles/SkillboxSearchEngine.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\SkillboxSearchEngine.dir\\convjson.cpp.obj -c C:\\develop\\skill_project\\src\\convjson.cpp",
+  "file": "C:/develop/skill_project/src/convjson.cpp",
+  "output": "src/CMakeFiles/SkillboxSearchEngine.dir/convjson.cpp.obj"
+},
+{
+  "directory": "C:/develop/skill_project/build/src",
+  "command": "C:\\mingw64\\bin\\g++.exe -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64 @CMakeFiles/SkillboxSearchEngine.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\SkillboxSearchEngine.dir\\service.cpp.obj -c C:\\develop\\skill_project\\src\\service.cpp",
+  "file": "C:/develop/skill_project/src/service.cpp",
+  "output": "src/CMakeFiles/SkillboxSearchEngine.dir/service.cpp.obj"
+}
+]
