@@ -2,6 +2,7 @@
 
 void Service::examination(char* fname){
       string temp(fname);
+      cout << "filename is " << temp << endl;
       // if( argumc > 1 && (argumv.find("/")) < argumv.length() ){
         // string::size_type pos;
         // pos = argumv.find("/");
@@ -14,6 +15,17 @@ void Service::examination(char* fname){
       }
       }
       // }
+}
+
+void Service::examination1(char* fname){
+  fstream fp;
+  fp.open(fname, ios::in);
+  if(!fp.is_open()){
+    TouchFile(fname);
+    fileConfError = true;
+  }else{
+    fileConfError = true;//file exist
+  }
 }
 
 void Service::ArgumSet(char* argv[]){
@@ -63,6 +75,7 @@ void Service::Start(){
       }else if(argumv[pos] == 'r'){
         // cout << "finded /r" << endl;
         serviceKey = false; serviceKeyError = false;
+        fileConfError = false;
         codeKey = int('r');
       }else if(argumv[pos] == 'h'){
         // cout << "finded /h" << endl;
@@ -118,8 +131,7 @@ void Service::GetArgumInfo(){
 }
 
 void Service::filExist(string f){
-  bool bFileExist;
-  // cout << "file is " << f << endl;
+  cout << "file is " << f << endl;
   fstream fp;
   fp.open(f, ios::in);
   if(fp.is_open()){    
@@ -141,25 +153,38 @@ void Service::setRespFiles(int resp){
 
 int Service::numbRespFiles(){
 int ret;
-  QDir sourceDir("/resources");
+qsizetype qres;
+  QDir sourceDir("C:\\develop\\skill_project\\resources");
   auto files = sourceDir.entryList(QStringList() << "*.txt", QDir::Files);
+  qres = sourceDir.count();
+  ret = static_cast<int>(qres);
 
+  if(ret >= 2)
+    ret -= 2;
+
+  int i = 0;
   for(auto &filename : files){
-    cout << filename.toStdString() << " ";
+    i += 1;
+    strRespFiles += filename.toStdString();
+    if(i != (ret-1))
+      strRespFiles += " ";
+
+    // cout << filename.toStdString() << " ";
   }
   cout << endl;
   return ret;
 }
 
 void Service::prepareConfFile(){
+  respFiles = numbRespFiles();
   cout << "Prepare file Config.json!\n";
-  cout << "Maximum responses files :";
-  cin >> respFiles;
+  // cout << "Maximum responses files :";
+
   if(respFiles == 0)
     respFiles = 5;
 
+  cout << "response files count is " << respFiles << endl;
   // setRespFiles(respFiles);
-  numbRespFiles();
 
   jConfJSON = {
     {"config",{
@@ -167,6 +192,6 @@ void Service::prepareConfFile(){
       {"version","0.1"},
       {"max_responses",respFiles}
     },
-    "files",{}
+    "files",{strRespFiles}
     }};
 }

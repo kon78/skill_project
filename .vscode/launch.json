@@ -11,7 +11,7 @@
             "args": [
               " /s", " config.json"
           ],
-          "cwd": "${workspaceFolder}/src",
+          "cwd": "${workspaceFolder}",
           "environment": []
   }]
 }

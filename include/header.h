@@ -26,11 +26,13 @@ class Service{
       start = true; stop = false;
       fConfJSON = "config.json";
       ArgumSet(ptrArgv);
-      examination(fConfJSON);
+      // examination(fConfJSON);
+      examination1(fConfJSON);
       // fin = make_shared<ifstream>("config.json",ios::app);
     }
     ~Service(){fin.reset();fout.reset();}
     void examination(char* fname);
+    void examination1(char *fname);
     string GetInfo();
     void GetArgumInfo();
     void filExist(string f);
@@ -60,6 +62,7 @@ class Service{
     json jConfJSON;
     string json2strTemp;
     int respFiles;
+    string strRespFiles;
     // ConverterJSON* clConvJson = nullptr;
 };
 
