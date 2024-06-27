@@ -2,14 +2,26 @@
 
 void Service::examination(char* fname){
       string temp(fname);
-      
-      while(start && !fileConfError){
-      try{
-        filExist(temp);
+      // if( argumc > 1 && (argumv.find("/")) < argumv.length() ){
+        // string::size_type pos;
+        // pos = argumv.find("/");
+        // pos += 1;
+        while(start && !fileConfError){
+        try{
+         filExist(temp);
       } catch (exception &ex){
-        cout << "file " << temp << ". " << ex.what() << "!\n";
+          cout << "file " << temp << ". " << ex.what() << "!\n";
       }
       }
+      // }
+}
+
+void Service::ArgumSet(char* argv[]){
+      for(int i = 0; i < argumc; i++){
+        argumv += argv[i];
+        if(i != (argumc-1))
+          argumv += " ";
+        }
 }
 
 string Service::GetInfo(){
@@ -105,9 +117,11 @@ void Service::GetArgumInfo(){
 }
 
 void Service::filExist(string f){
+  bool bFileExist;
+  // cout << "file is " << f << endl;
   fstream fp;
   fp.open(f, ios::in);
-  if(!fp){
+  if(fp.is_open()){    
     fileConfError = true;
     throw runtime_error("Config file is missing");
   }

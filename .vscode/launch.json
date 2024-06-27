@@ -9,7 +9,7 @@
             "request": "launch",
             "program": "C:\\develop\\skill_project\\build\\SkillboxSearchEngine.exe",
             "args": [
-              " /r", " config.json"
+              " /s", " config.json"
           ],
           "cwd": "${workspaceFolder}/src",
           "environment": []

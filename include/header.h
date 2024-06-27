@@ -16,19 +16,16 @@
 using namespace nlohmann::json_abi_v3_11_3;
 using namespace std;
 
+string ArgumSet(int argc, char *argv[]);
+
 class ConverterJSON;
 
 class Service{
   public:
-    Service(int argc, char* argv[]):start(false),stop(true),argumc(argc),fileConfError(false),serviceKey(false),codeKey(0),serviceKeyError(false){
+    Service(int argc, char* argv[]):start(false),stop(true),argumc(argc),fileConfError(false),serviceKey(false),codeKey(0),serviceKeyError(false),ptrArgv(argv){
       start = true; stop = false;
       fConfJSON = "config.json";
-
-      for(int i = 0; i < argc; i++){
-        argumv += argv[i];
-        if(i != (argc-1))
-          argumv += " ";
-        }
+      ArgumSet(ptrArgv);
       examination(fConfJSON);
       // fin = make_shared<ifstream>("config.json",ios::app);
     }
@@ -43,12 +40,14 @@ class Service{
     void setRespFiles(int resp);
     int numbRespFiles();
     void GetObject();
+    void ArgumSet(char** ptrArgv);
 
   private:
     string argumv;
     int argumc;
     bool start;
     bool stop;
+    char** ptrArgv = nullptr;
     shared_ptr<ifstream> fin;
     shared_ptr<ofstream> fout;
     shared_ptr<ConverterJSON> sptrClConvJSON;

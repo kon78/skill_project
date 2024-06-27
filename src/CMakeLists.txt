@@ -19,7 +19,7 @@ set(CMAKE_PREFIX_PATH "C:\\Qt_mingw\\6.8.0\\mingw_64\\lib\\cmake")
 
 find_package(Qt6 COMPONENTS Core Widgets REQUIRED)
 
-add_executable(SkillboxSearchEngine main.cpp convjson.cpp service.cpp)
+add_executable(SkillboxSearchEngine main.cpp convjson.cpp service.cpp maininstr.cpp)
 target_include_directories(SkillboxSearchEngine PUBLIC ${MY_INCLUDE_DIR})
 
 target_include_directories(SkillboxSearchEngine PUBLIC ${NLOHMANN_LIB})
