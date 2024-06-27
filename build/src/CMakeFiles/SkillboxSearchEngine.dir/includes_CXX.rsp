@@ -1,1 +1,0 @@
--IC:/develop/skill_project/include -IC:/develop/nlohmann_json -I"C:/develop/skill_project/build/_deps/json-src/include" -isystem C:/Qt/6.7.0/mingw_64/include/QtCore -isystem C:/Qt/6.7.0/mingw_64/include -isystem "C:/Qt/6.7.0/mingw_64/mkspecs/win32-g++"
