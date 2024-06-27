@@ -2,7 +2,7 @@
 
 void Service::examination(char* fname){
       string temp(fname);
-
+      
       while(start && !fileConfError){
       try{
         filExist(temp);
@@ -83,8 +83,16 @@ void Service::Start(){
 
         json2strTemp.clear();
         fout.reset();      
+      }else if(codeKey == int('r')){
+        cout << "Run!" << endl;
+        GetObject();
+        sptrClConvJSON->GetTextDocuments();
       }
     }
+}
+
+void Service::GetObject(){
+  sptrClConvJSON = make_shared<ConverterJSON>();
 }
 
 void Service::TouchFile(char* fname){

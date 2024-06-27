@@ -16,18 +16,20 @@
 using namespace nlohmann::json_abi_v3_11_3;
 using namespace std;
 
+class ConverterJSON;
+
 class Service{
   public:
     Service(int argc, char* argv[]):start(false),stop(true),argumc(argc),fileConfError(false),serviceKey(false),codeKey(0),serviceKeyError(false){
       start = true; stop = false;
       fConfJSON = "config.json";
-      examination(fConfJSON);
 
       for(int i = 0; i < argc; i++){
         argumv += argv[i];
         if(i != (argc-1))
           argumv += " ";
         }
+      examination(fConfJSON);
       // fin = make_shared<ifstream>("config.json",ios::app);
     }
     ~Service(){fin.reset();fout.reset();}
@@ -40,6 +42,7 @@ class Service{
     void TouchFile(char* fname);
     void setRespFiles(int resp);
     int numbRespFiles();
+    void GetObject();
 
   private:
     string argumv;
@@ -48,6 +51,7 @@ class Service{
     bool stop;
     shared_ptr<ifstream> fin;
     shared_ptr<ofstream> fout;
+    shared_ptr<ConverterJSON> sptrClConvJSON;
     char* projectName = nullptr;
     char* fConfJSON = nullptr;
     int codeKey;
@@ -57,6 +61,7 @@ class Service{
     json jConfJSON;
     string json2strTemp;
     int respFiles;
+    // ConverterJSON* clConvJson = nullptr;
 };
 
 class ConverterJSON{
