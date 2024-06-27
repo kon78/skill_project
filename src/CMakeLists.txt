@@ -14,7 +14,8 @@ include(FetchContent)
 FetchContent_Declare(json URL ${NLOHMANN_LIB})
 FetchContent_MakeAvailable(json)
 
-set(CMAKE_PREFIX_PATH "C:\\Qt\\6.7.0\\mingw_64\\lib\\cmake")
+set(CMAKE_PREFIX_PATH "C:\\Qt_mingw\\6.8.0\\mingw_64\\lib\\cmake")
+# C:\Qt_mingw\6.8.0\mingw_64
 
 find_package(Qt6 COMPONENTS Core Widgets REQUIRED)
 
