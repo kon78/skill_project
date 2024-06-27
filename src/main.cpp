@@ -11,15 +11,17 @@ string argumentV;
     cout << Bunner << "\n/c clear\n/i info\n/s service\n/r run\n/h help\n";
     exit(0);
   }else{
-      for(int i = 0; i < argc; i++){
+      // for(int i = 0; i < argc; i++){
         
-        argumentV += argv[i];
-        if(i != (argc-1))
-          argumentV += " ";
-        }
+      //   argumentV += argv[i];
+      //   if(i != (argc-1))
+      //     argumentV += " ";
+      //   }
 
-      cout << "argument is " << argumentV << endl;
-      
+      // cout << "argument is " << argumentV << endl;
+
+      // ArgumSet(argc, argv);
+
       Service* service = new Service(argc, argv);
     service->Start();
     // service->numbRespFiles();

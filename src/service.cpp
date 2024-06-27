@@ -22,6 +22,7 @@ void Service::ArgumSet(char* argv[]){
         if(i != (argumc-1))
           argumv += " ";
         }
+  cout << "argumentV is " << argumv << endl;
 }
 
 string Service::GetInfo(){
