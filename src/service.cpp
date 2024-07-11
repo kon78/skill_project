@@ -153,6 +153,8 @@ void Service::setRespFiles(int resp){
 
 int Service::numbRespFiles(){
 int ret;
+
+#if(do_this == do_not)
 qsizetype qres;
   QDir sourceDir("C:\\develop\\skill_project\\resources");
   auto files = sourceDir.entryList(QStringList() << "*.txt", QDir::Files);
@@ -172,6 +174,14 @@ qsizetype qres;
     // cout << filename.toStdString() << " ";
   }
   cout << endl;
+#endif
+
+  string path = "C:\\develop\\skill_project\\resources";
+  ret = 0;
+  for (auto & p : fs::directory_iterator(path)){
+    ++ret;
+        }
+
   return ret;
 }
 

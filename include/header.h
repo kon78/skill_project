@@ -7,7 +7,7 @@
 #include<fstream>
 #include<string>
 #include<nlohmann/json.hpp>
-#include<QtCore>
+#include<filesystem>
 
 #define do_this 1
 #define do_not 0
@@ -15,6 +15,7 @@
 
 using namespace nlohmann::json_abi_v3_11_3;
 using namespace std;
+namespace fs = filesystem;
 
 string ArgumSet(int argc, char *argv[]);
 
