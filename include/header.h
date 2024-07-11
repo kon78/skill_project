@@ -22,10 +22,10 @@ class ConverterJSON;
 
 class Service{
   public:
-    Service(int argc, char* argv[]):start(false),stop(true),argumc(argc),fileConfError(false),serviceKey(false),codeKey(0),serviceKeyError(false),ptrArgv(argv){
+    Service(int argc, char* argv[]):start(false),stop(true),argumc(argc),fileConfError(false),serviceKey(false),codeKey(0),serviceKeyError(false)/*,ptrArgv(argv)*/{
       start = true; stop = false;
       fConfJSON = "config.json";
-      ArgumSet(ptrArgv);
+      ArgumSet(argv);
       // examination(fConfJSON);
       examination1(fConfJSON);
       // fin = make_shared<ifstream>("config.json",ios::app);
@@ -42,14 +42,14 @@ class Service{
     void setRespFiles(int resp);
     int numbRespFiles();
     void GetObject();
-    void ArgumSet(char** ptrArgv);
+    void ArgumSet(char* argv[]);
 
   private:
     string argumv;
     int argumc;
     bool start;
     bool stop;
-    char** ptrArgv = nullptr;
+    // char** ptrArgv = nullptr;
     shared_ptr<ifstream> fin;
     shared_ptr<ofstream> fout;
     shared_ptr<ConverterJSON> sptrClConvJSON;
