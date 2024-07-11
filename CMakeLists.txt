@@ -3,4 +3,8 @@ project("SkillboxSearchEngine" VERSION 0.1)
 
 set(CMAKE_CXX_STANDARD 14)
 
+set(MY_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+set(NILS_LIB ${CMAKE_SOURCE_DIR}/nlohmann_json/include)
+
+add_subdirectory(nlohmann_json)
 add_subdirectory(src)
