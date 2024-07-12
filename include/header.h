@@ -19,11 +19,11 @@ namespace fs = filesystem;
 
 string ArgumSet(int argc, char *argv[]);
 
-class ConverterJSON;
+// class ConverterJSON;
 
 class Service{
   public:
-    Service(int argc, char* argv[]):start(false),stop(true),argumc(argc),fileConfError(false),serviceKey(false),codeKey(0),serviceKeyError(false)/*,ptrArgv(argv)*/{
+    Service(int argc, char* argv[]):start(false),stop(true),run(false),argumc(argc),fileConfError(false),serviceKey(false),codeKey(0),serviceKeyError(false)/*,ptrArgv(argv)*/{
       start = true; stop = false;
       fConfJSON = "config.json";
       ArgumSet(argv);
@@ -42,7 +42,8 @@ class Service{
     void TouchFile(char* fname);
     void setRespFiles(int resp);
     int numbRespFiles();
-    void GetObject();
+    bool AppReady();
+    // void GetObject();
     void ArgumSet(char* argv[]);
 
   private:
@@ -50,10 +51,11 @@ class Service{
     int argumc;
     bool start;
     bool stop;
+    bool run;
     // char** ptrArgv = nullptr;
     shared_ptr<ifstream> fin;
     shared_ptr<ofstream> fout;
-    shared_ptr<ConverterJSON> sptrClConvJSON;
+    // shared_ptr<ConverterJSON> sptrClConvJSON;
     char* projectName = nullptr;
     char* fConfJSON = nullptr;
     int codeKey;
@@ -69,9 +71,15 @@ class Service{
 
 class ConverterJSON{
   public:
-    ConverterJSON() = default;// ConverterJSON(){}
     vector<string> GetTextDocuments();
+
+    ConverterJSON() = default;// ConverterJSON(){}
+    void ParamApp(Service* pService);
+
     int GetResponsesLimit();
     vector<string> GetRequests();
     void putAnswers(vector<vector<pair<int, float>>>answers);
+  
+  private:
+    Service* pService = nullptr;
 };

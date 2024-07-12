@@ -28,13 +28,17 @@ void Service::examination1(char* fname){
   }
 }
 
+bool Service::AppReady(){
+  return run;
+}
+
 void Service::ArgumSet(char* argv[]){
       for(int i = 0; i < argumc; i++){
         argumv += argv[i];
         if(i != (argumc-1))
           argumv += " ";
         }
-  cout << "argumentV is " << argumv << endl;
+  cout << "Constructor argumentV is " << argumv << endl;
 }
 
 string Service::GetInfo(){
@@ -62,7 +66,15 @@ void Service::Start(){
       pos += 1;
       if(argumv[pos] == 's'){
         // cout << "finded /s" << endl;
-        serviceKey = true; serviceKeyError = false;
+        pos = argumv.find(fConfJSON);
+        if(pos < argumv.length() ){
+          // cout << "json file exist!\n";
+          serviceKey = true;  
+        }else{
+          serviceKey = false;  
+        }
+        // serviceKey = true; 
+        serviceKeyError = false;
         codeKey = int('s');
       }else if(argumv[pos] == 'c'){
         // cout << "finded /c" << endl;
@@ -83,7 +95,6 @@ void Service::Start(){
         codeKey = int('h');
       }else{
         serviceKeyError = true;
-        cout << "error usage key!\n";
       }
       // if( argumv.find("/") )      
       // cout << "argc=" << argumc << " argv=" << argumv << endl;
@@ -93,7 +104,8 @@ void Service::Start(){
   }
 
   if(!start && stop && fileConfError && !serviceKey){
-    // cout << "exit" << endl;
+    cout << "exit Service::Start()" << endl;
+    cout << "error usage key!\n";
     exit(0);
     }else{
       //service file <*target*>.json
@@ -109,17 +121,18 @@ void Service::Start(){
 
         json2strTemp.clear();
         fout.reset();      
-      }else if(codeKey == int('r')){
+      }else if(codeKey == int('r') ){//здесь стоит детально проверить условия запуска
         cout << "Run!" << endl;
-        GetObject();
-        sptrClConvJSON->GetTextDocuments();
+        run = true;
+        // GetObject();
+        // sptrClConvJSON->GetTextDocuments();
       }
     }
 }
 
-void Service::GetObject(){
-  sptrClConvJSON = make_shared<ConverterJSON>();
-}
+// void Service::GetObject(){
+//   sptrClConvJSON = make_shared<ConverterJSON>();
+// }
 
 void Service::TouchFile(char* fname){
   fout = make_shared<ofstream>(fname,ios::out);
@@ -153,7 +166,6 @@ void Service::setRespFiles(int resp){
 
 int Service::numbRespFiles(){
 int ret;
-
 #if(do_this == do_not)
 qsizetype qres;
   QDir sourceDir("C:\\develop\\skill_project\\resources");
