@@ -197,6 +197,16 @@ qsizetype qres;
   return ret;
 }
 
+string Service::prepareNameFiles(){
+  string ret;
+  string path = "C:\\develop\\skill_project\\resources";
+  for(auto &p : fs::directory_iterator(path)){
+    ret += p.path().filename().generic_string();
+    ret += " ";
+  }
+  return ret;
+}
+
 void Service::prepareConfFile(){
   respFiles = numbRespFiles();
   cout << "Prepare file Config.json!\n";

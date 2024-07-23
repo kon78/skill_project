@@ -8,6 +8,7 @@
 #include<string>
 #include<nlohmann/json.hpp>
 #include<filesystem>
+// #include<gtest/gtest.h>
 
 #define do_this 1
 #define do_not 0
@@ -43,8 +44,12 @@ class Service{
     void setRespFiles(int resp);
     int numbRespFiles();
     bool AppReady();
+    string prepareNameFiles();
     // void GetObject();
     void ArgumSet(char* argv[]);
+    Service* getAddr(){
+      return this;
+    }
 
   private:
     string argumv;
@@ -74,12 +79,15 @@ class ConverterJSON{
     vector<string> GetTextDocuments();
 
     ConverterJSON() = default;// ConverterJSON(){}
-    void ParamApp(Service* pService);
+    // ConverterJSON(){}
+    void ParamApp();
+    void SetObjServ(shared_ptr<Service> _shrdPtrServ);
 
     int GetResponsesLimit();
     vector<string> GetRequests();
     void putAnswers(vector<vector<pair<int, float>>>answers);
   
   private:
-    Service* pService = nullptr;
+    // Service* pService = nullptr;
+    shared_ptr<Service>shrdPtrServ;
 };

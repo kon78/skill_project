@@ -21,10 +21,12 @@ int main(int argc, char *argv[]){
     delete service;
 #endif
 
-  service = new Service(argc, argv);
+  shared_ptr<Service>_shrdPtrServ = make_shared<Service>(argc, argv); 
+  // service = new Service(argc, argv);
   ConverterJSON* clConvJSON = new ConverterJSON();
-  clConvJSON->ParamApp(service);
-  if( service->AppReady() ){
+  clConvJSON->SetObjServ(_shrdPtrServ);
+  clConvJSON->ParamApp();
+  if( _shrdPtrServ->AppReady() ){
     //двигаемся дальше - получаем вектор с содержимым файлов-запросов
     clConvJSON->GetTextDocuments();
   }else{
