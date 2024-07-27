@@ -14,7 +14,15 @@ set(NILS_LIB ${CMAKE_SOURCE_DIR}/nlohmann_json/include)#true
 
 # enable_testing()#true
 
+add_executable(SkillboxSearchEngine src/main.cpp src/convjson.cpp src/service.cpp src/maininstr.cpp)
+
+target_include_directories(SkillboxSearchEngine PUBLIC ${MY_INCLUDE_DIR})
+
+target_include_directories(SkillboxSearchEngine PUBLIC ${NILS_LIB})
+
+target_link_libraries(SkillboxSearchEngine PRIVATE nlohmann_json::nlohmann_json)
+
 add_subdirectory(${CMAKE_SOURCE_DIR}/nlohmann_json)#true
 
-add_subdirectory(src)
+# add_subdirectory(src)
 add_subdirectory(tests)#true

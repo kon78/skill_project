@@ -1,4 +1,10 @@
-set(MY_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+cmake_minimum_required(VERSION 3.10)
+
+project(SkillboxSearchEngine-tests)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED on)
+# set(MY_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 
 # GTest
 include(FetchContent)
@@ -7,7 +13,32 @@ FetchContent_MakeAvailable(googletest)
 add_library(GTest::GTest INTERFACE IMPORTED)
 target_link_libraries(GTest::GTest INTERFACE gtest_main)
 
-add_executable(multiply_test multiply_test.cpp)#true
-target_link_libraries(multiply_test PRIVATE GTest::GTest multiply ${MY_INCLUDE_DIR})#true
+enable_testing()#true
 
-add_test(multiply_gtests multiply_test)#true
+include_directories(
+    ${MY_INCLUDE_DIR}
+    ${GTEST_INCLUDE_DIRS}
+)
+
+set(gtest_disable_pthreads on)
+
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+
+add_executable(TestSerialization ./multiply_test.cpp
+    # ../src/multiply.cpp
+    # ../src/service.cpp ../src/convjson.cpp
+)#true
+
+# add_executable(TestSkillboxSearchEngine multiply_test.cpp
+    # ../src/multiply.cpp
+# )#true
+# target_link_directories(TestSkillboxSearchEngine PUBLIC ${MY_INCLUDE_DIR})#sobiraetsya
+
+target_link_libraries(TestSerialization ${GTEST_LIBRARIES} PRIVATE GTest::GTest)#true
+include(GoogleTest)
+gtest_discover_tests(TestSerialization)
+
+# add_test(Serialization TestSerialization)#true
+#собранный тест должен находиться в папке C:\develop\skill_project\build\tests, иначе он не подключается
+#тест в файле multiply_test.cpp проходит

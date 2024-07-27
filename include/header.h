@@ -8,7 +8,6 @@
 #include<string>
 #include<nlohmann/json.hpp>
 #include<filesystem>
-// #include<gtest/gtest.h>
 
 #define do_this 1
 #define do_not 0
