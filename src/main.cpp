@@ -1,5 +1,11 @@
+// #include<nlohmann/json.hpp>
 #include "header.h"
+#include "service.h"
+#include "convjson.h"
 // #include "service.h"
+
+// using namespace nlohmann::json_abi_v3_11_3;
+using namespace std;
 
 char Bunner[] = "Usage: SkillboxSearchEngine [keys /c/i/s/r/h] <config.json | requests.json | answers.json>";
 char keys[] = "\n/c clear\n/i info\n/s service\n/r run\n/h help\n";

@@ -1,5 +1,5 @@
 #include"header.h"
-
+#include"service.h"
 void Service::examination(char* fname){
       string temp(fname);
       cout << "filename is " << temp << endl;
@@ -138,9 +138,10 @@ void Service::TouchFile(char* fname){
   fout = make_shared<ofstream>(fname,ios::out);
 }
 
-void Service::GetArgumInfo(){
-  cout << "numbers arguments is " << argumc << endl;
-  cout << argumv << endl;
+string Service::GetArgumInfo(){
+  // cout << "numbers arguments is " << argumc << endl;
+  // cout << argumv << endl;
+  return argumv;
 }
 
 void Service::filExist(string f){

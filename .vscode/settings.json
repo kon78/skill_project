@@ -2,6 +2,14 @@
     "files.associations": {
         "iosfwd": "cpp",
         "iostream": "cpp",
-        "new": "cpp"
-    }
+        "new": "cpp",
+        "charconv": "cpp",
+        "ratio": "cpp",
+        "array": "cpp",
+        "functional": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "enabled"
 }

@@ -13,32 +13,38 @@ FetchContent_MakeAvailable(googletest)
 add_library(GTest::GTest INTERFACE IMPORTED)
 target_link_libraries(GTest::GTest INTERFACE gtest_main)
 
-enable_testing()#true
 
 include_directories(
     ${MY_INCLUDE_DIR}
     ${GTEST_INCLUDE_DIRS}
-)
+    # ${MY_INCLUDE_DIR}/nlohmann_json
+    )
 
-set(gtest_disable_pthreads on)
-
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-
-add_executable(TestSerialization ./multiply_test.cpp
+    set(NILS_LIB ${CMAKE_SOURCE_DIR}/nlohmann_json/include)#true
+    
+    set(gtest_disable_pthreads on)
+    
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    
+    
+    add_executable(TestSerialization ./multiply_test.cpp
+    ../src/service.cpp
     # ../src/multiply.cpp
     # ../src/service.cpp ../src/convjson.cpp
-)#true
-
-# add_executable(TestSkillboxSearchEngine multiply_test.cpp
+    )#true
+    
+    target_include_directories(TestSerialization PUBLIC ${NILS_LIB})
+    # add_executable(TestSkillboxSearchEngine multiply_test.cpp
     # ../src/multiply.cpp
-# )#true
-# target_link_directories(TestSkillboxSearchEngine PUBLIC ${MY_INCLUDE_DIR})#sobiraetsya
-
-target_link_libraries(TestSerialization ${GTEST_LIBRARIES} PRIVATE GTest::GTest)#true
-include(GoogleTest)
-gtest_discover_tests(TestSerialization)
-
+    # )#true
+    # target_link_directories(TestSkillboxSearchEngine PUBLIC ${MY_INCLUDE_DIR})#sobiraetsya
+    
+    target_link_libraries(TestSerialization ${GTEST_LIBRARIES} PRIVATE GTest::GTest)#true
+    target_link_libraries(TestSerialization PRIVATE nlohmann_json::nlohmann_json)
+    include(GoogleTest)
+    gtest_discover_tests(TestSerialization)
+    
+    enable_testing()#true
 # add_test(Serialization TestSerialization)#true
 #собранный тест должен находиться в папке C:\develop\skill_project\build\tests, иначе он не подключается
 #тест в файле multiply_test.cpp проходит
