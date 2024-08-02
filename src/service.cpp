@@ -144,6 +144,7 @@ string Service::GetArgumInfo(){
   return argumv;
 }
 
+//для проверки, существует ли файл config.json
 void Service::filExist(string f){
   cout << "file is " << f << endl;
   fstream fp;
@@ -156,6 +157,26 @@ void Service::filExist(string f){
     //здесь проверить, есть ли в файле поле config наверно в методе ConverterJSON::GetTextDocuments()
     
   }
+}
+
+void Service::readFile(string f){
+  fstream fp;
+  string temp;
+  filErr = false;
+  fp.open(f, ios::in);
+  if(fp.is_open()){
+    filErr = true;
+    while(!fp.eof()){
+      getline(fp,temp);
+      dataFile.push_back(temp);
+    }
+  }else{
+    cout << "Can't read file " << f << "!\n";
+  }
+}
+
+vector<string> Service::GetDataFile(){
+  return dataFile;
 }
 
 void Service::setRespFiles(int resp){
@@ -198,6 +219,17 @@ qsizetype qres;
   return ret;
 }
 
+string Service::nameRespFiles(){
+  string ret;
+  string path = "C:\\develop\\skill_project\\resources";
+  for (auto & p : fs::directory_iterator(path)){
+    cout << p.path() << " ";    
+  }
+  cout << endl;
+  return ret;
+}
+
+//имена всех файлов в папке resource
 string Service::prepareNameFiles(){
   string ret;
   string path = "C:\\develop\\skill_project\\resources";

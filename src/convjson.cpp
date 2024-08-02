@@ -1,5 +1,6 @@
 #include"header.h"
 #include"convjson.h"
+
 vector<string> ConverterJSON::GetTextDocuments(){
   vector<string> ret;
   string temp;
@@ -23,10 +24,11 @@ vector<string> ConverterJSON::GetTextDocuments(){
     --iCntRespFiles;
   }
 
-  for(auto p:ret){
-    cout << p << " ";
-  }
-  cout << endl;
+  //printing filenames string
+  // for(auto p:ret){
+  //   cout << p << " ";
+  // }
+  // cout << endl;
 
 return ret;
 }

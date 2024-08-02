@@ -2,7 +2,8 @@
 #ifndef SERVICE_H
 #define SERVICE_H
 #include<nlohmann/json.hpp>
-// #include "header.h"
+#include<vector>
+
 using namespace std;
 
 using namespace nlohmann::json_abi_v3_11_3;
@@ -24,12 +25,15 @@ class Service{
     void examination1(char *fname);
     string GetInfo();
     string GetArgumInfo();
+    vector<string> GetDataFile();
     void filExist(string f);
+    void readFile(string f);
     void Start();
     void prepareConfFile();
     void TouchFile(char* fname);
     void setRespFiles(int resp);
     int numbRespFiles();
+    string nameRespFiles();
     bool AppReady();
     string prepareNameFiles();
     // void GetObject();
@@ -44,6 +48,8 @@ class Service{
     bool start;
     bool stop;
     bool run;
+    bool filErr;
+    vector<string>dataFile;
     // char** ptrArgv = nullptr;
     shared_ptr<ifstream> fin;
     shared_ptr<ofstream> fout;

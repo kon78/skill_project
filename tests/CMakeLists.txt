@@ -29,6 +29,8 @@ include_directories(
     
     add_executable(TestSerialization ./multiply_test.cpp
     ../src/service.cpp
+    ../src/invertindex.cpp
+    ../src/convjson.cpp
     # ../src/multiply.cpp
     # ../src/service.cpp ../src/convjson.cpp
     )#true

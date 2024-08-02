@@ -1,29 +1,37 @@
 #include <gtest/gtest.h>
 
 #include "service.h"
-#include"convjson.h"
+#include "convjson.h"
+#include "invertindex.h"
+#include <memory>
 
-// TEST(test_Service_case, test_Service_case_NumbFiles__Test)
 TEST(testService, NumbFiles)
 {
-    // int argc = 0; char* argv[] = {"this", " is", " test\n"};
-    // Service* TestServ = new Service(argc, argv);
     Service TestServ;
     int n = TestServ.numbRespFiles();
     EXPECT_EQ(n, 7);
-    // delete TestServ;
+}
+
+TEST(TestIvertIndex, index){
+  int argc = 3; char* argv[] = {"this", "is", "test"};
+  shared_ptr<Service>_shrdPtrServ = make_shared<Service>(argc, argv); 
+  // service = new Service(argc, argv);
+  ConverterJSON* clConvJSON = new ConverterJSON();
+  InvertedIndex* clInvInd = new InvertedIndex();
+  
+  clConvJSON->SetObjServ(_shrdPtrServ);//передача
+  clInvInd->SetObjServ(_shrdPtrServ);
+  clInvInd->UpdateDocumentBase(clConvJSON->GetTextDocuments());
+  int n = clInvInd->GetNumbFiles();
+  // cout << "n=" << n << endl;
+  EXPECT_EQ(n,7);
+  //если убирать в тесте обьекты - ошибка
+  // delete clInvInd; delete clInvInd; _shrdPtrServ.reset();
 }
 
 TEST(testServiceArgum, arguments)
 {
     int argc = 3; char* argv[] = {"this", "is", "test"};
-    // string str; int i = 0;
-
-    // for(auto &arg : argv){
-    //     ++i; str += arg[i];
-    //     if(i > argc)break;
-    //     str += " ";
-    // }
     string str = "this is test";
     Service* TestServ = new Service(argc, argv);
     string value = TestServ->GetArgumInfo();

@@ -14,7 +14,7 @@ set(NILS_LIB ${CMAKE_SOURCE_DIR}/nlohmann_json/include)#true
 
 # enable_testing()#true
 
-add_executable(SkillboxSearchEngine src/main.cpp src/convjson.cpp src/service.cpp src/maininstr.cpp)
+add_executable(SkillboxSearchEngine src/main.cpp src/convjson.cpp src/service.cpp src/maininstr.cpp src/invertindex.cpp)
 
 target_include_directories(SkillboxSearchEngine PUBLIC ${MY_INCLUDE_DIR})
 

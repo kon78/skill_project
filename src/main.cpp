@@ -2,6 +2,7 @@
 #include "header.h"
 #include "service.h"
 #include "convjson.h"
+#include "invertindex.h"
 // #include "service.h"
 
 // using namespace nlohmann::json_abi_v3_11_3;
@@ -30,11 +31,16 @@ int main(int argc, char *argv[]){
   shared_ptr<Service>_shrdPtrServ = make_shared<Service>(argc, argv); 
   // service = new Service(argc, argv);
   ConverterJSON* clConvJSON = new ConverterJSON();
-  clConvJSON->SetObjServ(_shrdPtrServ);
+  InvertedIndex* clInvInd = new InvertedIndex();
+  
+  clConvJSON->SetObjServ(_shrdPtrServ);//передача
+  clInvInd->SetObjServ(_shrdPtrServ);
+
   clConvJSON->ParamApp();
   if( _shrdPtrServ->AppReady() ){
     //двигаемся дальше - получаем вектор с содержимым файлов-запросов
-    clConvJSON->GetTextDocuments();
+    // clConvJSON->GetTextDocuments();
+    clInvInd->UpdateDocumentBase(clConvJSON->GetTextDocuments());
   }else{
     cout << "Wrong! AppReady() - false!\n";
   }
