@@ -20,6 +20,7 @@ string InvertedIndex::_makeRegExp(const string &word){
 }
 
 void InvertedIndex::UpdateDocumentBase(vector<string> input_docs){
+  map<string, vector<Entry>>::iterator iterMapFreqDict;
   int index = 0; Entry stEntry; smatch m; vector<Entry>v;
   string path = "C:\\develop\\skill_project\\resources\\";
   // vector<string> temp;
@@ -64,60 +65,59 @@ void InvertedIndex::UpdateDocumentBase(vector<string> input_docs){
   }
 #endif
 
-  //docs --> freq_dictionary;
-  // cout << "size docs is " << docs.size() << endl;
   for(auto &d : docs){
     str = d;//получаем строку
-    int cntWord = 0;
-    // while(cntWrd != 0){
-    // cout << "length string " << str << " is " << str.length() << endl;
-    //\b(?!%)\w+
+    // int cntWord = 0;
+    bool wrdSave = false;
     const regex findRegCntWord(_makeRegExp("%"));
     ptrdiff_t const countWord(distance(sregex_iterator(d.begin(), d.end(), findRegCntWord), sregex_iterator()));
-    int cntWrd = countWord;
-    cout << "count word at string " << str << " is " << cntWrd << endl;
+    int cntWrd = (int)countWord;//количество слов в строке
     while(cntWrd != 0){
     if(str.length() > 0){
-      stEntry.doc_id = index;//index увеличиваем на 1 после прохождения цикла
-      cout << str << endl;
-      //делаем обход строки
-      ++cntWord;
+    stEntry.doc_id = index;//index увеличиваем на 1 после прохождения цикла
+      // ++cntWord;
       posB = str.find(" ");
-      if(posB < str.length()){
         strCopy = str.substr(0,posB);
         str.erase(0,posB+1);
-        
-        // cout << "length string is " << str.length() << endl;
-        //здесь лучше подключить regexp, чтобы искать count вхождений в строке strCopy
-        // string findStr(strCopy);
         const regex findRegExpWord(makeRegExp(strCopy));
-        // regex_search(d,m,findRegExpWord);//обычный поиск
-
-        //поиска совпадений
         ptrdiff_t const matchCount(distance(sregex_iterator(d.begin(), d.end(), findRegExpWord), sregex_iterator()));
         cout << strCopy << " count --> " << matchCount << endl;
-        stEntry.count = matchCount;
-      }
-      else{
-        const regex findRegExpWord(makeRegExp(str));
-        ptrdiff_t const matchCount(distance(sregex_iterator(d.begin(), d.end(), findRegExpWord), sregex_iterator()));
-        cout << str << " count --> " << matchCount << endl;
-        stEntry.count = matchCount;
-      }
+        stEntry.count = (int)matchCount;
+        stEntry.doc_id = index;
+        if(freq_dictionary.size() != 0){
+          iterMapFreqDict = freq_dictionary.find(strCopy);//поиск по ключу
+            if(iterMapFreqDict->first == strCopy && !wrdSave){
+              (iterMapFreqDict->second).push_back(stEntry);
+              wrdSave = true;//сюда больше не заходим в этом документе index
+        }else{
+          v.clear();
+          v.push_back(stEntry);
+          freq_dictionary.insert(pair<string,vector<Entry>>(strCopy, v));
+        }
+        }else{
+          v.push_back(stEntry);
+          freq_dictionary.insert(pair<string,vector<Entry>>(strCopy, v));
+          v.clear();
+        }
     }
     --cntWrd;
     }//while
-    cout << "count word at string " << str << " is " << cntWord << endl;
     ++index;
-
-    v.push_back(stEntry);
-    freq_dictionary.insert(pair<string,vector<Entry>>(strCopy, v));
-
+    v.clear();
   }//for
-  //map<string, vector<Entry>> freq_dictionary
-
+    vector<Entry>vTempEntry;
+    string strIndexTemp;
+    cout << "-----------------------------\n";
   for(auto &fd : freq_dictionary){
-    cout << "index[" << fd.first << "]=" << fd.second.size() << endl;
+    strIndexTemp = fd.first;
+    vTempEntry = fd.second;
+    int sizeStruct = vTempEntry.size();
+    cout << "\nindex[" << strIndexTemp << "]=";
+    for(int i = 0; i < sizeStruct; i++){
+      cout << "{";
+      cout << vTempEntry[i].doc_id << "," << vTempEntry[i].count << "}";
+    }
+    vTempEntry.clear();
   }
   return;
 }
