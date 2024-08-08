@@ -19,6 +19,83 @@ string InvertedIndex::_makeRegExp(const string &word){
   return ret;
 }
 
+void print(stThread _thread){
+  cout << "Martin thread " << _thread.id << " test!\n";
+}
+
+// void InvertedIndex::print(stThread _thread){
+//   cout << "Martin thread " << _thread.id << " test!\n";
+// }
+
+// thread InvertedIndex::makeThread(stThread _thread){
+
+//   // if(_thread.id != "" && _thread.status == threadStopTask)
+//     // thread thrd(print, _thread);
+//     return thread (print, _thread);
+//     // thread thrd(print);
+//     // return thread();  
+// }
+
+int InvertedIndex::ThreadRoutine(vector<string> input_docs){
+  mutex threadAccess;
+  // stThread strucThread;
+  string str, threadId("Thread_");
+  int index = 0;
+  for(auto &d : input_docs){
+    str = d;//получаем строку
+    bool wrdSave = false;
+    const regex findRegCntWord(_makeRegExp("%"));
+    ptrdiff_t const countWord(distance(sregex_iterator(d.begin(), d.end(), findRegCntWord), sregex_iterator()));
+    int cntWrd = (int)countWord;//количество слов в строке
+  while(cntWrd != 0){
+    threadId += index;//подпись созданного потока
+    strucThread.id = threadId;
+    strucThread.status = threadStopTask;
+    strucThread.milliseconds = 0;
+    // thread th(InvertedIndex::print, ref(strucThread));
+
+    pVecThreadDocs.push_back(new thread(print, (strucThread)));
+    // vecThreadDocs.push_back(move(makeThread(strucThread)));
+    // vecThreadDocs.push_back(thread(print,ref(strucThread)));
+    --cntWrd;
+  }
+  ++index;//increment
+  }
+    for(auto& t: pVecThreadDocs){
+        t->join();
+    }
+  return threadError;
+}
+
+void InvertedIndex::UpdateDocumentBaseThread(vector<string> input_docs){
+  map<string, vector<Entry>>::iterator iterMapFreqDict;
+  int index = 0; Entry stEntry; smatch m; vector<Entry>v;
+  string path = "C:\\develop\\skill_project\\resources\\";
+  string str, fStrName, strCopy;
+  string::size_type posB;
+  int i = 0;
+
+  iCntRespFiles = shrdPtrServ.get()->numbRespFiles();
+  str = shrdPtrServ.get()->prepareNameFiles();
+  while(iCntRespFiles != 0){
+    fStrName = path;
+    posB = str.find(" ");
+    if(posB < str.length()){
+      fStrName += str.substr(0,posB);
+      str.erase(0,posB+1);
+      shrdPtrServ.get()->readFile(fStrName);
+      docs = shrdPtrServ.get()->GetDataFile();
+      fStrName.erase();
+      input_docs.push_back(docs[i]);
+      ++i;
+    }
+
+  --iCntRespFiles;
+  }
+
+
+}
+
 void InvertedIndex::UpdateDocumentBase(vector<string> input_docs){
   map<string, vector<Entry>>::iterator iterMapFreqDict;
   int index = 0; Entry stEntry; smatch m; vector<Entry>v;
@@ -67,7 +144,6 @@ void InvertedIndex::UpdateDocumentBase(vector<string> input_docs){
 
   for(auto &d : docs){
     str = d;//получаем строку
-    // int cntWord = 0;
     bool wrdSave = false;
     const regex findRegCntWord(_makeRegExp("%"));
     ptrdiff_t const countWord(distance(sregex_iterator(d.begin(), d.end(), findRegCntWord), sregex_iterator()));
@@ -102,6 +178,7 @@ void InvertedIndex::UpdateDocumentBase(vector<string> input_docs){
     }
     --cntWrd;
     }//while
+    
     ++index;
     v.clear();
   }//for
