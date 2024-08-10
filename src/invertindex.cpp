@@ -15,31 +15,20 @@ string InvertedIndex::_makeRegExp(const string &word){
   ret = "(\\b(?!";
   ret += word;
   ret += ")\\w+)";
-  // cout << ret << endl;
   return ret;
 }
 
-void print(stThread _thread){
-  cout << "Martin thread " << _thread.id << " test!\n";
+void print(stThread stthread){
+  if(stthread.status == threadStopTask){
+  cout << "Martin thread " << stthread.id << " test!\n";
+  stthread.status = threadEndedTask;
+  }
 }
 
-// void InvertedIndex::print(stThread _thread){
-//   cout << "Martin thread " << _thread.id << " test!\n";
-// }
-
-// thread InvertedIndex::makeThread(stThread _thread){
-
-//   // if(_thread.id != "" && _thread.status == threadStopTask)
-//     // thread thrd(print, _thread);
-//     return thread (print, _thread);
-//     // thread thrd(print);
-//     // return thread();  
-// }
-
 int InvertedIndex::ThreadRoutine(vector<string> input_docs){
-  mutex threadAccess;
-  // stThread strucThread;
+  // mutex threadAccess;
   string str, threadId("Thread_");
+  int countElements;
   int index = 0;
   for(auto &d : input_docs){
     str = d;//получаем строку
@@ -47,23 +36,41 @@ int InvertedIndex::ThreadRoutine(vector<string> input_docs){
     const regex findRegCntWord(_makeRegExp("%"));
     ptrdiff_t const countWord(distance(sregex_iterator(d.begin(), d.end(), findRegCntWord), sregex_iterator()));
     int cntWrd = (int)countWord;//количество слов в строке
+    countElements = (int)countWord;
   while(cntWrd != 0){
-    threadId += index;//подпись созданного потока
-    strucThread.id = threadId;
-    strucThread.status = threadStopTask;
-    strucThread.milliseconds = 0;
-    // thread th(InvertedIndex::print, ref(strucThread));
+    threadId += to_string(index);//подпись созданного потока
+    pStThread = new stThread;
+    pStThread->id = threadId;
+    pStThread->status = threadStopTask;
+    pStThread->milliseconds = 0;
+    vecStructThreads.push_back(pStThread);
 
-    pVecThreadDocs.push_back(new thread(print, (strucThread)));
-    // vecThreadDocs.push_back(move(makeThread(strucThread)));
-    // vecThreadDocs.push_back(thread(print,ref(strucThread)));
     --cntWrd;
   }
   ++index;//increment
   }
+    cout << "size vector vecStructThreads is " << vecStructThreads.size() << endl;
+    //create vectors threads
+    for(int i = 0; i < vecStructThreads.size(); ++i){
+      // pVecThreadDocs.push_back(new thread(print, (*pStThread)));
+      cout << "thread " << i << endl;
+      pVecThreadDocs.push_back( new thread( print, ( *vecStructThreads[i] ) ) );
+    }
+
+    //switch-on threads
     for(auto& t: pVecThreadDocs){
+        // std::this_thread::sleep_for(std::chrono::milliseconds(10));
         t->join();
     }
+
+    //switch-off threads
+    for(auto& t: pVecThreadDocs){
+        // std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        if(t->joinable())
+          t->detach();
+    }
+
+
   return threadError;
 }
 

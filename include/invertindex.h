@@ -7,6 +7,7 @@
 #include <regex>
 #include <thread>
 #include <mutex>
+#include <chrono>
 // #include <time.h>//?
 
 enum {threadRunTask=100, threadStopTask=101, threadError=99, threadEndedTask=1}enumState;
@@ -45,7 +46,9 @@ class InvertedIndex{
     map<string, vector<Entry>> freq_dictionary;
     shared_ptr<Service>shrdPtrServ;
     vector<thread*> pVecThreadDocs;
-    stThread strucThread;
+    vector<stThread*> vecStructThreads;//вектор структур
+    stThread* pStThread = nullptr;
+    mutex threadAccess;
 };
 
 #endif
