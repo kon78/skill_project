@@ -18,61 +18,89 @@ string InvertedIndex::_makeRegExp(const string &word){
   return ret;
 }
 
-void print(stThread stthread){
-  if(stthread.status == threadStopTask){
-  cout << "Martin thread " << stthread.id << " test!\n";
-  stthread.status = threadEndedTask;
-  }
+// void Tester::RunTask(){
+//   th(func);
+// }
+
+void InnerHelloWorld(int n)
+{
+  // if(pStrucThread != nullptr){
+    cout << "Hello from the inner word! n = " << n << endl;
+    // dataAccess.lock();
+    // ++pStrucThread->milliseconds;
+  // }
 }
 
-int InvertedIndex::ThreadRoutine(vector<string> input_docs){
-  // mutex threadAccess;
-  string str, threadId("Thread_");
-  int countElements;
-  int index = 0;
-  for(auto &d : input_docs){
-    str = d;//получаем строку
-    bool wrdSave = false;
-    const regex findRegCntWord(_makeRegExp("%"));
-    ptrdiff_t const countWord(distance(sregex_iterator(d.begin(), d.end(), findRegCntWord), sregex_iterator()));
-    int cntWrd = (int)countWord;//количество слов в строке
-    countElements = (int)countWord;
-  while(cntWrd != 0){
-    threadId += to_string(index);//подпись созданного потока
-    pStThread = new stThread;
-    pStThread->id = threadId;
-    pStThread->status = threadStopTask;
-    pStThread->milliseconds = 0;
-    vecStructThreads.push_back(pStThread);
+// void print(stThread stthread){
+//   if(stthread.status == threadStopTask){
+//   cout << "Martin thread " << stthread.id << " test!\n";
+//   stthread.status = threadEndedTask;
+//   }
+// }
 
-    --cntWrd;
-  }
-  ++index;//increment
-  }
-    cout << "size vector vecStructThreads is " << vecStructThreads.size() << endl;
-    //create vectors threads
-    for(int i = 0; i < vecStructThreads.size(); ++i){
-      // pVecThreadDocs.push_back(new thread(print, (*pStThread)));
-      cout << "thread " << i << endl;
-      pVecThreadDocs.push_back( new thread( print, ( *vecStructThreads[i] ) ) );
-    }
-
-    //switch-on threads
-    for(auto& t: pVecThreadDocs){
-        // std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        t->join();
-    }
-
-    //switch-off threads
-    for(auto& t: pVecThreadDocs){
-        // std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        if(t->joinable())
-          t->detach();
-    }
-
-
-  return threadError;
+void InvertedIndex::ResetStruct(stThread* pStrucThread){
+  *pStrucThread = {};
 }
+
+int InvertedIndex::ThreadRoutine(){
+  stThread* pStrucThread;
+for(int i = 0 ; i < 4 ; i++)
+  {
+    testers.emplace_back(10,InnerHelloWorld);
+  }
+  _sleep(10);
+  
+  // this_thread::sleep_for(10);
+  return 0;
+}
+// int InvertedIndex::ThreadRoutine(vector<string> input_docs){
+//   // mutex threadAccess;
+//   string str, threadId("Thread_");
+//   int countElements;
+//   int index = 0;
+//   for(auto &d : input_docs){
+//     str = d;//получаем строку
+//     bool wrdSave = false;
+//     const regex findRegCntWord(_makeRegExp("%"));
+//     ptrdiff_t const countWord(distance(sregex_iterator(d.begin(), d.end(), findRegCntWord), sregex_iterator()));
+//     int cntWrd = (int)countWord;//количество слов в строке
+//     countElements = (int)countWord;
+//   while(cntWrd != 0){
+//     threadId += to_string(index);//подпись созданного потока
+//     pStThread = new stThread;
+//     pStThread->id = threadId;
+//     pStThread->status = threadStopTask;
+//     pStThread->milliseconds = 0;
+//     vecStructThreads.push_back(pStThread);
+
+//     --cntWrd;
+//   }
+//   ++index;//increment
+//   }
+//     cout << "size vector vecStructThreads is " << vecStructThreads.size() << endl;
+//     //create vectors threads
+//     for(int i = 0; i < vecStructThreads.size(); ++i){
+//       // pVecThreadDocs.push_back(new thread(print, (*pStThread)));
+//       cout << "thread " << i << endl;
+//       pVecThreadDocs.push_back( new thread( print, ( *vecStructThreads[i] ) ) );
+//     }
+
+//     //switch-on threads
+//     for(auto& t: pVecThreadDocs){
+//         // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+//         t->join();
+//     }
+
+//     //switch-off threads
+//     for(auto& t: pVecThreadDocs){
+//         // std::this_thread::sleep_for(std::chrono::milliseconds(50));
+//         if(t->joinable())
+//           t->detach();
+//     }
+
+
+//   return threadError;
+// }
 
 void InvertedIndex::UpdateDocumentBaseThread(vector<string> input_docs){
   map<string, vector<Entry>>::iterator iterMapFreqDict;

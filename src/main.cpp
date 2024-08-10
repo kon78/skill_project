@@ -43,7 +43,8 @@ int main(int argc, char *argv[]){
   #if(do_this == do_not)
     clInvInd->UpdateDocumentBaseThread(clConvJSON->GetTextDocuments());
   #endif
-    clInvInd->ThreadRoutine(clConvJSON->GetTextDocuments());
+    // clInvInd->ThreadRoutine(clConvJSON->GetTextDocuments());
+    clInvInd->ThreadRoutine();
   }else{
     cout << "Wrong! AppReady() - false!\n";
   }

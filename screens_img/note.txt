@@ -1,0 +1,3 @@
+wait_for
+пример ожидания, когда что либо выполняется, интересно (в коллекции Edge - SearchEngine)
+https://cplusplus.com/reference/condition_variable/condition_variable/wait_for/

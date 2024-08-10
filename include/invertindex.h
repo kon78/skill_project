@@ -22,14 +22,47 @@ struct stThread{
   int status;
 };
 
-void print(stThread _thread);
+void InnerHelloWorld(int n);
+
+class Tester
+{
+  public:
+  // Tester(){
+  // std::function<void(void)> func;
+  //   func = InnerHelloWorld;
+  //   // RunTask();
+  //   // th(func,0);
+  //   // function<void(void)> f_object = strucTh;
+  // }
+  Tester(int n,std::function<void(int)> func) : th(func,n){}//working
+  // Tester(std::function<void(int)> func1) : th(func1){}
+  // void RunTask(){
+  //   th(func);
+  // }
+  ~Tester()
+  {
+    if(th.joinable())
+        th.join();
+  }
+
+  Tester(Tester&&) = default;
+  private:
+  // stThread strucTh;
+  std::thread th;
+};
+
+
+// mutex dataAccess;
+
+// void print(stThread _thread);
 
 //M.A.R.T.I.N.
 class InvertedIndex{
   public:
     InvertedIndex(){}
     ~InvertedIndex(){}
-    int ThreadRoutine(vector<string> input_docs);
+    int ThreadRoutine();
+    void ResetStruct(stThread* pStrucThread);
     void UpdateDocumentBase(vector<string> input_docs);
     void UpdateDocumentBaseThread(vector<string> input_docs);
     void SetObjServ(shared_ptr<Service> _shrdPtrServ);
@@ -48,7 +81,7 @@ class InvertedIndex{
     vector<thread*> pVecThreadDocs;
     vector<stThread*> vecStructThreads;//вектор структур
     stThread* pStThread = nullptr;
-    mutex threadAccess;
+    vector<Tester> testers;
 };
 
 #endif
