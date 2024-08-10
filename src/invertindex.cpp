@@ -22,10 +22,10 @@ string InvertedIndex::_makeRegExp(const string &word){
 //   th(func);
 // }
 
-void InnerHelloWorld(int n)
+void InnerHelloWorld(stThread strucTh)
 {
   // if(pStrucThread != nullptr){
-    cout << "Hello from the inner word! n = " << n << endl;
+    cout << "Hello from the inner word! n = " << strucTh.id << endl;
     // dataAccess.lock();
     // ++pStrucThread->milliseconds;
   // }
@@ -38,15 +38,26 @@ void InnerHelloWorld(int n)
 //   }
 // }
 
+void Tester::GetAddressStruct(stThread* address){
+  if(address != nullptr){
+
+  }
+}
+
 void InvertedIndex::ResetStruct(stThread* pStrucThread){
   *pStrucThread = {};
 }
 
 int InvertedIndex::ThreadRoutine(){
-  stThread* pStrucThread;
+  // stThread* pStrucThread;
 for(int i = 0 ; i < 4 ; i++)
   {
-    testers.emplace_back(10,InnerHelloWorld);
+    pStThread = new stThread();
+    pStThread->id = i;
+    pStThread->status = threadRunTask;//выставляем флаг, что задачу можно выполнять
+    pStThread->milliseconds = 0;//start time
+    
+    testers.emplace_back(*pStThread,InnerHelloWorld);
   }
   _sleep(10);
   

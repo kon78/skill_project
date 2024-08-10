@@ -22,7 +22,7 @@ struct stThread{
   int status;
 };
 
-void InnerHelloWorld(int n);
+void InnerHelloWorld(stThread strucTh);
 
 class Tester
 {
@@ -34,11 +34,15 @@ class Tester
   //   // th(func,0);
   //   // function<void(void)> f_object = strucTh;
   // }
-  Tester(int n,std::function<void(int)> func) : th(func,n){}//working
+  Tester(stThread strucTh,std::function<void(stThread)> func) : th(func,strucTh){
+    // ResetStruct();
+
+  }//working
   // Tester(std::function<void(int)> func1) : th(func1){}
   // void RunTask(){
   //   th(func);
   // }
+  void GetAddressStruct(stThread* pStruct);
   ~Tester()
   {
     if(th.joinable())
@@ -47,7 +51,7 @@ class Tester
 
   Tester(Tester&&) = default;
   private:
-  // stThread strucTh;
+  stThread strucTh;
   std::thread th;
 };
 
