@@ -17,6 +17,22 @@ void Service::examination(char* fname){
       // }
 }
 
+// string Service::makeRegExpSpace(){
+//   string ret;
+//   ret =  "(\\b(?! )\\w+)";
+//   return ret;
+// }
+
+vector<string>* Service::FilterWordsSpaces(const string& words){
+vector<string>* ptrRet = &ret;
+  const regex rgxSpaces (makeRegExpSpace());
+  ret.clear();
+  for( sregex_iterator it(words.begin(), words.end(), rgxSpaces), it_end; it != it_end; ++it ){
+    ret.push_back(it->str());
+}
+return ptrRet;
+}
+
 void Service::examination1(char* fname){
   fstream fp;
   fp.open(fname, ios::in);
@@ -165,11 +181,11 @@ void Service::readFile(string f){
   filErr = false;
   fp.open(f, ios::in);
   if(fp.is_open()){
-    filErr = true;
     while(!fp.eof()){
       getline(fp,temp);
       dataFile.push_back(temp);
     }
+    filErr = true;
   }else{
     cout << "Can't read file " << f << "!\n";
   }
@@ -177,6 +193,47 @@ void Service::readFile(string f){
 
 vector<string> Service::GetDataFile(){
   return dataFile;
+}
+
+//шаблон не может быть виртуалным
+//шаблон лучше прописывать в header файле
+// template<class T>
+// void Service::clearVec1(vector<T>& TVector){
+//   typename vector<T>::iterator it;
+//   for(it = TVector.begin(); it != TVector.end(); ++it){
+//     it = TVector.erase(it);
+//   }
+// }
+
+//пока откажусь от механизма чтения и перудачи через класс Service
+#if(do_this == do_not)
+bool Service::readjson(const string& fName){
+  // std::ifstream f("..\\requests.json");
+  // json data = json::parse(f);
+
+  ifstream f(fName);
+  if(f.is_open()){
+    data = json::parse(f);
+  }else{
+    cout << "file " << fName << " not exist or located any folder!\n";
+  }
+  cout << "readjson() " << data << endl;
+}
+
+json Service::GetJSON(){
+  cout << "GetJSON() " << data << endl;
+  return data;
+}
+#endif
+
+void Service::clearVec(){
+for(vector<string>::iterator it = dataFile.begin(); it != dataFile.end();){
+  it = dataFile.erase(it);
+}
+}
+
+size_t Service::SizeVector(){
+  return dataFile.size();
 }
 
 void Service::setRespFiles(int resp){
@@ -240,6 +297,26 @@ string Service::prepareNameFiles(){
   return ret;
 }
 
+vector<string>& Service::prepareNameFilesVec(){
+  vector<string> &ref = FNamesFoldResource;
+  string path = "C:\\develop\\skill_project\\resources";
+  for(auto &p : fs::directory_iterator(path)){
+    ref.push_back(p.path().filename().generic_string());
+  }
+  return ref;
+}
+
+string Service::GetFName(int index){
+  string ret;
+  const int vecSize = FNamesFoldResource.size();
+  if(index > vecSize || index < 0){
+    cout << "error index vector!";
+  }else{
+    ret = FNamesFoldResource[index];
+  }
+  return ret;
+}
+
 void Service::prepareConfFile(){
   respFiles = numbRespFiles();
   cout << "Prepare file Config.json!\n";
@@ -259,4 +336,119 @@ void Service::prepareConfFile(){
     },
     "files",{strRespFiles}
     }};
+}
+
+void Service::prepareReqFile(){
+  // vector<string>vecstr;
+  // vecstr.push_back("some_words...");
+  // vecstr.push_back("some_words...");
+  // vecstr.push_back("some_words...");
+  cout << "Prepare file requests.json!\n";
+  jRequestsJSON = {
+    {"requests",{
+    }
+    }
+  };
+
+  json::iterator it=jRequestsJSON.begin();
+  // for(auto &s : req){
+  //   it.value() = s;
+  //   ++it;
+  // }
+
+  int i = 0;
+  while(true){
+    if(i == req.size())break;
+    it.value().push_back(req[i]);
+    ++i;
+  }
+  // --it;
+  int size_vec = req.size();
+  int size_json = it.value().size();
+  cout << "size req is " << size_vec << " size json is " << size_json << endl;
+}
+
+string Service::makeRegExpSpace(){
+  string ret;
+  ret =  "(\\b(?! )\\w+)";
+  return ret;
+}
+
+void Service::FilterWords(){
+  const regex rgxSpaces (makeRegExpSpace());
+  for(auto &d : dataFile){
+    for( sregex_iterator it(d.begin(), d.end(), rgxSpaces), it_end; it != it_end; ++it ){
+        strRequests += it->str();
+        strRequests += " ";
+        }
+  size_t pos = strRequests.length();
+  strRequests.erase(pos-1, pos);//delete last space
+  req.push_back(strRequests);
+  strRequests.erase();
+  }
+}
+
+
+void Service::SetRequests(){
+  clearVec();//clear vector dataFile
+  readFile("requests.txt");//data to vector
+  FilterWords();
+  clearVec();
+  prepareReqFile();
+  //save
+  char* fName = "requests.json";
+  TouchFile(fName);
+  json2strTemp.clear();
+  json2strTemp = jRequestsJSON.dump();
+  const char* str = json2strTemp.c_str();
+  fout.get()->write(str,json2strTemp.length());
+  fout.get()->close();
+  fout.reset();
+}
+
+json Service::GetRequests(){
+  return jRequestsJSON;
+}
+
+void Service::PrepareQueries(){
+  json::iterator it = jRequestsJSON.begin();
+  string key = it.key();
+  vector<string>value;
+  size_t jsize = it.value().size();
+  for(size_t ind = 0; ind < jsize; ++ind){
+    value.push_back(it.value()[ind]);
+  }
+
+  // cout << value.size() << " " << it.value().size() << endl;
+  assert(value.size() == it.value().size());//if error
+
+  // cout << "value is ";
+  // for(auto &s : value){
+  //   cout << s << " ";
+  // }
+  // cout << endl;
+
+  const regex rgxSpaces (makeRegExpSpace());
+  for(auto &d : value){
+    for( sregex_iterator it(d.begin(), d.end(), rgxSpaces), it_end; it != it_end; ++it ){
+      // cout << " reg " << it->str() << " ";
+      // string t = it->str();
+      queries.push_back(it->str());
+  }
+  }
+  // cout << endl;
+  // cout << "after reg size is " << queries.size() << endl;
+
+// #if(do_this == execute)
+//   for(auto &s : queries){
+//     cout << s << " ";
+//   }
+//   cout << endl;
+//   cout << "size queries is " << queries.size() << endl;
+// #endif
+
+}
+
+vector<string>& Service::GetQueries(){
+  return queries;
 }

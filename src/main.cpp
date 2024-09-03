@@ -3,6 +3,7 @@
 #include "service.h"
 #include "convjson.h"
 #include "invertindex.h"
+#include "search.h"
 // #include "service.h"
 
 // using namespace nlohmann::json_abi_v3_11_3;
@@ -32,19 +33,44 @@ int main(int argc, char *argv[]){
   // service = new Service(argc, argv);
   ConverterJSON* clConvJSON = new ConverterJSON();
   InvertedIndex* clInvInd = new InvertedIndex();
-  
+  SearchServer* clSearchServ = new SearchServer();
+  // SearchServer clSearchServ;
+  // InvertedIndex clInvInd;
   clConvJSON->SetObjServ(_shrdPtrServ);//передача
   clInvInd->SetObjServ(_shrdPtrServ);
+  clSearchServ->SetObjServ(_shrdPtrServ);
+  clSearchServ->SetObjInvInd(clInvInd);
 
   clConvJSON->ParamApp();
   if( _shrdPtrServ->AppReady() ){
     //двигаемся дальше - получаем вектор с содержимым файлов-запросов
     // clConvJSON->GetTextDocuments();
-  #if(do_this == do_not)
-    clInvInd->UpdateDocumentBaseThread(clConvJSON->GetTextDocuments());
+  #if(do_this == execute)
+
+    clInvInd->UpdateDocumentBase1();
+    // clInvInd.UpdateDocumentBase1();
+
+    clInvInd->UpdateDocumentBaseThreads();
+    // clInvInd.UpdateDocumentBaseThreads();
+
+    _shrdPtrServ->SetRequests();
+    _shrdPtrServ->PrepareQueries();
+    // clSearchServ->ReadRequests();//временно выключил!!!
+    // clSearchServ->search1();
+    clSearchServ->GetInvIndMap();
+    clSearchServ->search(_shrdPtrServ->GetQueries());
+    // clInvInd->EqualFreqDictionary();
+    // cout << boolalpha << clInvInd->map_compare();
+    // clInvInd->EqualFreqDictionary2();
+    // clInvInd->PrepareDocs();//перенес в метод InvertedIndex::UpdateDocumentBaseThreads(...)
+    // clInvInd->UpdateDocumentBaseThreads(clConvJSON->GetTextDocuments());
   #endif
-    // clInvInd->ThreadRoutine(clConvJSON->GetTextDocuments());
+  #if(do_this == do_not)
+    cout << "before threads work numb is " << clInvInd->GetNumbTest() << endl; 
     clInvInd->ThreadRoutine();
+    cout << "after threads work numb is " << clInvInd->GetNumbTest() << endl;
+  #endif
+  
   }else{
     cout << "Wrong! AppReady() - false!\n";
   }

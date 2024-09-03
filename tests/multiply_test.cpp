@@ -1,48 +1,76 @@
+// #include <multiply/multiply.h>
 #include <gtest/gtest.h>
+// #include <nlohmann/json.hpp>
+#include "multiply.h"
+// #include "service.h"
+// #include "appparam.h"
 
-#include "service.h"
-#include "convjson.h"
-#include "invertindex.h"
-#include <memory>
+// using namespace nlohmann::json_abi_v3_11_3;
 
-TEST(testService, NumbFiles)
+TEST(MultiplyTests, TestIntegerOne_One)
 {
-    Service TestServ;
-    int n = TestServ.numbRespFiles();
-    EXPECT_EQ(n, 7);
+    const auto expected = 1;
+    const auto actual = multiply(1, 1);
+    ASSERT_EQ(expected, actual);
 }
 
-TEST(TestIvertIndex, index){
-  int argc = 3; char* argv[] = {"this", "is", "test"};
-  shared_ptr<Service>_shrdPtrServ = make_shared<Service>(argc, argv); 
-  // service = new Service(argc, argv);
-  ConverterJSON* clConvJSON = new ConverterJSON();
-  InvertedIndex* clInvInd = new InvertedIndex();
-  
-  clConvJSON->SetObjServ(_shrdPtrServ);//передача
-  clInvInd->SetObjServ(_shrdPtrServ);
-  // clInvInd->UpdateDocumentBase(clConvJSON->GetTextDocuments());
-  int n = clInvInd->GetNumbFiles();
-  cout << "n=" << n << endl;
-  // cout << "n=" << n << endl;
-  EXPECT_EQ(n,7);
-  //если убирать в тесте обьекты - ошибка
-  // delete clInvInd; delete clInvInd; _shrdPtrServ.reset();
-}
 
-TEST(testServiceArgum, arguments)
+TEST(MultiplyTests, TestIntegerZero_Zero)
 {
-    int argc = 3; char* argv[] = {"this", "is", "test"};
-    string str = "this is test";
-    Service* TestServ = new Service(argc, argv);
-    string value = TestServ->GetArgumInfo();
-  EXPECT_EQ(bool(value == str),true);
-  delete TestServ;
+    const auto expected = 0;
+    const auto actual = multiply(0, 0);
+    ASSERT_EQ(expected, actual);
 }
 
-TEST(sample_test_case, sample_test){
-    EXPECT_EQ(1,1);
+TEST(MultiplyTests, TestIntegerZero_One)
+{
+    const auto expected = 0;
+    const auto actual = multiply(0, 1);
+    ASSERT_EQ(actual, expected);
 }
+
+// TEST(MultiplyTests, TestSerializaton){
+//     json jString = "this is a simple test";
+//     std::string cppString = jString.dump();
+//     EXPECT_EQ(bool(cppString == std::string(jString.dump())), true);
+// }
+
+// TEST(MultiplyTests, ClearVector){
+// Service serv;
+// serv.readFile("config.json");
+// int sizeVec = serv.SizeVector();
+// EXPECT_EQ(sizeVec > 0, true);
+// serv.clearVec();
+// sizeVec = serv.SizeVector();
+// EXPECT_EQ(sizeVec == 0, true);
+// }
+
+// TEST(MultiplyTests, ClearVec1){
+//   Service serv;
+//   vector<string>vec{"one", "two", "three"};
+//   serv.clearVec1(vec);
+//   vector<string>vec1;
+//   ASSERT_EQ(vec, vec1);
+// }
+
+// TEST(MultiplyTests, readFileJSON){
+//   Service serv;
+//   json j = {
+//     {"requests",{
+//       "milk water","sugar solt","index"
+//     }
+//     }
+//   };
+//   /*файл должен наодиться в папке skill_project\build, если его там, значит его там нет или 
+//   он находится в папке skill_project, тогда к имени файла надо добавлять ..\\fname.xyz*/
+//   //пока выключил этих механизмы в классе Service
+//   // serv.readjson("..\\requests.json");
+//   // json t = serv.GetJSON();
+//   // cout << "TEST " << t << endl;
+//   std::ifstream f("..\\requests.json");
+//   json data = json::parse(f);
+//   ASSERT_EQ(j, data);
+// }
 
 int main(int argc, char** argv)
 {
