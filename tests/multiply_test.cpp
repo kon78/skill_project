@@ -21,8 +21,9 @@ TEST(TestIvertIndex, index){
   
   clConvJSON->SetObjServ(_shrdPtrServ);//передача
   clInvInd->SetObjServ(_shrdPtrServ);
-  clInvInd->UpdateDocumentBase(clConvJSON->GetTextDocuments());
+  // clInvInd->UpdateDocumentBase(clConvJSON->GetTextDocuments());
   int n = clInvInd->GetNumbFiles();
+  cout << "n=" << n << endl;
   // cout << "n=" << n << endl;
   EXPECT_EQ(n,7);
   //если убирать в тесте обьекты - ошибка

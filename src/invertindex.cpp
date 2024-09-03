@@ -250,5 +250,6 @@ void InvertedIndex::SetObjServ(shared_ptr<Service> _shrdPtrServ){
 }
 
 int InvertedIndex::GetNumbFiles(){
+  iCntRespFiles = shrdPtrServ.get()->numbRespFiles();
   return iCntRespFiles;
 }
