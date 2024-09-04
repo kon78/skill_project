@@ -1,39 +1,52 @@
 // #include <multiply/multiply.h>
 #include <gtest/gtest.h>
-// #include <nlohmann/json.hpp>
-#include "multiply.h"
-// #include "service.h"
+#include <nlohmann/json.hpp>
+// #include "multiply.h"
+#include "service.h"
+#include "invertindex.h"
+// #include "appparam.h"
 // #include "appparam.h"
 
-// using namespace nlohmann::json_abi_v3_11_3;
+using namespace nlohmann::json_abi_v3_11_3;
 
-TEST(MultiplyTests, TestIntegerOne_One)
-{
-    const auto expected = 1;
-    const auto actual = multiply(1, 1);
-    ASSERT_EQ(expected, actual);
-}
-
-
-TEST(MultiplyTests, TestIntegerZero_Zero)
-{
-    const auto expected = 0;
-    const auto actual = multiply(0, 0);
-    ASSERT_EQ(expected, actual);
-}
-
-TEST(MultiplyTests, TestIntegerZero_One)
-{
-    const auto expected = 0;
-    const auto actual = multiply(0, 1);
-    ASSERT_EQ(actual, expected);
-}
-
-// TEST(MultiplyTests, TestSerializaton){
-//     json jString = "this is a simple test";
-//     std::string cppString = jString.dump();
-//     EXPECT_EQ(bool(cppString == std::string(jString.dump())), true);
+// TEST(MultiplyTests, TestIntegerOne_One)
+// {
+//     const auto expected = 1;
+//     const auto actual = multiply(1, 1);
+//     ASSERT_EQ(expected, actual);
 // }
+
+
+// TEST(MultiplyTests, TestIntegerZero_Zero)
+// {
+//     const auto expected = 0;
+//     const auto actual = multiply(0, 0);
+//     ASSERT_EQ(expected, actual);
+// }
+
+// TEST(MultiplyTests, TestIntegerZero_One)
+// {
+//     const auto expected = 0;
+//     const auto actual = multiply(0, 1);
+//     ASSERT_EQ(actual, expected);
+// }
+
+TEST(TestApplication, TestSerializaton){
+    json jString = "this is a simple test";
+    std::string cppString = jString.dump();
+    EXPECT_EQ(bool(cppString == std::string(jString.dump())), true);
+}
+
+TEST(TestApplication, TestEqualMap){
+    Service serv;
+    serv.readFile("freq_dictionary.map");
+    vector<string> vec1 = serv.GetDataFile();
+    serv.clearVec();
+    
+    serv.readFile("freq_dictionaryTh.map");
+    vector<string> vec2 = serv.GetDataFile();
+    ASSERT_EQ(vec1, vec2);    
+}
 
 // TEST(MultiplyTests, ClearVector){
 // Service serv;

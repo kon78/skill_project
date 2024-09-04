@@ -58,6 +58,7 @@ int main(int argc, char *argv[]){
     // clSearchServ->ReadRequests();//временно выключил!!!
     // clSearchServ->search1();
     clSearchServ->GetInvIndMap();
+    clSearchServ->GetInvIndDocs();
     clSearchServ->search(_shrdPtrServ->GetQueries());
     // clInvInd->EqualFreqDictionary();
     // cout << boolalpha << clInvInd->map_compare();

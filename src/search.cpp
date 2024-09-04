@@ -83,6 +83,87 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
     }
   }
 
+  //число документов
+  int cntDoc = shrdPtrServ->numbRespFiles();
+  cout << "size vec docs is " << uDocsIdx.get()->size() << endl;//два раза где-то повторяется
+
+
+  //calc relatives
+  vector< pair<json,CalcRel> >vPhrase;
+  pair<json,CalcRel> valuePhrase;
+  size_t Rabs;
+  CalcRel calcR;
+  // vector<pair </*doc_id*/size_t,pair </*word from phrase*/string,/*rel count*/size_t>> >vTemp;
+  map<string,pair<string,size_t>>mPhrase;//map<word<Request,Rabs>>
+  json jReq = shrdPtrServ.get()->GetRequests();
+  json::iterator itj = jReq.begin();
+  //читаем json по-строчно
+  for(auto &s : itj.value()){
+    calcR.phrase = s;//фраза целиком в структуру
+    valuePhrase.first = s;  
+    const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
+      string sReq = s.dump();
+      Rabs = 0;
+      //число слов в фразе
+      //milk water --> milk Rabs=5 , water Rabs=0 /
+      std::ptrdiff_t const match_count(distance(sregex_iterator(sReq.begin(), sReq.end(), rgxSpaces),sregex_iterator()));
+      cout << "word in phrase is " << match_count << endl;
+      for( sregex_iterator itrgx(sReq.begin(), sReq.end(), rgxSpaces), it_end; itrgx != it_end; ++itrgx ){
+        itMapIdx = uMapIdx.get()->find(itrgx->str());
+        if(itMapIdx == itMapIdxEnd){
+          Rabs = 0;
+          cout << sReq << " Rabs=" << Rabs << endl;
+          calcR.NullElem(itrgx->str());
+          valuePhrase.second.NullElem(itrgx->str());
+          continue;
+        }
+        value = itMapIdx->second;
+        //doc_id
+        for(auto &d : value){
+          calcR.push_elem(itrgx->str(),d.doc_id,d.count);
+          valuePhrase.second.push_elem(itrgx->str(),d.doc_id,d.count);
+
+          // calc.doc_id.push_back(d.doc_id);
+        }
+    }
+    // vTemp.clear();
+    // pair<json,CalcRel> valuePhrase;
+    // CalcRel el;
+    
+    // el = calcR;
+    vPhrase.push_back(valuePhrase); 
+    }
+
+
+    size_t sz = 0;
+    double Rrel;
+    cout << "size struct calcR is " << calcR.size() << endl;
+    cout << "size vec valuePhrase is " << vPhrase.size() << endl;
+      cout << "--------------------------------\n";
+    for(auto &v : vPhrase){
+      
+      cout << "phrase is " << v.first << endl;
+      cout << "size struct this cell is " << v.second.size() << endl;
+      // v.second.printElem(0);
+      for(; sz < v.second.size(); ++sz){
+        v.second.printElem(sz);
+        tie(Rabs,Rrel) = v.second.calculate(sz);
+      cout << "Rabs=" << Rabs << " Rrel=" /*<< std::setprecision (std::numeric_limits<double>::digits10 + 1)*/ << (Rrel) << endl;
+      }
+
+      cout << "--------------------------------\n";
+    }
+
+    // pair<int,double>Rtemp;
+    // for(size_t i = 0; i < calcR.size(); i++){
+      // calcR.printElem(i);
+      // tie(Rabs,Rrel) = calcR.calculate(i);
+      // cout << "Rabs=" << Rtemp.first << " Rrel=" << fixed << setprecision (9) << (Rtemp.second) << endl;
+      // std::setprecision (std::numeric_limits<double>::digits10 + 1)
+      // cout << "Rabs=" << Rabs << " Rrel=" /*<< std::setprecision (std::numeric_limits<double>::digits10 + 1)*/ << (Rrel) << endl;
+      // cout << "--------------------------------\n";
+    // }
+
 
 
   return ret;
@@ -131,6 +212,13 @@ void SearchServer::GetInvIndMap(){
     // }catch(exception &ex){
       // cout << "can't do this!" << ex.what() << endl;
   // }
+}
+
+void SearchServer::GetInvIndDocs(){
+  vector<string>& vDocsInvInd = ptrInvInd->GetDocs();
+  uDocsIdx = make_unique< vector<string> >(vDocsInvInd);
+  size_t sizeDocs = uDocsIdx.get()->size();
+  cout << "size vec is " << sizeDocs << endl;
 }
 
 /*

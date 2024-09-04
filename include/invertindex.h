@@ -25,6 +25,11 @@ struct EntryThreads{
   // string str,reg, word;
   // size_t cntWrd;
   // ptrdiff_t number;
+  //добавил метод для записи в файл
+  void operator=(const EntryThreads& other){
+    count = other.count;
+    doc_id = other.doc_id;
+  }
 };
 
 typedef map<string,vector<Entry>> MyMap;
@@ -200,8 +205,9 @@ class InvertedIndex{
     map<string, vector<EntryThreads>>& GetMap();
     string MapGetKey(const string& key );
     MyVectorTh MapGetValue(const string& key);
-    template <class K, class V> void SaveMap(map<K, V>& m);
+    template <class K, class V, class N> void SaveMap(map<K, V>& m, N fn);
     int GetNumbFiles();
+    vector<string>& GetDocs();
   private:
     Entry stEntry;
     EntryThreads stEntryTh;
@@ -231,15 +237,18 @@ class InvertedIndex{
     // MyMapTh::iterator it;
 };
 
-    template <class K, class V> void InvertedIndex::SaveMap(map<K, V>& this_map){
-      ofstream mStream("inv.map");
-      typedef V value;
-      // typedef pair<const K, V>& _pair;
-      // map<K, V>::iterator it = this_map.begin();
 
-      for(auto &_map : this_map){
-        mStream << _map.first << " ";
-      }
+    template <class K, class V, class N> void InvertedIndex::SaveMap(map<K, V>& this_map, N fn){
+      ofstream mStream(fn);
+      V value;
+      for(auto &m : this_map){
+        mStream << "[" << m.first << "]";
+        value = m.second;
+        for(auto &v : value){
+          mStream << "{" << v.doc_id << "," << v.count << "}";
+        }
+        }
+        mStream << endl;
       mStream.close();
     }
 

@@ -168,7 +168,8 @@ void InvertedIndex::UpdateDocumentBaseThreads(){
   string str, fStrName, strCopy;
   string::size_type posB;
   int i = 0;
-  PrepareDocs();
+  //повторное фомирование не нужно!!!
+  // PrepareDocs();
   int countThreads = shrdPtrServ.get()->numbRespFiles();
   pVecDocs = &shrdPtrServ.get()->prepareNameFilesVec();
   for(int i = 0; i < countThreads; ++i){
@@ -215,6 +216,8 @@ void InvertedIndex::UpdateDocumentBaseThreads(){
     vTempEntry.clear();
   }
 #endif
+
+  SaveMap(freq_dictionaryTh,"freq_dictionaryTh.map");
 
   cout << "\nmap compare is " << boolalpha << map_compare() << endl;
 }
@@ -444,6 +447,10 @@ void InvertedIndex::PrepareDocs(){
   --iCntRespFiles;
   }
 
+}
+
+vector<string>& InvertedIndex::GetDocs(){
+  return docs;
 }
 
 bool my_equal(const Entry &entl, const EntryThreads &entr) {
@@ -676,8 +683,8 @@ void InvertedIndex::UpdateDocumentBase1(){
   }
 #endif
 
-//save map to file via template
-  SaveMap(freq_dictionary);
+//save map to file
+  SaveMap(freq_dictionary,"freq_dictionary.map");
 }
 
 void InvertedIndex::UpdateDocumentBase(/*vector<string> input_docs*/){

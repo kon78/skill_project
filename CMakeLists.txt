@@ -29,4 +29,4 @@ target_include_directories(SkillboxSearchEngine PUBLIC ${MY_INCLUDE_DIR})
 # add_subdirectory(${CMAKE_SOURCE_DIR}/nlohmann_json)#true
 
 # add_subdirectory(src)
-# add_subdirectory(tests)#true
+add_subdirectory(tests)#true

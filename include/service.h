@@ -74,7 +74,7 @@ class Service{
     bool filErr;
     vector<string>dataFile;
     vector<string>req;
-    vector<string> ret;
+    vector<string>ret;
     // char** ptrArgv = nullptr;
     shared_ptr<ifstream> fin;
     shared_ptr<ofstream> fout;
