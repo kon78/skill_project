@@ -8,6 +8,130 @@ void SearchServer::SetObjInvInd(InvertedIndex* _shrdPtrInvInd){
   ptrInvInd = _shrdPtrInvInd;
 }
 
+  void CalcRel::printElem(size_t elem){
+    // pairKey prKey;
+    vCalcRel vecElem = vecRel[elem];
+    for(auto &key : vecElem){
+      cout << "doc_id " << key.first << " ";
+      cout << "word " << key.second.first << " count " << key.second.second << endl;
+    }
+  }
+
+  string CalcRel::GetWord(size_t elem){
+    vCalcRel vecElem = vecRel[elem];
+        for(auto &key : vecElem)
+    return key.second.first;        
+  }
+
+
+  size_t CalcRel::GetDocid(size_t elem){
+     vCalcRel vecElem = vecRel[elem];
+        for(auto &key : vecElem)
+    return key.first;    
+  }
+
+  auto CalcRel::GetData(size_t elem){
+vCalcRel vecElem = vecRel[elem];
+        for(auto &key : vecElem){
+          return make_tuple(key.first,key.second.first,key.second.second);
+        }    
+  }
+//pair<size_t beg, size_t end>
+  vector<pair<size_t,size_t>> CalcRel::calculate(const size_t& beg, const size_t& elem){
+    cout << "begin " << beg << " elem " << elem << endl;
+    // pairKey key;
+    // vCalcRel vecElem = vecRel[elem];
+
+    // size_t elem = vecRel.size();
+    //ищем одинаковые слова в этом промежутке
+    pairKey prKey;
+    vector<size_t>vecalg;
+    // vCalcRel vecElem = vecRel[beg];
+    for(size_t ind = beg; ind < (beg+elem); ++ind){
+      // printElem(ind);
+      vecalg.push_back(GetDocid(ind));
+    }
+    // cout << endl;
+
+    for(auto &s : vecalg){
+      cout << s <<" ";
+    }
+    cout << endl;
+
+    sort(vecalg.begin(),vecalg.end());
+
+    for(auto &s : vecalg){
+      cout << s <<" ";
+    }
+    cout << endl;
+
+    vector<size_t>cop;
+    cop.clear();
+    //получили вектор с одинаковыми документами, то есть в них есть искомые слова
+    std::copy_if(vecalg.begin(), vecalg.end(),
+                 std::back_inserter(cop),
+                 [vecalg](size_t x) { return x == vecalg[0]; });
+
+    for(auto &s : cop){
+      cout << s <<" ";
+    }
+              //doc_id rabs
+    vector<pair<size_t,size_t>>vecRabs;
+    pair<size_t,size_t>C;
+    // pair<int,double>R;
+    size_t Rabs=0; double Rrel=0;
+    //расчет Rabs для одинаковых документов (на основе векотра vector cop)
+    if(!cop.empty() && cop.size() > 1){
+      cout << "calculate Rabs!\n";
+      size_t docSearch = cop[0];
+      cop.clear();
+      // for(auto &v : cop){
+        //пока нет информации об элементе, придется перебирать все документы из этой подчасти структуры
+        vector<size_t>memcalc;//здесь уже посчитанные документы
+        bool saveData = false;
+        for(size_t ind = beg; ind < (beg+elem); ++ind){
+        auto d = GetData(ind);
+        Rabs=0;
+        if(!saveData){
+          vecRabs.push_back(make_pair(0,0));
+          saveData = true;}
+        if(get<0>(d) == docSearch){
+          Rabs = vecRabs[0].second;//выгружаем прежнее значение
+          Rabs += get<2>(d);
+          C.first = get<0>(d);//doc_id
+          C.second = Rabs;
+          cout << "doc_id " << C.first << "Rabs " << C.second << endl;
+          vecRabs[0] = make_pair(get<0>(d),Rabs);
+
+          // vecRabs.push_back(C);
+          memcalc.push_back(get<0>(d));//кладем посчитанные документы
+        }else if(get<0>(d) != docSearch){
+          Rabs += get<2>(d);
+          C.first = get<0>(d);//doc_id
+          C.second = Rabs;
+          cout << "doc_id " << C.first << "Rabs " << C.second << endl;
+          memcalc.push_back(get<0>(d));//кладем посчитанные документы
+      vecRabs.push_back(C);
+        }
+        }
+      // }
+    }
+
+    cout << "Relevant \n";
+    for(auto &r : vecRabs){
+      cout << "doc_id " << r.first << " Rabs = " << r.second << endl;
+    }
+
+    cout << endl;
+    vCalcRel vecElem = vecRel[elem];
+    for(auto &key : vecElem){
+      Rabs += key.second.second;//Rabs
+    Rrel = ((double)Rabs);
+    }
+    // return make_pair(Rabs,Rrel);
+    return vecRabs;
+  }
+
 vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries_input){
   vector<vector<RelativeIndex>> ret;
   unordered_map<std::string, int> filterWords;
@@ -139,20 +263,77 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
     double Rrel;
     cout << "size struct calcR is " << calcR.size() << endl;
     cout << "size vec valuePhrase is " << vPhrase.size() << endl;
-      cout << "--------------------------------\n";
-    for(auto &v : vPhrase){
-      
-      cout << "phrase is " << v.first << endl;
-      cout << "size struct this cell is " << v.second.size() << endl;
-      // v.second.printElem(0);
-      for(; sz < v.second.size(); ++sz){
-        v.second.printElem(sz);
-        tie(Rabs,Rrel) = v.second.calculate(sz);
-      cout << "Rabs=" << Rabs << " Rrel=" /*<< std::setprecision (std::numeric_limits<double>::digits10 + 1)*/ << (Rrel) << endl;
-      }
+    cout << "--------------------------------\n";
+    // size_t sz;
+    // mem = vPhrase[0].second.size();
+    // cout << "size struct this cell is " << mem << endl;
 
-      cout << "--------------------------------\n";
+    //печать поэлементная 
+    vector<size_t>vecSegSize;
+    size_t mem = 0;
+      size_t szi = 0;
+    for(auto &v : vPhrase){
+      size_t sz = v.second.size() - mem;
+      mem += sz;
+      vecSegSize.push_back(sz);
+      for(size_t g = 0; g < sz; ++g){//g-group
+        calcR.printElem(szi);
+        ++szi;
+      }
+      cout << endl;
     }
+//печать количества элементов в группе запросов, размер вектора равен количеству запросов
+    for(auto &v :vecSegSize){
+      cout << v << " ";
+    }
+    cout << endl;
+
+    mem = 0; szi = 0; size_t el = 0; size_t beg = 0;
+    for(auto &v : vPhrase){
+
+      size_t sz = v.second.size() - mem;
+      mem += sz;
+      cout << "element is " << vecSegSize[el] << " element beg  is " << beg << endl;
+      // vector<pair<size_t,size_t>> vecCalRabs = calcR.calculate(beg, vecSegSize[el]);//вернулась константой!!!
+      vecAnswerRabs.push_back(calcR.calculate(beg, vecSegSize[el]));
+
+
+      // tie(Rabs,Rrel) = calcR.calculate(beg, vecSegSize[el]);
+
+      cout << "Rabs=" << Rabs << " Rrel=" << (Rrel) << endl;
+      ++el; beg += sz;
+    }
+      cout << "------------------Calculate-----------------------\n";
+      for(auto &ransw : vecAnswerRabs){
+        for(auto &r : ransw){
+        cout << "doc_d " << r.first << " Rabs=" << r.second << endl;
+        }
+      }
+      cout << "-------\n";
+      // cout << "phrase is " << v.first << endl;
+      // cout << "size struct this cell is " << sz << endl;
+      //sz - число элементов 5
+        // tie(Rabs,Rrel) = calcR.calculate(szi);
+        // cout << "Rabs=" << Rabs << " Rrel=" << (Rrel) << " ";
+      // v.second.printElem(0);
+      // for(; sz < v.second.size(); ++sz){
+      //   v.second.printElem(sz);
+      //   tie(Rabs,Rrel) = v.second.calculate();
+      // cout << "Rabs=" << Rabs << " Rrel=" /*<< std::setprecision (std::numeric_limits<double>::digits10 + 1)*/ << (Rrel) << endl;
+      // }
+
+      // cout << "--------------------------------\n";
+
+
+    // for(auto &Seg : vecSegSize){
+    //   for(size_t sz = 0; sz < Seg; ++sz){
+    //     tie(Rabs,Rrel) = calcR.calculate(sz);
+    //   // cout << "Rabs=" << Rabs << " Rrel=" /*<< std::setprecision (std::numeric_limits<double>::digits10 + 1)*/ << (Rrel) << endl;
+    //   }
+    // }
+      // for(; sz < v.second.size(); ++sz){
+        // v.second.printElem(sz);
+      // }
 
     // pair<int,double>Rtemp;
     // for(size_t i = 0; i < calcR.size(); i++){

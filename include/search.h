@@ -66,38 +66,17 @@ struct CalcRel{
     v.push_back(prKey);
     vecRel.push_back(v);
   }
-  void printElem(size_t elem){
-    pairKey prKey;
-    vCalcRel vecElem = vecRel[elem];
-    for(auto &key : vecElem){
-      cout << "doc_id " << key.first << " ";
-      cout << "word " << key.second.first << " count " << key.second.second << endl;
-    }
-  }
 
   size_t size(){
     size_t ret = vecRel.size();
     return ret;
   }
-
-  pair<int,double> calculate(size_t elem){
-    pair<int,double>R;
-    size_t Rabs=0; double Rrel=0;
-    // pairKey prKey;
-    // pair<int,double>R;
-    vCalcRel vecElem = vecRel[elem];
-    for(auto &key : vecElem){
-      Rabs += key.second.second;//Rabs
-    // assert(!(Rabs > 10));
-    Rrel = ((double)Rabs);
-    // cout << "Rref->" << fixed << setprecision(4) << "[" << R.first << "/10 =" << (double)(4 / 10) << "]" << endl;
-    // std::setprecision (std::numeric_limits<double>::digits10 + 1)
-        // cout << "Rref->" << "[" << Rabs << "/10 =" << Rrel << "]" << endl;
-    }
-
-    return make_pair(Rabs,Rrel);
-  }
-
+void printElem(size_t elem);
+ string GetWord(size_t elem);
+ size_t GetDocid(size_t elem);
+    auto GetData(size_t elem);
+// pair<int,double> calculate(const size_t& beg, const size_t& elem);
+vector<pair<size_t,size_t>> calculate(const size_t& beg, const size_t& elem);
   // void operator=(CalcRel other){
   //   other.phrase = phrase;
   //   other.vecRel
@@ -134,6 +113,7 @@ private:
   vector<string>vecUncnownWord;
   unique_ptr<map<string,vector<EntryThreads>>> uMapIdx;
   unique_ptr<vector<string>> uDocsIdx;
+  vector<vector<pair<size_t,size_t>>>vecAnswerRabs;
   // map<string, vector<EntryThreads>>& mapInvInd;
 };
 
