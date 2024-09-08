@@ -141,6 +141,8 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
     for(auto &qi : queries_input)
       filterWords[qi] = qi.length();//нужны только уникальные ключи
   
+  unordered_map<std::string, int>::iterator itFiltWrd;
+  unordered_map<std::string, int>::iterator itFiltWrdE = filterWords.end();
   
   //vector уникальных слов pair<word,count>
   vector<pair<string,size_t>>uniqueWords;
@@ -171,54 +173,183 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
   );
 
 //вывод содержимого вектора на экран
-#if(do_this == execute)
-  vector<pair<string,size_t>>::iterator itVecUW;
+  vector<pair<string,size_t>>::iterator itVecUW;//iterator uniqueWords
+#if(do_this == do_not)
       for(itVecUW = uniqueWords.begin(); itVecUW != uniqueWords.end(); ++itVecUW){
         std::cout << itVecUW->first << " ";
         std::cout << itVecUW->second << '\n';
     }
 #endif
-
-  vector<pair<string,vector<vector<size_t>>>>uniqueWordsDocID;
+// exit(0);
+//набор одинаковых слов - string vector doc_id
+//            слово                документ
+// uniqueWordsDocID заменить на identicalWordsDocID
+  vector<pair<string,vector<size_t>>>uniqueWordsDocID;
+  vector<size_t> vdoc;
+  pair<string,vector<size_t>>vecUDOCID;
   cout << "size vec is " << uniqueWords.size() << endl;
-  for(auto &v : uniqueWords){
-    itMapIdx = uMapIdx.get()->find(v.first);
+  for(auto &k : uniqueWords){
+    itMapIdx = uMapIdx.get()->find(k.first);
+    vecUDOCID = make_pair(k.first,vdoc);
+    vecUDOCID.first=k.first;
     value = itMapIdx->second;
-    uniqueWordsDocID.push_back(make_pair(v.first,[value](){
-      vector<vector<size_t>>vec;
-      vector<size_t>vecInner;
-      for(auto& v : value){
-        vecInner.push_back(v.doc_id);
-      }
-      vec.push_back(vecInner);
-      vecInner.clear();
-      return vec;
-    }() ));
+    for(auto &v : value){
+      vdoc.push_back(
+      //lambda
+      [v](){
+        size_t doc = v.doc_id;
+        return doc;
+      }());
+      vecUDOCID.second=vdoc;
+    }
+      uniqueWordsDocID.push_back(vecUDOCID);
+      vdoc.clear();
+    //   uniqueWordsDocID.push_back(make_pair(k.first,[value](){
+    //   vector<vector<size_t>>vec;
+    //   vector<size_t>vecInner;
+    //   for(auto& v : value){
+    //     vecInner.push_back(v.doc_id);
+    //   }
+    //   vec.push_back(vecInner);
+    //   vecInner.clear();
+    //   return vec;
+    // }() ));
   }
 
-  vector<pair<string,vector<vector<size_t>>>>::iterator itUWDID;
+//вывод содержимого на экран
+#if(do_this == do_not)
+  vector<pair<string,vector<size_t>>>::iterator itUWDID;
   for(itUWDID = uniqueWordsDocID.begin(); itUWDID != uniqueWordsDocID.end(); ++itUWDID){
     cout << itUWDID->first << " ";
     for(auto &v : itUWDID->second){
-      for(auto &vIn : v){
-        cout << vIn << " ";
-      }
-      cout << endl;
+        cout << v << " ";
     }
+      cout << endl;
   }
-
+#endif
+// exit(0);
   //число документов
   int cntDoc = shrdPtrServ->numbRespFiles();
   cout << "size vec docs is " << uDocsIdx.get()->size() << endl;//два раза где-то повторяется
+
+  //новый вариант расчета
+  //vdoc уже есть, не забывать его очищать
+  vdoc.clear();
+  vector<pair<string,vector<size_t>>>vecPhrase;
+  pair<string,vector<size_t>>prDataInVec;
+  for(auto &w : uniqueWords){
+    itMapIdx = uMapIdx.get()->find(w.first);
+    if(itMapIdx == itMapIdxEnd){
+      continue;}
+    else{
+      value = itMapIdx->second;
+      prDataInVec.first = w.first;
+      for(auto &v : value){
+        vdoc.push_back(v.doc_id);
+      }
+      prDataInVec.second = vdoc;
+      vecPhrase.push_back(prDataInVec);
+      vdoc.clear();
+    }
+  }
+
+  size_t Rabs = 0;
+  vector<size_t>vCalcRel;
+  vector<pair<string,vector<size_t>>>::iterator itvPhr;
+  vector<pair<size_t,vector<size_t>>>vecRabs;//вектор посчитанных релевантностей для документов
+  vector<pair<string,vector<size_t>>>vecLinks;//связи слова с релевантностями
+  for(itvPhr = uniqueWordsDocID.begin(); itvPhr != uniqueWordsDocID.end(); ++itvPhr){
+    for(auto &v : itvPhr->second){//число документов для расчета релевантностей
+      if(! [v,vCalcRel](){
+        bool wasCalc = false;
+        for(auto &vec : vCalcRel){
+          if(v == vec)
+            wasCalc = true;
+        }
+        return wasCalc;
+      }() ){
+      cout << "document " << v << " " << uDocsIdx.get()->at(v);
+      string s = uDocsIdx.get()->at(v);
+      //считаем Rabs для полученного документа
+      SearchSubStrng schSubStrng(s,"");
+      vector<string>vecWordsDoc = schSubStrng.GetVec();//возврат по ссылке
+          Rabs = 0;
+      for(auto &s :vecWordsDoc){
+        itMapIdx = uMapIdx.get()->find(s);
+        if(itMapIdx == itMapIdxEnd){
+          continue;
+        }else{
+        
+          value = itMapIdx->second;
+          for(auto &d : value){
+            if(d.doc_id == v && [queries_input,itMapIdx](){
+              bool compare = false;
+              for(auto &s : queries_input){
+                if(s == itMapIdx->first)
+                  compare = true;            
+                  }
+                return compare;  
+            }() ){
+              if(d.count == 1)
+                Rabs += d.count;
+              else
+                Rabs += (d.count / d.count);
+                vCalcRel.push_back(v);//уже посчитанные ранее значения
+            // break;
+            }
+            }        
+        }
+      }
+          cout << " " << Rabs << endl;
+}
+    }
+  }
+//вывод содержимого на экран
+#if(do_this == do_not)
+  vector<pair<string,vector<size_t>>>::iterator itvPhr;
+  for(itvPhr = uniqueWordsDocID.begin(); itvPhr != uniqueWordsDocID.end(); ++itvPhr){
+    cout << itvPhr->first << " ";
+    for(auto &v : itvPhr->second){
+        cout << v << " ";
+    }
+      cout << endl;
+  }
+#endif
+
+//   json jReq = shrdPtrServ.get()->GetRequests();
+//   json::iterator itj = jReq.begin();
+// //читаем json по-строчно
+//   for(auto &s : itj.value()){
+//     const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
+//     string sReq = s.dump();
+//     //выбираем из фразы только слова без пробелов
+//     std::ptrdiff_t const match_count(distance(sregex_iterator(sReq.begin(), sReq.end(), rgxSpaces),sregex_iterator()));
+//     //пословная обработка фразы запроса
+//     for( sregex_iterator itrgx(sReq.begin(), sReq.end(), rgxSpaces), it_end; itrgx != it_end; ++itrgx ){
+//       itFiltWrd = filterWords.find(itrgx->str());
+//       if(itFiltWrd == itFiltWrdE){
+//         continue;}else{
+
+//         }
+      
+
+//     }
+//   }
+
+//   for(itVecUW = uniqueWords.begin(); itVecUW != uniqueWords.end(); ++itVecUW){
+//     itMapIdx = uMapIdx.get()->find(itVecUW->first);//поиск в map dict_frequencyTh
+
+//   }
+  exit(0);
 
 
   //calc relatives
   vector< pair<json,CalcRel> >vPhrase;
   pair<json,CalcRel> valuePhrase;
-  size_t Rabs;
+  // size_t Rabs;
   CalcRel calcR;
   // vector<pair </*doc_id*/size_t,pair </*word from phrase*/string,/*rel count*/size_t>> >vTemp;
-  map<string,pair<string,size_t>>mPhrase;//map<word<Request,Rabs>>
+  // map<string,pair<string,size_t>>mPhrase;//map<word<Request,Rabs>>
   json jReq = shrdPtrServ.get()->GetRequests();
   json::iterator itj = jReq.begin();
   //читаем json по-строчно
@@ -306,7 +437,8 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
       cout << "------------------Calculate-----------------------\n";
       for(auto &ransw : vecAnswerRabs){
         for(auto &r : ransw){
-        cout << "doc_d " << r.first << " Rabs=" << r.second << endl;
+
+          cout << "doc_id " << r.first << " Rabs=" << r.second << endl;
         }
       }
       cout << "-------\n";

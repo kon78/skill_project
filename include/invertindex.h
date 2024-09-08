@@ -10,7 +10,7 @@
 #include <mutex>
 #include <chrono>
 #include <cassert>
-
+#include <condition_variable>
 
 enum {threadRunTask=100, threadStopTask=101, threadError=99, threadEndedTask=1}enumState;
 
@@ -56,9 +56,30 @@ public:
     GetVector();
     Search();
   }
+  SearchSubStrng(const vector<string>& vecStr,const string &Str1){
+    strV = ([vecStr](){
+      string ret;
+      for(auto &s : vecStr){
+        ret += s;
+        ret += " ";
+      }
+      ret.erase(ret.length()-1);
+      return ret;
+    }());
+    copyStr = strV;
+    GetVector();
+    Search();
+  }
+  string& GetString();
   void GetVector();
   size_t GetMatch();
   void Search();
+  size_t GetSize(){
+    return strV.length();
+  }
+  vector<string>& GetVec(){
+    return result;
+  }
 
 private:
   vector<string> result;
@@ -68,6 +89,7 @@ private:
   size_t match;
   string subCopy;
   string::size_type posB;
+  string strV;
 };
 
 
@@ -174,7 +196,7 @@ private:
 //M.A.R.T.I.N.
 class InvertedIndex{
   public:
-    InvertedIndex():cntEqualDoc(0),pMutex(new mutex),idThread(0),Th(Sleep, this){}
+    InvertedIndex():cntEqualDoc(0),pMutex(new mutex),idThread(0),Th(Sleep, this),ready(false)/**/{}
     ~InvertedIndex(){}
     void SetObjServ(shared_ptr<Service> _shrdPtrServ);
     void PrepareDocs();
@@ -190,10 +212,13 @@ class InvertedIndex{
     void ThreadRoutine();
     void ThreadSleep();
     void DocBaseThread(int numDocs);
-    void DocBaseThreadNew(const int &numDocs, 
+    void DocBaseThreadNew(size_t &numDocs, 
                           // map<string, vector<EntryThreads>> freq_dictionaryTh,
                           const vector<string> &docs
     );
+    void DocBaseThreadNew1(size_t& numDocs, 
+                          // map<string, vector<EntryThreads>> freq_dictionaryTh,
+                          const vector<string> &docs);
     void TestPutToString(string str);
     void Sleep(){this_thread::sleep_for(10ms);}
     void PrepareData(int index);
@@ -208,6 +233,7 @@ class InvertedIndex{
     template <class K, class V, class N> void SaveMap(map<K, V>& m, N fn);
     int GetNumbFiles();
     vector<string>& GetDocs();
+    void go();
   private:
     Entry stEntry;
     EntryThreads stEntryTh;
@@ -223,6 +249,9 @@ class InvertedIndex{
     vector<string>::iterator itVecDocs;
     vector<EntryThreads> vRepeatWords;
     mutex* pMutex = nullptr;
+    std::condition_variable cv;
+bool ready;
+mutex global;
     int idThread;//for test
     // mutex global;
     vector<string> docs;

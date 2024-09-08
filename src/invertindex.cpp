@@ -170,21 +170,51 @@ void InvertedIndex::UpdateDocumentBaseThreads(){
   int i = 0;
   //повторное фомирование не нужно!!!
   // PrepareDocs();
-  int countThreads = shrdPtrServ.get()->numbRespFiles();
+  size_t countThreads = shrdPtrServ.get()->numbRespFiles();
+  size_t fieldDocs = -1;//start index
+  if(countThreads % 10 > 1)
   pVecDocs = &shrdPtrServ.get()->prepareNameFilesVec();
-  for(int i = 0; i < countThreads; ++i){
+  cout << "size vector docs is " << docs.size() << endl;
+  for(size_t i = 0; i < countThreads; ++i){//(int i = 0; i < countThreads; ++i)
     // vecThDocBase.push_back(thread(DocBaseThread,this,i));
     // vecThDocBase.emplace_back(thread(DocBaseThread,this,i));
-    vecThDocBase.emplace_back(thread(DocBaseThreadNew,this,i,/*freq_dictionaryTh*/docs));
+    vecThDocBase.emplace_back(thread(DocBaseThreadNew,this,ref(fieldDocs),/*freq_dictionaryTh*/ref(docs)));
   }
   //run threads
+
+  ThreadSleep();
+  go();
+
   for (auto& t: vecThDocBase) {
     t.join();
     }
-  ThreadSleep();
+
+#if(do_this == do_not)
+  int th = 0;
+  const int ten = 10;
+  if(countThreads % 10 > 1){
+    int cntVectorsTens = countThreads % 10;
+    int remaindVec = cntVectorsTens - ((countThreads % 10) * 10);
+    for(int i = 0; i < cntVectorsTens; ++i){
+      for(int j = 0; j < ten; ++j){
+        vecThDocBase[th].join();
+        ++th;
+      }
+    }
+    for(int k = 0; k < remaindVec; ++ k){
+      vecThDocBase[th].join();
+      ++th;
+    }
+  }else{
+  for (auto& t: vecThDocBase) {
+    t.join();
+    }
+  }
+#endif
+
   
-  cout << "after working " << countThreads << " threads count is " << idThread << endl;
-  cout << "result----------\n";
+  // cout << "after working " << countThreads << " threads count is " << idThread << endl;
+  // cout << "result----------\n";
   cout << "size freq_dictionaryTh is " << freq_dictionaryTh.size() << endl;
 
 //здесь определяем число повторений в map freq_dictionaryTh
@@ -196,9 +226,9 @@ void InvertedIndex::UpdateDocumentBaseThreads(){
     }    
   }
   cout << "count repeats words is " << vDubl.size() << endl;
-  for(auto &s : vDubl){
-    cout << s << endl;
-  }
+  // for(auto &s : vDubl){
+  //   cout << s << endl;
+  // }
 //вывод на экран содержимого map freq_dictionaryTh - рабочий вариант
 #if(do_this == do_not)
     vector<EntryThreads>vTempEntry;
@@ -255,13 +285,34 @@ void SearchSubStrng::GetVector() {
 #endif
 }
 
-void InvertedIndex::DocBaseThreadNew(const int &numDocs, 
+string& SearchSubStrng::GetString(){
+  return copyStr;
+}
+
+void InvertedIndex::DocBaseThreadNew1(size_t& numDocs, const vector<string> &docs){
+// mutex global;
+// lock_guard<mutex>guard(global);
+unique_lock<std::mutex> lck(global);
+while (!ready) cv.wait(lck);
+++numDocs;
+  cout << "thread say " << docs[numDocs] << endl;
+  // cout << "thread say " << numDocs << endl;
+}
+
+void InvertedIndex::go() {
+  std::unique_lock<std::mutex> lck(global);
+  ready = true;
+  cv.notify_all();
+}
+
+void InvertedIndex::DocBaseThreadNew(size_t &numDocs, 
                                     // map<string, vector<EntryThreads>> freq_dictionaryTh, 
                                     const vector<string> &docs
 
 ){
-mutex global;
-lock_guard<mutex>guard(global);
+// mutex global;
+// lock_guard<mutex>guard(global);
+unique_lock<std::mutex> lck(global);
 string str,key, reg,strCopy, strC;
 string::size_type posB;
 string::size_type posF;
@@ -270,11 +321,14 @@ MyVectorTh value;
 map<string, vector<EntryThreads>>::iterator iterSearchTh;
 EditMyMapTh editMyMap(freq_dictionaryTh);
 
+while (!ready) cv.wait(lck);
+++numDocs;
+
   str = docs[numDocs];//своемоу потоку своя строка
   strC = str;
   const regex findRegCntWord(_makeRegExp("%"));
   ptrdiff_t const countWord(distance(sregex_iterator(str.begin(), str.end(), findRegCntWord), sregex_iterator()));
-  int cntWrd = (int)countWord;//количество слов в строке
+  size_t cntWrd = (size_t)countWord;//количество слов в строке
   stEntryTh.doc_id = numDocs; /*stEntryTh.str = str;*/
     while(cntWrd != 0){
       if(str.length() > 0){
