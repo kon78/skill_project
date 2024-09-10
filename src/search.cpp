@@ -138,7 +138,59 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
   MyMapTh::iterator itMapIdx = uMapIdx.get()->begin();
   MyMapTh::iterator itMapIdxEnd = uMapIdx.get()->end();
   MyVectorTh value;
-    for(auto &qi : queries_input)
+
+//содержимое заппроса
+#if(do_this == do_not)
+      cout << "size is " << queries_input.size() 
+          << [queries_input](){
+      string temp;
+      for(auto &s : queries_input){
+        temp += s + " ";
+      }
+      return temp;
+    }();
+#endif
+
+string t;
+
+//вывод из вектора через лямбду в строку на экран
+t = [queries_input](){
+  string temp, mem;
+  size_t pos=0;size_t pos1=0;
+      for(auto &s : queries_input){
+        mem = s;
+        pos = mem.length();
+        if(!temp.empty()){
+          mem.erase(0,pos1);
+          pos1 = mem.length();          
+          }
+        temp += mem + " ";
+        mem.clear();
+        pos1=pos;
+      }
+        temp.erase(temp.length()-1);
+      return temp;
+}();
+cout << t << endl;
+
+//строку из вектора необходимо разбивать на слова
+//     string sReq = s.dump();
+//     //выбираем из фразы только слова без пробелов
+//     //пословная обработка фразы запроса
+
+vector<string>queries;
+size_t cntQueries = queries_input.size();//число строк в векторе
+size_t ind = 0;
+while(cntQueries != 0){
+
+    string s = queries_input[ind];
+    const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
+    std::ptrdiff_t const match_count(distance(sregex_iterator(s.begin(), s.end(), rgxSpaces),sregex_iterator()));
+    for( sregex_iterator itrgx(s.begin(), s.end(), rgxSpaces), it_end; itrgx != it_end; ++itrgx ){
+      queries.push_back(itrgx->str());
+    }
+
+    for(auto &qi : queries)
       filterWords[qi] = qi.length();//нужны только уникальные ключи
   
   unordered_map<std::string, int>::iterator itFiltWrd;
@@ -227,13 +279,12 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
       cout << endl;
   }
 #endif
-// exit(0);
+
   //число документов
   int cntDoc = shrdPtrServ->numbRespFiles();
   cout << "size vec docs is " << uDocsIdx.get()->size() << endl;//два раза где-то повторяется
 
   //новый вариант расчета
-  //vdoc уже есть, не забывать его очищать
   vdoc.clear();
   vector<pair<string,vector<size_t>>>vecPhrase;
   pair<string,vector<size_t>>prDataInVec;
@@ -254,10 +305,15 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
   }
 
   size_t Rabs = 0;
+  double maxRabs = 0;
   vector<size_t>vCalcRel;
+  RelativeIndex relIndx;
+  vector<RelativeIndex>vecRel;
   vector<pair<string,vector<size_t>>>::iterator itvPhr;
-  vector<pair<size_t,vector<size_t>>>vecRabs;//вектор посчитанных релевантностей для документов
-  vector<pair<string,vector<size_t>>>vecLinks;//связи слова с релевантностями
+  vector<pair<size_t,size_t>>vecRabs;//вектор посчитанных релевантностей для документов
+  pair<size_t,size_t>prVecRabs;
+  vector<pair<vector<string>,vector<RelativeIndex>>>vecLinks;//связи запроса с релевантностями
+  pair<vector<string>,vector<RelativeIndex>>prLinks;
   for(itvPhr = uniqueWordsDocID.begin(); itvPhr != uniqueWordsDocID.end(); ++itvPhr){
     for(auto &v : itvPhr->second){//число документов для расчета релевантностей
       if(! [v,vCalcRel](){
@@ -269,6 +325,8 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
         return wasCalc;
       }() ){
       cout << "document " << v << " " << uDocsIdx.get()->at(v);
+      prVecRabs.first = v;
+      relIndx.doc_id = v;//номер документа в струтуру ответа
       string s = uDocsIdx.get()->at(v);
       //считаем Rabs для полученного документа
       SearchSubStrng schSubStrng(s,"");
@@ -281,10 +339,11 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
         }else{
         
           value = itMapIdx->second;
+          prLinks.first = queries;//запрос для пары связи запроса и ветора релевантностей
           for(auto &d : value){
-            if(d.doc_id == v && [queries_input,itMapIdx](){
+            if(d.doc_id == v && [queries,itMapIdx](){
               bool compare = false;
-              for(auto &s : queries_input){
+              for(auto &s : queries){
                 if(s == itMapIdx->first)
                   compare = true;            
                   }
@@ -301,9 +360,62 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
         }
       }
           cout << " " << Rabs << endl;
+          prVecRabs.second = Rabs;
+          vecRabs.push_back(prVecRabs);
+          relIndx.rank = Rabs;
+          vecRel.push_back(relIndx);
+          (Rabs > maxRabs)?maxRabs=Rabs:maxRabs=maxRabs;
 }
+  vecRelIdx.push_back(vecRel);
+  prLinks.second = vecRel;
+  vecLinks.push_back(prLinks);
     }
   }
+
+
+//вывод содержимого на экран вектора ответов
+#if(do_this == do_not)
+for(auto &v : vecRabs){
+  cout << "document " << v.first << " Rabs=" << v.second << " Rrel=" << ((double)v.second / maxRabs) << endl;
+}
+#endif
+
+//вывод содержимого на экран
+typedef pair<vector<string>,vector<RelativeIndex>> prValueLnk;
+typedef vector<string>lhpVecLink;//левая часть пары
+typedef vector<RelativeIndex>rhpVecLinks;//правая часть пары
+ vector<pair<vector<string>,vector<RelativeIndex>>>::iterator itLinks;
+#if(do_this == execute)
+size_t sizeVec = vecLinks.size();
+for(itLinks = vecLinks.begin(); itLinks != vecLinks.end(); ++itLinks){
+  lhpVecLink lhp = itLinks->first;
+  rhpVecLinks rhp = itLinks->second;
+  while(sizeVec != 0){
+    cout << [lhp](){
+      string temp;
+      for(auto &s : lhp){
+        temp += s + " ";
+      }
+      return temp;
+    }();
+
+    pair<size_t,size_t>p;
+    for(auto &v : rhp){
+      cout << [v](){
+              string answ;
+              RelativeIndex ri;
+              ri = v;              
+              answ = to_string(ri.doc_id) + to_string(ri.rank);
+              return answ;
+      }();
+    }
+
+    --sizeVec;
+  }
+}
+
+#endif
+
 //вывод содержимого на экран
 #if(do_this == do_not)
   vector<pair<string,vector<size_t>>>::iterator itvPhr;
@@ -316,30 +428,11 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
   }
 #endif
 
-//   json jReq = shrdPtrServ.get()->GetRequests();
-//   json::iterator itj = jReq.begin();
-// //читаем json по-строчно
-//   for(auto &s : itj.value()){
-//     const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
-//     string sReq = s.dump();
-//     //выбираем из фразы только слова без пробелов
-//     std::ptrdiff_t const match_count(distance(sregex_iterator(sReq.begin(), sReq.end(), rgxSpaces),sregex_iterator()));
-//     //пословная обработка фразы запроса
-//     for( sregex_iterator itrgx(sReq.begin(), sReq.end(), rgxSpaces), it_end; itrgx != it_end; ++itrgx ){
-//       itFiltWrd = filterWords.find(itrgx->str());
-//       if(itFiltWrd == itFiltWrdE){
-//         continue;}else{
+  ++ind;
+  --cntQueries;
+  }
 
-//         }
-      
 
-//     }
-//   }
-
-//   for(itVecUW = uniqueWords.begin(); itVecUW != uniqueWords.end(); ++itVecUW){
-//     itMapIdx = uMapIdx.get()->find(itVecUW->first);//поиск в map dict_frequencyTh
-
-//   }
   exit(0);
 
 
@@ -358,7 +451,7 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
     valuePhrase.first = s;  
     const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
       string sReq = s.dump();
-      Rabs = 0;
+      // Rabs = 0;
       //число слов в фразе
       //milk water --> milk Rabs=5 , water Rabs=0 /
       std::ptrdiff_t const match_count(distance(sregex_iterator(sReq.begin(), sReq.end(), rgxSpaces),sregex_iterator()));
@@ -366,8 +459,8 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
       for( sregex_iterator itrgx(sReq.begin(), sReq.end(), rgxSpaces), it_end; itrgx != it_end; ++itrgx ){
         itMapIdx = uMapIdx.get()->find(itrgx->str());
         if(itMapIdx == itMapIdxEnd){
-          Rabs = 0;
-          cout << sReq << " Rabs=" << Rabs << endl;
+          // Rabs = 0;
+          // cout << sReq << " Rabs=" << Rabs << endl;
           calcR.NullElem(itrgx->str());
           valuePhrase.second.NullElem(itrgx->str());
           continue;
@@ -431,7 +524,7 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
 
       // tie(Rabs,Rrel) = calcR.calculate(beg, vecSegSize[el]);
 
-      cout << "Rabs=" << Rabs << " Rrel=" << (Rrel) << endl;
+      // cout << "Rabs=" << Rabs << " Rrel=" << (Rrel) << endl;
       ++el; beg += sz;
     }
       cout << "------------------Calculate-----------------------\n";

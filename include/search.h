@@ -114,6 +114,7 @@ private:
   unique_ptr<map<string,vector<EntryThreads>>> uMapIdx;
   unique_ptr<vector<string>> uDocsIdx;
   vector<vector<pair<size_t,size_t>>>vecAnswerRabs;
+  vector<vector<RelativeIndex>>vecRelIdx;
   // map<string, vector<EntryThreads>>& mapInvInd;
 };
 

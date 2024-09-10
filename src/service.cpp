@@ -417,36 +417,31 @@ void Service::PrepareQueries(){
   size_t jsize = it.value().size();
   for(size_t ind = 0; ind < jsize; ++ind){
     value.push_back(it.value()[ind]);
+    cout << it.value()[ind] << endl;
   }
 
-  // cout << value.size() << " " << it.value().size() << endl;
   assert(value.size() == it.value().size());//if error
 
-  // cout << "value is ";
-  // for(auto &s : value){
-  //   cout << s << " ";
-  // }
-  // cout << endl;
+#if(do_this == execute)
+  const regex rgxSpaces (makeRegExpSpace());
+  string temp;
+  for(auto &d : value){
+    for( sregex_iterator it(d.begin(), d.end(), rgxSpaces), it_end; it != it_end; ++it ){
+      temp += it->str() + " ";
+      temp.erase(temp.length()-1);//удаляем последний пробел
+      queries.push_back(temp);
+  }
+}
+#endif
 
+#if(do_this == do_not)
   const regex rgxSpaces (makeRegExpSpace());
   for(auto &d : value){
     for( sregex_iterator it(d.begin(), d.end(), rgxSpaces), it_end; it != it_end; ++it ){
-      // cout << " reg " << it->str() << " ";
-      // string t = it->str();
       queries.push_back(it->str());
   }
   }
-  // cout << endl;
-  // cout << "after reg size is " << queries.size() << endl;
-
-// #if(do_this == execute)
-//   for(auto &s : queries){
-//     cout << s << " ";
-//   }
-//   cout << endl;
-//   cout << "size queries is " << queries.size() << endl;
-// #endif
-
+#endif
 }
 
 vector<string>& Service::GetQueries(){
