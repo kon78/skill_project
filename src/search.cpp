@@ -133,27 +133,38 @@ vCalcRel vecElem = vecRel[elem];
   }
 
 vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries_input){
-  vector<vector<RelativeIndex>> ret;
-  unordered_map<std::string, int> filterWords;
+  unordered_map<std::string, int> filterWords;//уникальные слова получаемые из запроса
   MyMapTh::iterator itMapIdx = uMapIdx.get()->begin();
   MyMapTh::iterator itMapIdxEnd = uMapIdx.get()->end();
   MyVectorTh value;
+  vector<string>queries;
 
-//содержимое заппроса
-#if(do_this == do_not)
-      cout << "size is " << queries_input.size() 
-          << [queries_input](){
-      string temp;
+
+//начитка строки из вектора в лямбде
+#if(do_this == execute)
+  string t;
+  {
+  t = [queries_input](){
+  string temp, mem;
+  size_t pos=0;size_t pos1=0;
       for(auto &s : queries_input){
-        temp += s + " ";
+        mem = s;
+        pos = mem.length();
+        if(!temp.empty()){
+          mem.erase(0,pos1);
+          pos1 = mem.length();          
+          }
+        temp += mem + " ";
+        mem.clear();
+        pos1=pos;
       }
+        temp.erase(temp.length()-1);
       return temp;
-    }();
+}();
+  }
 #endif
 
-string t;
-
-//вывод из вектора через лямбду в строку на экран
+#if(do_this == do_not)
 t = [queries_input](){
   string temp, mem;
   size_t pos=0;size_t pos1=0;
@@ -172,31 +183,26 @@ t = [queries_input](){
       return temp;
 }();
 cout << t << endl;
+#endif
 
-//строку из вектора необходимо разбивать на слова
-//     string sReq = s.dump();
-//     //выбираем из фразы только слова без пробелов
-//     //пословная обработка фразы запроса
-
-vector<string>queries;
-size_t cntQueries = queries_input.size();//число строк в векторе
-size_t ind = 0;
-while(cntQueries != 0){
-
-    string s = queries_input[ind];
-    const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
-    std::ptrdiff_t const match_count(distance(sregex_iterator(s.begin(), s.end(), rgxSpaces),sregex_iterator()));
-    for( sregex_iterator itrgx(s.begin(), s.end(), rgxSpaces), it_end; itrgx != it_end; ++itrgx ){
-      queries.push_back(itrgx->str());
+//уникальные слова    
+    size_t v;
+const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
+    std::ptrdiff_t const match_count(distance(sregex_iterator(t.begin(), t.end(), rgxSpaces),sregex_iterator()));
+    for( sregex_iterator itrgx(t.begin(), t.end(), rgxSpaces), it_end; itrgx != it_end; ++itrgx ){
+      filterWords[itrgx->str()] = v;
+      queries.push_back(itrgx->str());//этот вектор необходим для дальнейшей работы!!!
     }
-
-    for(auto &qi : queries)
-      filterWords[qi] = qi.length();//нужны только уникальные ключи
+  //вывод на экран уникальных слов
+      // for(auto &s:filterWords){
+      //   cout << s.first << " ";
+      // }
+      // cout << endl;
   
   unordered_map<std::string, int>::iterator itFiltWrd;
   unordered_map<std::string, int>::iterator itFiltWrdE = filterWords.end();
   
-  //vector уникальных слов pair<word,count>
+  //vector уникальных слов pair<word,count> количество слов по всем документам
   vector<pair<string,size_t>>uniqueWords;
   vector<string>vecUncnownWord;
   size_t doc_id;
@@ -216,6 +222,7 @@ while(cntQueries != 0){
 }() ));
   }
 
+//сортировка слов от меньшего к бльшему (по числу упоминаний)
   sort(
     uniqueWords.begin(),
     uniqueWords.end(),
@@ -232,10 +239,8 @@ while(cntQueries != 0){
         std::cout << itVecUW->second << '\n';
     }
 #endif
-// exit(0);
-//набор одинаковых слов - string vector doc_id
-//            слово                документ
-// uniqueWordsDocID заменить на identicalWordsDocID
+
+//(база) вектор слов запроса по всем документам
   vector<pair<string,vector<size_t>>>uniqueWordsDocID;
   vector<size_t> vdoc;
   pair<string,vector<size_t>>vecUDOCID;
@@ -256,16 +261,6 @@ while(cntQueries != 0){
     }
       uniqueWordsDocID.push_back(vecUDOCID);
       vdoc.clear();
-    //   uniqueWordsDocID.push_back(make_pair(k.first,[value](){
-    //   vector<vector<size_t>>vec;
-    //   vector<size_t>vecInner;
-    //   for(auto& v : value){
-    //     vecInner.push_back(v.doc_id);
-    //   }
-    //   vec.push_back(vecInner);
-    //   vecInner.clear();
-    //   return vec;
-    // }() ));
   }
 
 //вывод содержимого на экран
@@ -279,7 +274,7 @@ while(cntQueries != 0){
       cout << endl;
   }
 #endif
-
+// exit(0);
   //число документов
   int cntDoc = shrdPtrServ->numbRespFiles();
   cout << "size vec docs is " << uDocsIdx.get()->size() << endl;//два раза где-то повторяется
@@ -314,6 +309,7 @@ while(cntQueries != 0){
   pair<size_t,size_t>prVecRabs;
   vector<pair<vector<string>,vector<RelativeIndex>>>vecLinks;//связи запроса с релевантностями
   pair<vector<string>,vector<RelativeIndex>>prLinks;
+
   for(itvPhr = uniqueWordsDocID.begin(); itvPhr != uniqueWordsDocID.end(); ++itvPhr){
     for(auto &v : itvPhr->second){//число документов для расчета релевантностей
       if(! [v,vCalcRel](){
@@ -324,7 +320,7 @@ while(cntQueries != 0){
         }
         return wasCalc;
       }() ){
-      cout << "document " << v << " " << uDocsIdx.get()->at(v);
+      // cout << "document " << v << " " << uDocsIdx.get()->at(v);
       prVecRabs.first = v;
       relIndx.doc_id = v;//номер документа в струтуру ответа
       string s = uDocsIdx.get()->at(v);
@@ -339,7 +335,7 @@ while(cntQueries != 0){
         }else{
         
           value = itMapIdx->second;
-          prLinks.first = queries;//запрос для пары связи запроса и ветора релевантностей
+          // prLinks.first = queries;//запрос для пары связи запроса и ветора релевантностей
           for(auto &d : value){
             if(d.doc_id == v && [queries,itMapIdx](){
               bool compare = false;
@@ -359,7 +355,7 @@ while(cntQueries != 0){
             }        
         }
       }
-          cout << " " << Rabs << endl;
+          // cout << " " << Rabs << endl;
           prVecRabs.second = Rabs;
           vecRabs.push_back(prVecRabs);
           relIndx.rank = Rabs;
@@ -373,19 +369,23 @@ while(cntQueries != 0){
   }
 
 
+
 //вывод содержимого на экран вектора ответов
 #if(do_this == do_not)
 for(auto &v : vecRabs){
   cout << "document " << v.first << " Rabs=" << v.second << " Rrel=" << ((double)v.second / maxRabs) << endl;
 }
-#endif
+#endif  
 
+//подготовка вектора ответов
+
+#if(do_this == do_not)
 //вывод содержимого на экран
 typedef pair<vector<string>,vector<RelativeIndex>> prValueLnk;
 typedef vector<string>lhpVecLink;//левая часть пары
 typedef vector<RelativeIndex>rhpVecLinks;//правая часть пары
  vector<pair<vector<string>,vector<RelativeIndex>>>::iterator itLinks;
-#if(do_this == execute)
+
 size_t sizeVec = vecLinks.size();
 for(itLinks = vecLinks.begin(); itLinks != vecLinks.end(); ++itLinks){
   lhpVecLink lhp = itLinks->first;
@@ -414,11 +414,10 @@ for(itLinks = vecLinks.begin(); itLinks != vecLinks.end(); ++itLinks){
   }
 }
 
-#endif
+
 
 //вывод содержимого на экран
-#if(do_this == do_not)
-  vector<pair<string,vector<size_t>>>::iterator itvPhr;
+  // vector<pair<string,vector<size_t>>>::iterator itvPhr;
   for(itvPhr = uniqueWordsDocID.begin(); itvPhr != uniqueWordsDocID.end(); ++itvPhr){
     cout << itvPhr->first << " ";
     for(auto &v : itvPhr->second){
@@ -428,151 +427,17 @@ for(itLinks = vecLinks.begin(); itLinks != vecLinks.end(); ++itLinks){
   }
 #endif
 
-  ++ind;
-  --cntQueries;
+//окончательный вывод ответов в виде чисел структуры RelativeIndex
+cout << "size vector vecRelIdx is " << vecRelIdx.size() << endl;
+cout << "size subvectors is " << vecRelIdx[0].size() << endl;
+cout << "all size is " << (vecRelIdx.size() * vecRelIdx[0].size()) << endl;
+cout << "  doc_id  " << " relative " << endl;
+for(auto & vec:vecRelIdx){
+  for(auto &v:vec){
+    cout << v.doc_id << "   " << v.rank << endl;
   }
-
-
-  exit(0);
-
-
-  //calc relatives
-  vector< pair<json,CalcRel> >vPhrase;
-  pair<json,CalcRel> valuePhrase;
-  // size_t Rabs;
-  CalcRel calcR;
-  // vector<pair </*doc_id*/size_t,pair </*word from phrase*/string,/*rel count*/size_t>> >vTemp;
-  // map<string,pair<string,size_t>>mPhrase;//map<word<Request,Rabs>>
-  json jReq = shrdPtrServ.get()->GetRequests();
-  json::iterator itj = jReq.begin();
-  //читаем json по-строчно
-  for(auto &s : itj.value()){
-    calcR.phrase = s;//фраза целиком в структуру
-    valuePhrase.first = s;  
-    const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
-      string sReq = s.dump();
-      // Rabs = 0;
-      //число слов в фразе
-      //milk water --> milk Rabs=5 , water Rabs=0 /
-      std::ptrdiff_t const match_count(distance(sregex_iterator(sReq.begin(), sReq.end(), rgxSpaces),sregex_iterator()));
-      cout << "word in phrase is " << match_count << endl;
-      for( sregex_iterator itrgx(sReq.begin(), sReq.end(), rgxSpaces), it_end; itrgx != it_end; ++itrgx ){
-        itMapIdx = uMapIdx.get()->find(itrgx->str());
-        if(itMapIdx == itMapIdxEnd){
-          // Rabs = 0;
-          // cout << sReq << " Rabs=" << Rabs << endl;
-          calcR.NullElem(itrgx->str());
-          valuePhrase.second.NullElem(itrgx->str());
-          continue;
-        }
-        value = itMapIdx->second;
-        //doc_id
-        for(auto &d : value){
-          calcR.push_elem(itrgx->str(),d.doc_id,d.count);
-          valuePhrase.second.push_elem(itrgx->str(),d.doc_id,d.count);
-
-          // calc.doc_id.push_back(d.doc_id);
-        }
-    }
-    // vTemp.clear();
-    // pair<json,CalcRel> valuePhrase;
-    // CalcRel el;
-    
-    // el = calcR;
-    vPhrase.push_back(valuePhrase); 
-    }
-
-
-    size_t sz = 0;
-    double Rrel;
-    cout << "size struct calcR is " << calcR.size() << endl;
-    cout << "size vec valuePhrase is " << vPhrase.size() << endl;
-    cout << "--------------------------------\n";
-    // size_t sz;
-    // mem = vPhrase[0].second.size();
-    // cout << "size struct this cell is " << mem << endl;
-
-    //печать поэлементная 
-    vector<size_t>vecSegSize;
-    size_t mem = 0;
-      size_t szi = 0;
-    for(auto &v : vPhrase){
-      size_t sz = v.second.size() - mem;
-      mem += sz;
-      vecSegSize.push_back(sz);
-      for(size_t g = 0; g < sz; ++g){//g-group
-        calcR.printElem(szi);
-        ++szi;
-      }
-      cout << endl;
-    }
-//печать количества элементов в группе запросов, размер вектора равен количеству запросов
-    for(auto &v :vecSegSize){
-      cout << v << " ";
-    }
-    cout << endl;
-
-    mem = 0; szi = 0; size_t el = 0; size_t beg = 0;
-    for(auto &v : vPhrase){
-
-      size_t sz = v.second.size() - mem;
-      mem += sz;
-      cout << "element is " << vecSegSize[el] << " element beg  is " << beg << endl;
-      // vector<pair<size_t,size_t>> vecCalRabs = calcR.calculate(beg, vecSegSize[el]);//вернулась константой!!!
-      vecAnswerRabs.push_back(calcR.calculate(beg, vecSegSize[el]));
-
-
-      // tie(Rabs,Rrel) = calcR.calculate(beg, vecSegSize[el]);
-
-      // cout << "Rabs=" << Rabs << " Rrel=" << (Rrel) << endl;
-      ++el; beg += sz;
-    }
-      cout << "------------------Calculate-----------------------\n";
-      for(auto &ransw : vecAnswerRabs){
-        for(auto &r : ransw){
-
-          cout << "doc_id " << r.first << " Rabs=" << r.second << endl;
-        }
-      }
-      cout << "-------\n";
-      // cout << "phrase is " << v.first << endl;
-      // cout << "size struct this cell is " << sz << endl;
-      //sz - число элементов 5
-        // tie(Rabs,Rrel) = calcR.calculate(szi);
-        // cout << "Rabs=" << Rabs << " Rrel=" << (Rrel) << " ";
-      // v.second.printElem(0);
-      // for(; sz < v.second.size(); ++sz){
-      //   v.second.printElem(sz);
-      //   tie(Rabs,Rrel) = v.second.calculate();
-      // cout << "Rabs=" << Rabs << " Rrel=" /*<< std::setprecision (std::numeric_limits<double>::digits10 + 1)*/ << (Rrel) << endl;
-      // }
-
-      // cout << "--------------------------------\n";
-
-
-    // for(auto &Seg : vecSegSize){
-    //   for(size_t sz = 0; sz < Seg; ++sz){
-    //     tie(Rabs,Rrel) = calcR.calculate(sz);
-    //   // cout << "Rabs=" << Rabs << " Rrel=" /*<< std::setprecision (std::numeric_limits<double>::digits10 + 1)*/ << (Rrel) << endl;
-    //   }
-    // }
-      // for(; sz < v.second.size(); ++sz){
-        // v.second.printElem(sz);
-      // }
-
-    // pair<int,double>Rtemp;
-    // for(size_t i = 0; i < calcR.size(); i++){
-      // calcR.printElem(i);
-      // tie(Rabs,Rrel) = calcR.calculate(i);
-      // cout << "Rabs=" << Rtemp.first << " Rrel=" << fixed << setprecision (9) << (Rtemp.second) << endl;
-      // std::setprecision (std::numeric_limits<double>::digits10 + 1)
-      // cout << "Rabs=" << Rabs << " Rrel=" /*<< std::setprecision (std::numeric_limits<double>::digits10 + 1)*/ << (Rrel) << endl;
-      // cout << "--------------------------------\n";
-    // }
-
-
-
-  return ret;
+}
+  return vecRelIdx;
 }
 
 
