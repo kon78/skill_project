@@ -139,8 +139,10 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
   MyVectorTh value;
   vector<string>queries;
 
-
 //начитка строки из вектора в лямбде
+size_t sizeQ = queries_input.size();
+while(sizeQ != 0){
+
 #if(do_this == execute)
   string t;
   {
@@ -184,6 +186,9 @@ t = [queries_input](){
 }();
 cout << t << endl;
 #endif
+// string t;
+
+// for(auto &t : queries_input){
 
 //уникальные слова    
     size_t v;
@@ -193,6 +198,7 @@ const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
       filterWords[itrgx->str()] = v;
       queries.push_back(itrgx->str());//этот вектор необходим для дальнейшей работы!!!
     }
+//}
   //вывод на экран уникальных слов
       // for(auto &s:filterWords){
       //   cout << s.first << " ";
@@ -222,6 +228,10 @@ const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
 }() ));
   }
 
+  if( uniqueWords.size() == 0 )
+    result.push_back(false);
+  else
+    result.push_back(true);
 //сортировка слов от меньшего к бльшему (по числу упоминаний)
   sort(
     uniqueWords.begin(),
@@ -362,7 +372,7 @@ const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
           vecRel.push_back(relIndx);
           (Rabs > maxRabs)?maxRabs=Rabs:maxRabs=maxRabs;
 }
-  vecRelIdx.push_back(vecRel);
+  // vecRelIdx.push_back(vecRel);
   prLinks.second = vecRel;
   vecLinks.push_back(prLinks);
     }
@@ -428,6 +438,7 @@ for(itLinks = vecLinks.begin(); itLinks != vecLinks.end(); ++itLinks){
 #endif
 
 //окончательный вывод ответов в виде чисел структуры RelativeIndex
+#if(do_this == do_not)
 cout << "size vector vecRelIdx is " << vecRelIdx.size() << endl;
 cout << "size subvectors is " << vecRelIdx[0].size() << endl;
 cout << "all size is " << (vecRelIdx.size() * vecRelIdx[0].size()) << endl;
@@ -437,9 +448,102 @@ for(auto & vec:vecRelIdx){
     cout << v.doc_id << "   " << v.rank << endl;
   }
 }
+#endif
+  vector<RelativeIndex>vRelIndx;
+  RelativeIndex rind;
+  for(auto &v : vecRabs){
+    rind.doc_id = v.first;
+    rind.rank = v.second;
+    vRelIndx.push_back(rind);
+  }
+  vecRelIdx.push_back(vRelIndx);
+  --sizeQ;
+}//
+
+  for(auto &vec:vecRelIdx){
+    for(auto &v:vec){
+      cout << v.doc_id << " " << v.rank << endl;
+    }
+  }
+
+  cout << "result is " << result.size() << " vecRelIdx is " << vecRelIdx.size() << endl;
+  assert(result.size() == vecRelIdx.size());//число ответов не совпадает!!!
+  Answers();
   return vecRelIdx;
 }
 
+void SearchServer::Answers(){
+jAnswJSON = {
+  {
+    "answers",{
+      // {"result"}
+
+    }    
+  }
+};
+  json::iterator it = jAnswJSON.begin();
+  // pair<string,bool>jp;
+  size_t ind = 0;string field = "request";
+  json value;
+  json j;
+      vector<pair<size_t,double>>vec2j;
+      vector<string>vec2jstr;
+      pair<size_t,double>jp;
+  for(auto &v : vecRelIdx){
+    if(result[ind]){
+    ++ind;
+    field += [ind](){
+      string temp;
+      temp = to_string(ind);
+      if(temp.length() == 1){
+        temp.clear();temp += "00";temp += to_string(ind);
+      }else if(temp.length() == 2){
+        temp.clear();temp += "0";temp += to_string(ind);
+      }else if(temp.length() == 3){
+        temp.clear();temp += to_string(ind);}
+      return temp;
+    }();
+
+    it.value().push_back(field);
+    // j = it.value();
+    // value = it.value();
+      json jb = { "result" , true };
+      it.value().push_back(jb);
+      
+    json jr;
+    // json jparse,jdoc,jrel;
+    json::iterator itRel = jr.begin();
+    size_t i = 0;
+    for(auto &vec:vecRelIdx){
+      for(auto &v:vec){
+        
+        // jparse = R"({jdoc["docid"] = v.doc_id,jrel["rank"] = v.rank})"_json;//error
+        
+        // jp.first = v.doc_id; jp.second = v.rank;
+        // vec2j.push_back(jp);
+    j[i] = {{"doc_id",v.doc_id},{"rank",v.rank}};
+    jr["relevance"] = j;
+    ++i;
+
+    }
+    }
+      // json jparse = json::parse(vec2j.begin(), vec2j.end());
+
+        // jparse = json::parse(vec2j.begin(), vec2j.end());
+        // itRel.value().push_back(jparse);
+    it.value().push_back(jr);
+
+    
+
+
+    }else{
+      json jb = { "result" , false };
+      it.value().push_back(jb);
+    }
+    
+  }
+  cout << jAnswJSON << endl;
+}
 
 //можно обращаться к коллекции и через обычный указатель
 void SearchServer::search1(){

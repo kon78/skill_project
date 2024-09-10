@@ -422,15 +422,16 @@ void Service::PrepareQueries(){
 
   assert(value.size() == it.value().size());//if error
 
+//фильтр пробелов
 #if(do_this == execute)
   const regex rgxSpaces (makeRegExpSpace());
   string temp;
   for(auto &d : value){
     for( sregex_iterator it(d.begin(), d.end(), rgxSpaces), it_end; it != it_end; ++it ){
       temp += it->str() + " ";
+  }
       temp.erase(temp.length()-1);//удаляем последний пробел
       queries.push_back(temp);
-  }
 }
 #endif
 
