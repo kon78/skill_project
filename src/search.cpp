@@ -516,15 +516,8 @@ for(auto & vec:vecRelIdx){
 
 void SearchServer::Answers(){
 
-jAnswJSON = {
-  {
-    "answers",{
-
-    }    
-  }
-};
+jAnswJSON = {{"answers",{}}};
   json::iterator it = jAnswJSON.begin();
-  // pair<string,bool>jp;
   size_t ind = 0;
   size_t vecInd = 0;//для формирования ответов из результатов vecRelIdx
   json value;
@@ -536,9 +529,8 @@ jAnswJSON = {
   for(auto &vec : vResult){
     vector<RelativeIndex>& tempV = vecRelIdx[vecInd];
     for(size_t i = 0; i < vec.size(); ++i){
-      // cout << boolalpha << vec[i] << " ";
-      if(vec[i]){
     string field = "request";
+    json jfield;
    ++ind;
     field += [ind](){
       string temp;
@@ -551,22 +543,27 @@ jAnswJSON = {
         temp.clear();temp += to_string(ind);}
       return temp;
     }();
-
     it.value().push_back(field);
-    // j = it.value();
-    // value = it.value();
+    jfield[field] = it.value();
+
+      if(vec[i]){
       json jb = { "result" , true };
       it.value().push_back(jb);
       
     json jr;
-    // json jparse,jdoc,jrel;
     json::iterator itRel = jr.begin();
     size_t i = 0;
 
 #if(do_this == execute)
   for(auto &v : tempV){
-    // cout << "doc_id " << v.doc_id << " rank " << v.rank << endl;
-    j[i] = {{"doc_id",v.doc_id},{"rank",v.rank}};
+    j[i] = {{"doc_id",v.doc_id},{"rank",[v](){
+      double t;//floor(v.rank * 1e+4) / 1e+4
+      if(v.rank < 1){
+        t = floor(v.rank * 1e+3) / 1e+3;}else{
+          t = v.rank;
+        }
+      return t;
+    }()}};
     ++i;
     jr["relevance"] = j;
   }
@@ -582,28 +579,22 @@ jAnswJSON = {
     }
 #endif
 
-
-
     it.value().push_back(jr);
 
       }else{
      json jb = { "result" , false };
       it.value().push_back(jb);
-      cout << boolalpha << vec[i] << " ";
       }
     }
-    cout << endl;
     ++vecInd;
   }
   cout << jAnswJSON << endl;
   }
 
 void SearchServer::Answers1(){
-  //vecRelIdx vector<vector<RelativeIndex>>
 jAnswJSON = {
   {
     "answers",{
-      // {"result"}
 
     }    
   }
