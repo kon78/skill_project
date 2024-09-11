@@ -138,18 +138,39 @@ vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries
   MyMapTh::iterator itMapIdxEnd = uMapIdx.get()->end();
   MyVectorTh value;
   vector<string>queries;
-
+  vector<bool>res;//этот вектор в конце положить в вектор vResult для Answers()
 //начитка строки из вектора в лямбде
-size_t sizeQ = queries_input.size();
-while(sizeQ != 0){
+size_t sizeQ = queries_input.size();//для проверки
+// vector<string>vecT;
+// size_t pos;
+  string mem;
+  size_t pos=0;size_t pos1=0;
 
-#if(do_this == execute)
-  string t;
+string t;
+for(auto &vT : queries_input){
+        mem = vT;
+        pos = mem.length();
+        if(!t.empty()){
+          mem.erase(0,pos1);
+          pos1 = mem.length();          
+          }
+        // temp += mem + " ";
+        t = mem;
+        mem.clear();
+        pos1=pos;
+
+        // temp.erase(temp.length()-1);
+  cout << t << endl;
+// }
+// while(sizeQ != 0){
+
+  // size_t indT = 0;
+#if(do_this == do_not)
   {
-  t = [queries_input](){
+  t = [vecT](){
   string temp, mem;
   size_t pos=0;size_t pos1=0;
-      for(auto &s : queries_input){
+      for(auto &s : vecT){
         mem = s;
         pos = mem.length();
         if(!temp.empty()){
@@ -190,14 +211,16 @@ cout << t << endl;
 
 // for(auto &t : queries_input){
 
-//уникальные слова    
-    size_t v;
+//уникальные слова получаются из строки string t
+
 const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
     std::ptrdiff_t const match_count(distance(sregex_iterator(t.begin(), t.end(), rgxSpaces),sregex_iterator()));
     for( sregex_iterator itrgx(t.begin(), t.end(), rgxSpaces), it_end; itrgx != it_end; ++itrgx ){
+    size_t v;//любое значение 
       filterWords[itrgx->str()] = v;
       queries.push_back(itrgx->str());//этот вектор необходим для дальнейшей работы!!!
     }
+    // t.clear();
 //}
   //вывод на экран уникальных слов
       // for(auto &s:filterWords){
@@ -228,10 +251,13 @@ const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
 }() ));
   }
 
-  if( uniqueWords.size() == 0 )
+  if( uniqueWords.size() == 0 ){
     result.push_back(false);
-  else
+    res.push_back(false);
+    }else{
     result.push_back(true);
+    res.push_back(true);
+    }
 //сортировка слов от меньшего к бльшему (по числу упоминаний)
   sort(
     uniqueWords.begin(),
@@ -339,17 +365,18 @@ const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
       vector<string>vecWordsDoc = schSubStrng.GetVec();//возврат по ссылке
           Rabs = 0;
       for(auto &s :vecWordsDoc){
+        // cout << s << " ";
         itMapIdx = uMapIdx.get()->find(s);
         if(itMapIdx == itMapIdxEnd){
           continue;
-        }else{
-        
+        }else{        
           value = itMapIdx->second;
           // prLinks.first = queries;//запрос для пары связи запроса и ветора релевантностей
           for(auto &d : value){
             if(d.doc_id == v && [queries,itMapIdx](){
               bool compare = false;
-              for(auto &s : queries){
+              for(auto &s : queries){//queries не очищается
+                // cout << s << " ";
                 if(s == itMapIdx->first)
                   compare = true;            
                   }
@@ -365,6 +392,8 @@ const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
             }        
         }
       }
+      // cout << endl;
+      // vecWordsDoc.clear();
           // cout << " " << Rabs << endl;
           prVecRabs.second = Rabs;
           vecRabs.push_back(prVecRabs);
@@ -457,22 +486,120 @@ for(auto & vec:vecRelIdx){
     vRelIndx.push_back(rind);
   }
   vecRelIdx.push_back(vRelIndx);
-  --sizeQ;
+  vResult.push_back(res);//сохраняем в векторе вектор ответов bool
+  res.clear();//очищаем вектор перед новым проходом
+  vRelIndx.clear();
+  queries.clear();
+  vecRabs.clear();
+  uniqueWords.clear();
+  filterWords.clear();//очищаем уникальные слова
+  vdoc.clear();
+  maxRabs = 0;
+  --sizeQ;//если все правильно 0
 }//
 
+#if(do_this == do_not)
   for(auto &vec:vecRelIdx){
     for(auto &v:vec){
       cout << v.doc_id << " " << v.rank << endl;
     }
   }
+#endif
 
   cout << "result is " << result.size() << " vecRelIdx is " << vecRelIdx.size() << endl;
+  cout << "logic is " << res.size() << " vResult is " << vResult.size() << endl;
   assert(result.size() == vecRelIdx.size());//число ответов не совпадает!!!
+  // Answers1();
   Answers();
   return vecRelIdx;
 }
 
 void SearchServer::Answers(){
+
+jAnswJSON = {
+  {
+    "answers",{
+
+    }    
+  }
+};
+  json::iterator it = jAnswJSON.begin();
+  // pair<string,bool>jp;
+  size_t ind = 0;
+  size_t vecInd = 0;//для формирования ответов из результатов vecRelIdx
+  json value;
+  json j;
+      vector<pair<size_t,double>>vec2j;
+      vector<string>vec2jstr;
+      pair<size_t,double>jp;
+
+  for(auto &vec : vResult){
+    vector<RelativeIndex>& tempV = vecRelIdx[vecInd];
+    for(size_t i = 0; i < vec.size(); ++i){
+      // cout << boolalpha << vec[i] << " ";
+      if(vec[i]){
+    string field = "request";
+   ++ind;
+    field += [ind](){
+      string temp;
+      temp = to_string(ind);
+      if(temp.length() == 1){
+        temp.clear();temp += "00";temp += to_string(ind);
+      }else if(temp.length() == 2){
+        temp.clear();temp += "0";temp += to_string(ind);
+      }else if(temp.length() == 3){
+        temp.clear();temp += to_string(ind);}
+      return temp;
+    }();
+
+    it.value().push_back(field);
+    // j = it.value();
+    // value = it.value();
+      json jb = { "result" , true };
+      it.value().push_back(jb);
+      
+    json jr;
+    // json jparse,jdoc,jrel;
+    json::iterator itRel = jr.begin();
+    size_t i = 0;
+
+#if(do_this == execute)
+  for(auto &v : tempV){
+    // cout << "doc_id " << v.doc_id << " rank " << v.rank << endl;
+    j[i] = {{"doc_id",v.doc_id},{"rank",v.rank}};
+    ++i;
+    jr["relevance"] = j;
+  }
+#endif
+
+#if(do_this == do_not)
+    for(auto &vec:vecRelIdx){
+      for(auto &v:vec){
+    j[i] = {{"doc_id",v.doc_id},{"rank",v.rank}};
+    jr["relevance"] = j;
+    ++i;
+    }
+    }
+#endif
+
+
+
+    it.value().push_back(jr);
+
+      }else{
+     json jb = { "result" , false };
+      it.value().push_back(jb);
+      cout << boolalpha << vec[i] << " ";
+      }
+    }
+    cout << endl;
+    ++vecInd;
+  }
+  cout << jAnswJSON << endl;
+  }
+
+void SearchServer::Answers1(){
+  //vecRelIdx vector<vector<RelativeIndex>>
 jAnswJSON = {
   {
     "answers",{
@@ -489,6 +616,7 @@ jAnswJSON = {
       vector<pair<size_t,double>>vec2j;
       vector<string>vec2jstr;
       pair<size_t,double>jp;
+
   for(auto &v : vecRelIdx){
     if(result[ind]){
     ++ind;
@@ -521,20 +649,11 @@ jAnswJSON = {
     ++i;
     }
     }
-      // json jparse = json::parse(vec2j.begin(), vec2j.end());
-
-        // jparse = json::parse(vec2j.begin(), vec2j.end());
-        // itRel.value().push_back(jparse);
     it.value().push_back(jr);
-
-    
-
-
     }else{
       json jb = { "result" , false };
       it.value().push_back(jb);
     }
-    
   }
   cout << jAnswJSON << endl;
 }

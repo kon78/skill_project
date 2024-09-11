@@ -98,6 +98,7 @@ public:
   void GetInvIndDocs();
   vector<vector<RelativeIndex>> search(const vector<string>& queries_input);
   void search1();
+  void Answers1();//выдает ответ только для одного запроса
   void Answers();
   template <class T> void sorting(vector<T> &t);
   // template<class T> void SetAddrObj(T* _shared);//{ptrInvInd = _shared;}
@@ -117,7 +118,8 @@ private:
   vector<vector<pair<size_t,size_t>>>vecAnswerRabs;
   vector<vector<RelativeIndex>>vecRelIdx;
   json jAnswJSON;
-  vector<bool>result;//для файла answers.json результат найденного ответа true-ответы есть false-ответов нет
+  vector<vector<bool>>vResult;//для файла answers.json результат найденного ответа true-ответы есть false-ответов нет
+  vector<bool>result;//этот вектор для метода Answers1()
   // map<string, vector<EntryThreads>>& mapInvInd;
 };
 
