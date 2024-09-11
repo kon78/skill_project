@@ -453,7 +453,7 @@ for(auto & vec:vecRelIdx){
   RelativeIndex rind;
   for(auto &v : vecRabs){
     rind.doc_id = v.first;
-    rind.rank = v.second;
+    rind.rank = v.second / maxRabs;
     vRelIndx.push_back(rind);
   }
   vecRelIdx.push_back(vRelIndx);
@@ -516,15 +516,9 @@ jAnswJSON = {
     size_t i = 0;
     for(auto &vec:vecRelIdx){
       for(auto &v:vec){
-        
-        // jparse = R"({jdoc["docid"] = v.doc_id,jrel["rank"] = v.rank})"_json;//error
-        
-        // jp.first = v.doc_id; jp.second = v.rank;
-        // vec2j.push_back(jp);
     j[i] = {{"doc_id",v.doc_id},{"rank",v.rank}};
     jr["relevance"] = j;
     ++i;
-
     }
     }
       // json jparse = json::parse(vec2j.begin(), vec2j.end());
