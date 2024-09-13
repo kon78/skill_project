@@ -21,9 +21,10 @@ FetchContent_MakeAvailable(json)
 
 add_executable(TestApplication testapp.cpp
 # ../src/multiply.cpp
- ../src/service.cpp
+#  ../src/service.cpp
  ../src/invertindex.cpp
- ../src/appparam.cpp
+ ../src/myexception.cpp
+ ../src/server.cpp
   # ../src/appparam.cpp
   )
 

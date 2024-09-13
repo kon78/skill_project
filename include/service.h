@@ -1,6 +1,7 @@
 #pragma once
 #ifndef SERVICE_H
 #define SERVICE_H
+#include<iostream>
 #include<nlohmann/json.hpp>
 #include<vector>
 #include<cassert>
@@ -10,6 +11,13 @@
 using namespace std;
 
 using namespace nlohmann::json_abi_v3_11_3;
+namespace fs = filesystem;
+
+#define do_this 1
+#define do_not 0
+#define execute 1
+
+string ArgumSet(int argc, char *argv[]);
 
 class Service{
   public:

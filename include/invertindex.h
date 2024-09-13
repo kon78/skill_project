@@ -1,9 +1,6 @@
 #pragma once
 #ifndef INVERTINDEX_H
 #define INVERTINDEX_H
-#include "header.h"
-#include "service.h"
-#include "appparam.h"
 #include <map>
 #include <regex>
 #include <thread>
@@ -11,7 +8,14 @@
 #include <chrono>
 #include <cassert>
 #include <condition_variable>
+#include<iostream>
+#include "service.h"
 
+#define do_this 1
+#define do_not 0
+#define execute 1
+
+using namespace std;
 enum {threadRunTask=100, threadStopTask=101, threadError=99, threadEndedTask=1}enumState;
 
 struct Entry {
@@ -237,7 +241,7 @@ class InvertedIndex{
   private:
     Entry stEntry;
     EntryThreads stEntryTh;
-    Parameters clParamApp;
+    // Parameters clParamApp;
     int cntEqualDoc;
     bool bVecAreEqual;
     // map<string, vector<Entry>>::iterator iterMapFreqDict;

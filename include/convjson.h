@@ -1,21 +1,39 @@
 #pragma once
-#include"header.h"
-#include"service.h"
+#ifndef CONVJSON_H
+#define CONVJSON_H
+#include<fstream>
+#include<vector>
+#include<string>
+#include<iostream>
+#include<nlohmann/json.hpp>
+
+// #include<memory>
+// #include"service.h"
+using namespace std;
+using namespace nlohmann::json_abi_v3_11_3;
+
+#define do_this 1
+#define do_not 0
+#define execute 1
 
 class ConverterJSON{
   public:
-    vector<string> GetTextDocuments();
-
     ConverterJSON() = default;// ConverterJSON(){}
+    ~ConverterJSON(){}
+    // vector<string> GetTextDocuments();
+  void ReadJsonfile(const char* fname);
+
     // ConverterJSON(){}
     void ParamApp();
-    void SetObjServ(shared_ptr<Service> _shrdPtrServ);
+    // void SetObjServ(shared_ptr<Service> _shrdPtrServ);
 
-    int GetResponsesLimit();
-    vector<string> GetRequests();
-    void putAnswers(vector<vector<pair<int, float>>>answers);
+
+    int GetResponsesLimit(){return 0;}
+    // vector<string> GetRequests(){}
+    void putAnswers(vector<vector<pair<int, float>>>answers){}
   
   private:
     // Service* pService = nullptr;
-    shared_ptr<Service>shrdPtrServ;
+    // shared_ptr<Service>shrdPtrServ;
 };
+#endif

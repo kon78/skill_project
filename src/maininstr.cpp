@@ -1,5 +1,3 @@
-#include"header.h"
-
 string ArgumSet(int argc, char *argv[]){
     string ret;
       for(int i = 0; i < argc; i++){

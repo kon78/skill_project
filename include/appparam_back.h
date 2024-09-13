@@ -1,9 +1,18 @@
+#pragma once
+#ifndef APPPARAM_H
+#define APPPARAM_H
 #include<string>
 #include<vector>
 #include<regex>
 #include<nlohmann/json.hpp>
+#include<iostream>
+#include<fstream>
 using namespace nlohmann::json_abi_v3_11_3;
 using namespace std;
+
+#define do_this 1
+#define do_not 0
+#define execute 1
 
 enum status{YES = 1,NO = 0};
 
@@ -47,3 +56,4 @@ class Parameters{
   MyStructNames structNames;
   MethodPassingInfo structPassing;
 };
+#endif

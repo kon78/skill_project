@@ -1,33 +1,45 @@
-// #include<nlohmann/json.hpp>
-#include "header.h"
-#include "service.h"
+#include<iostream>
+// #include "service.h"
 #include "convjson.h"
 #include "invertindex.h"
-#include "search.h"
-// #include "service.h"
+// #include "search.h"
+#include "server.h"
+// #include "myexception.h"
 
-// using namespace nlohmann::json_abi_v3_11_3;
+#define Application 1
+#define Editing 0
+#define do_this 1
+#define do_not 0
+
 using namespace std;
 
-char Bunner[] = "Usage: SkillboxSearchEngine [keys /c/i/s/r/h] <config.json | requests.json | answers.json>";
-char keys[] = "\n/c clear\n/i info\n/s service\n/r run\n/h help\n";
-char appName[] = "SkillboxSearchEngine";
+char Bunner[] = "Usage: SkillboxSearchEngine [keys /e/i/s/r/h] <config.json | requests.json | answers.json>";
+char keys[] = "\n/e erase\n/i info\n/s service\n/r run\n/h help\n";
+string appName = "SkillboxSearchEngine";
 
 int main(int argc, char *argv[]){
-// string argumentV;
+
+#if(Application == do_this)
+  if(argc < 2){
+    cout << Bunner << keys;
+  }else{
+    Server* clServ = new Server(argc,argv);
+    if(clServ->Ready()){
+      clServ->Run(appName);
+  }
+  // char* fname = "config.json";
+  // clServ->examination(fname);
+  }
+
+#endif
+
+#if(Editing == do_this)
   Service* service = nullptr;
   if(argc < 2){
     cout << Bunner << keys;
     delete service;
     exit(0);
   }else{
-
-#if(do_this == do_not)
-      Service* service = new Service(argc, argv);
-    service->Start();
-
-    delete service;
-#endif
 
   shared_ptr<Service>_shrdPtrServ = make_shared<Service>(argc, argv); 
   ConverterJSON* clConvJSON = new ConverterJSON();
@@ -41,7 +53,6 @@ int main(int argc, char *argv[]){
   clConvJSON->ParamApp();
   if( _shrdPtrServ->AppReady() ){
     //двигаемся дальше - получаем вектор с содержимым файлов-запросов
-  #if(do_this == execute)
 
     clInvInd->UpdateDocumentBase1();
     clInvInd->UpdateDocumentBaseThreads();
@@ -50,16 +61,12 @@ int main(int argc, char *argv[]){
     clSearchServ->GetInvIndMap();
     clSearchServ->GetInvIndDocs();
     clSearchServ->search(_shrdPtrServ->GetQueries());
-  #endif
-  #if(do_this == do_not)
-    cout << "before threads work numb is " << clInvInd->GetNumbTest() << endl; 
-    clInvInd->ThreadRoutine();
-    cout << "after threads work numb is " << clInvInd->GetNumbTest() << endl;
-  #endif
   
   }else{
     cout << "Wrong! AppReady() - false!\n";
   }
   }
+#endif
+
   return 0;
 }

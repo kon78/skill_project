@@ -10,9 +10,14 @@
 #include<unordered_map>
 #include <iomanip>
 // #include<tuple>
-#include "header.h"
 #include "service.h"
 #include "invertindex.h"
+
+#define do_this 1
+#define do_not 0
+#define execute 1
+
+using namespace std;
 
 struct RelativeIndex{
 size_t doc_id;

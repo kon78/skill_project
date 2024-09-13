@@ -1,6 +1,5 @@
-#include"header.h"
 #include"appparam.h"
-
+using namespace std;
 string Parameters::makeRegExp(const string &word){
   string ret;
   ret = "(\\b(?!(?!";

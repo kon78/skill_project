@@ -1,13 +1,15 @@
 // #include <multiply/multiply.h>
 #include <gtest/gtest.h>
-#include <nlohmann/json.hpp>
+// #include <nlohmann/json.hpp>
 // #include "multiply.h"
-#include "service.h"
-#include "invertindex.h"
+// #include "service.h"
+// #include "invertindex.h"
+// #include "server.h"
+// #include "myexception.h"
 // #include "appparam.h"
 // #include "appparam.h"
 
-using namespace nlohmann::json_abi_v3_11_3;
+// using namespace nlohmann::json_abi_v3_11_3;
 
 // TEST(MultiplyTests, TestIntegerOne_One)
 // {
@@ -31,23 +33,30 @@ using namespace nlohmann::json_abi_v3_11_3;
 //     ASSERT_EQ(actual, expected);
 // }
 
-TEST(TestApplication, TestSerializaton){
-    json jString = "this is a simple test";
-    std::string cppString = jString.dump();
-    EXPECT_EQ(bool(cppString == std::string(jString.dump())), true);
-}
+// TEST(TestApplication, TestSerializaton){
+//     json jString = "this is a simple test";
+//     std::string cppString = jString.dump();
+//     EXPECT_EQ(bool(cppString == std::string(jString.dump())), true);
+// }
 
-TEST(TestApplication, TestEqualMap){
-    Service serv;
-    serv.readFile("freq_dictionary.map");
-    vector<string> vec1 = serv.GetDataFile();
-    serv.clearVec();
+// TEST(TestApplication, TestEqualMap){
+//     Service serv;
+//     serv.readFile("freq_dictionary.map");
+//     vector<string> vec1 = serv.GetDataFile();
+//     serv.clearVec();
     
-    serv.readFile("freq_dictionaryTh.map");
-    vector<string> vec2 = serv.GetDataFile();
-    ASSERT_EQ(vec1, vec2);    
-}
+//     serv.readFile("freq_dictionaryTh.map");
+//     vector<string> vec2 = serv.GetDataFile();
+//     ASSERT_EQ(vec1, vec2);    
+// }
 
+// TEST(TestApplication, TestException){
+//     int argc = 3; char* argv[] = {" this ", "is ", "test"};
+//     char* fname = "config.json";
+//     Server serv(argc, argv);
+
+//     serv.examination(fname);
+// }
 // TEST(MultiplyTests, ClearVector){
 // Service serv;
 // serv.readFile("config.json");

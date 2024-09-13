@@ -1,5 +1,5 @@
 #include"search.h"
-
+using namespace std;
 void SearchServer::SetObjServ(shared_ptr<Service> _shrdPtrServ){
   shrdPtrServ = _shrdPtrServ;  
 }

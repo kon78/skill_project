@@ -1,5 +1,5 @@
-#include"header.h"
 #include"service.h"
+
 void Service::examination(char* fname){
       string temp(fname);
       cout << "filename is " << temp << endl;
@@ -112,8 +112,6 @@ void Service::Start(){
       }else{
         serviceKeyError = true;
       }
-      // if( argumv.find("/") )      
-      // cout << "argc=" << argumc << " argv=" << argumv << endl;
     }
       }
     
