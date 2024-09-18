@@ -8,12 +8,18 @@
 #include <chrono>
 #include <cassert>
 #include <condition_variable>
+#include <fstream>
 #include<iostream>
-#include "service.h"
+// #include<server.h>
+// #include "service.h"
 
 #define do_this 1
 #define do_not 0
 #define execute 1
+
+#define switch_off 0
+#define switch_on 1
+#define switch 1
 
 using namespace std;
 enum {threadRunTask=100, threadStopTask=101, threadError=99, threadEndedTask=1}enumState;
@@ -202,7 +208,7 @@ class InvertedIndex{
   public:
     InvertedIndex():cntEqualDoc(0),pMutex(new mutex),idThread(0),Th(Sleep, this),ready(false)/**/{}
     ~InvertedIndex(){}
-    void SetObjServ(shared_ptr<Service> _shrdPtrServ);
+    // void SetObjServ(shared_ptr<Service> _shrdPtrServ);
     void PrepareDocs();
     void UpdateDocumentBase(/*vector<string> input_docs*/);
     void UpdateDocumentBase1();
@@ -235,6 +241,7 @@ class InvertedIndex{
     string MapGetKey(const string& key );
     MyVectorTh MapGetValue(const string& key);
     template <class K, class V, class N> void SaveMap(map<K, V>& m, N fn);
+    template <class x_Object> size_t GetNumbDocs(x_Object &obj);
     int GetNumbFiles();
     vector<string>& GetDocs();
     void go();
@@ -262,7 +269,7 @@ mutex global;
     int iCntRespFiles;//for testing
     map<string, vector<Entry>> freq_dictionary;
     map<string, vector<EntryThreads>> freq_dictionaryTh;
-    shared_ptr<Service>shrdPtrServ;
+    // shared_ptr<Service>shrdPtrServ;
     vector<Tester> testers;
     vector<string>* pVecDocs;//указатель на список файлов в папке /resource
     thread Th;
@@ -285,4 +292,8 @@ mutex global;
       mStream.close();
     }
 
+template <class x_Object> size_t GetServerInfo(x_Object &obj){
+  size_t ret = obj.GetNumbFiles();
+  return ret;
+}
 #endif

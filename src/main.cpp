@@ -15,7 +15,6 @@ using namespace std;
 
 char Bunner[] = "Usage: SkillboxSearchEngine [keys /e/i/s/r/h] <config.json | requests.json | answers.json>";
 char keys[] = "\n/e erase\n/i info\n/s service\n/r run\n/h help\n";
-string appName = "SkillboxSearchEngine";
 
 int main(int argc, char *argv[]){
 
@@ -25,7 +24,7 @@ int main(int argc, char *argv[]){
   }else{
     Server* clServ = new Server(argc,argv);
     if(clServ->Ready()){
-      clServ->Run(appName);
+      clServ->Run();
   }
   // char* fname = "config.json";
   // clServ->examination(fname);

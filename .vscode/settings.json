@@ -19,7 +19,10 @@
         "string": "cpp",
         "vector": "cpp",
         "chrono": "cpp",
-        "format": "cpp"
+        "format": "cpp",
+        "list": "cpp",
+        "xstring": "cpp",
+        "algorithm": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled",
     "C_Cpp.dimInactiveRegions": true

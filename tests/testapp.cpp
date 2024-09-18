@@ -1,15 +1,25 @@
 // #include <multiply/multiply.h>
 #include <gtest/gtest.h>
-// #include <nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 // #include "multiply.h"
 // #include "service.h"
 // #include "invertindex.h"
-// #include "server.h"
-// #include "myexception.h"
 // #include "appparam.h"
 // #include "appparam.h"
+#include<vector>
+#include<iostream>
+#include<sstream>
+#include<fstream>
+#include "server.h"
+#include "myexception.h"
+#include "convjson.h"
 
-// using namespace nlohmann::json_abi_v3_11_3;
+using namespace std;
+
+#define run_test_cin 0
+#define do_this 1
+
+using namespace nlohmann::json_abi_v3_11_3;
 
 // TEST(MultiplyTests, TestIntegerOne_One)
 // {
@@ -93,6 +103,59 @@
 //   json data = json::parse(f);
 //   ASSERT_EQ(j, data);
 // }
+
+#if(do_this == run_test_cin)
+typedef vector<char> symb;
+symb s{'a','y','[','(','.','n'};
+istream& operator>>(istream& in, symb& other){
+  char ch;
+  for(auto &c : other){
+    ch = c;
+    in.get(ch);
+    return in;
+  }
+}
+#endif
+
+string makeRegExp(){
+  string ret;
+  ret = "\\w+\\.\\w+";
+  return ret;
+}
+
+TEST(TestApplication, CinTest){
+  istringstream isch("ay[fje\n#(.n");
+  int good = 0;
+  char ch;
+  int cnt = 0;
+  while(!isch.eof()){
+    ch = isch.get();
+    ++cnt;
+    if((cin.fail() || cin.peek() != '\n') && (ch == 'y' || ch == 'n')){
+      ++good;
+    }
+    }
+    ASSERT_EQ(good, 2);
+    ASSERT_EQ(cnt, 12);
+}
+
+TEST(TestApplication, JSONVIEW){
+  ConverterJSON* clConvJSON = new ConverterJSON();
+  string fConfJSON = "C:\\develop\\skill_project\\config.json";//в тесте не может увидеть имя файла, только весь путь???
+  clConvJSON->TestRead(fConfJSON.c_str());
+  json jConf = clConvJSON->GetJSON();
+  json::iterator it=jConf.begin();
+  Server* clServ = new Server;
+  string key = "files";
+  string answer;
+  answer = clServ->ViewValueFiles(it,key);
+    const regex findRegCntWord(makeRegExp());
+    ptrdiff_t const countWord(distance(sregex_iterator(answer.begin(), answer.end(), findRegCntWord), sregex_iterator()));
+    int cntWrd = (int)countWord;//количество слов в строке
+
+  ASSERT_EQ(22,cntWrd);
+  // cout << answer << endl;
+}
 
 int main(int argc, char** argv)
 {

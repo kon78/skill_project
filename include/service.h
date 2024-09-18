@@ -7,6 +7,7 @@
 #include<cassert>
 #include<regex>
 #include<fstream>
+#include<server.h>
 
 using namespace std;
 

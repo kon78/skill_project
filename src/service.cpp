@@ -134,7 +134,7 @@ void Service::Start(){
         fout.get()->close();
 
         json2strTemp.clear();
-        fout.reset();      
+        fout.reset();
       }else if(codeKey == int('r') ){//здесь стоит детально проверить условия запуска
         cout << "Run!" << endl;
         run = true;
@@ -236,7 +236,6 @@ size_t Service::SizeVector(){
 
 void Service::setRespFiles(int resp){
   while(resp != 0){
-
     --resp;
   }
 }

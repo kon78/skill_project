@@ -159,6 +159,7 @@ bool ret = true;
   }
   return ret;
 }
+#if(switch == switch_off)
 
 void InvertedIndex::UpdateDocumentBaseThreads(){
   vector<thread>vecThDocBase;
@@ -251,6 +252,7 @@ void InvertedIndex::UpdateDocumentBaseThreads(){
 
   cout << "\nmap compare is " << boolalpha << map_compare() << endl;
 }
+#endif
 
 size_t SearchSubStrng::GetMatch() { 
   //  std::lock_guard<std::mutex> guard(clMutex);
@@ -305,6 +307,7 @@ void InvertedIndex::go() {
   cv.notify_all();
 }
 
+#if(switch == switch_off)
 void InvertedIndex::DocBaseThreadNew(size_t &numDocs, 
                                     // map<string, vector<EntryThreads>> freq_dictionaryTh, 
                                     const vector<string> &docs
@@ -375,6 +378,7 @@ while (!ready) cv.wait(lck);
 //здесь удаляем dataFile в классе Service
   shrdPtrServ.get()->clearVec();
 }
+#endif
 
 void InvertedIndex::DocBaseThread(int numDocs){
   vector<EntryThreads>v;//из метода UpdateDocumentBase
@@ -475,13 +479,17 @@ void InvertedIndex::TestPutToString(string str){
   forTest.push_back(str);
 }
 
+#if(switch == switch_on)
 void InvertedIndex::PrepareDocs(){
   string path = "C:\\develop\\skill_project\\resources\\";
   string str, fStrName; 
   string::size_type posB;
   int i = 0;
-  iCntRespFiles = shrdPtrServ.get()->numbRespFiles();
-  str = shrdPtrServ.get()->prepareNameFiles();
+  // iCntRespFiles = shrdPtrServ.get()->numbRespFiles();
+  // iCntRespFiles = Server::numbFiles;
+  // Server s = Server();
+  // s.GetNumbFiles(s);
+  // str = shrdPtrServ.get()->prepareNameFiles();
   // cout << str << endl;
   while(iCntRespFiles != 0){
     fStrName = path;
@@ -489,8 +497,8 @@ void InvertedIndex::PrepareDocs(){
     if(posB < str.length()){
       fStrName += str.substr(0,posB);
       str.erase(0,posB+1);
-      shrdPtrServ.get()->readFile(fStrName);
-      docs = shrdPtrServ.get()->GetDataFile();
+      // shrdPtrServ.get()->readFile(fStrName);
+      // docs = shrdPtrServ.get()->GetDataFile();
       // shrdPtrServ.get()->clearVec();//помоему не стоит тут так делать!!!
       // cout << "file " << fStrName << endl;
       fStrName.erase();
@@ -502,6 +510,7 @@ void InvertedIndex::PrepareDocs(){
   }
 
 }
+#endif
 
 vector<string>& InvertedIndex::GetDocs(){
   return docs;
@@ -916,9 +925,11 @@ void InvertedIndex::UpdateDocumentBase(/*vector<string> input_docs*/){
   return;
 }
 
+#if(switch == switch_off)
 void InvertedIndex::SetObjServ(shared_ptr<Service> _shrdPtrServ){
   shrdPtrServ = _shrdPtrServ;
 }
+#endif
 
 int InvertedIndex::GetNumbFiles(){
   return iCntRespFiles;

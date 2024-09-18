@@ -7,8 +7,18 @@ void ConverterJSON::ReadJsonfile(const char* fname){
   assert(fname != nullptr);
   myexcep.SetFName(fname);
   ifstream f(fname);
-  json data = json::parse(f);
-  cout << data << endl;
+  jData = json::parse(f);
+  // cout << data << endl;
+}
+
+void ConverterJSON::TestRead(const char* fname){
+  assert(fname != nullptr);
+  ifstream f(fname);
+  jData = json::parse(f);
+}
+
+json ConverterJSON::GetJSON(){
+  return jData;
 }
 
 // vector<string> ConverterJSON::GetTextDocuments(){

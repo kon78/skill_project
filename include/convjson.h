@@ -22,7 +22,8 @@ class ConverterJSON{
     ~ConverterJSON(){}
     // vector<string> GetTextDocuments();
   void ReadJsonfile(const char* fname);
-
+  void TestRead(const char* fname);
+    json GetJSON();
     // ConverterJSON(){}
     void ParamApp();
     // void SetObjServ(shared_ptr<Service> _shrdPtrServ);
@@ -33,6 +34,7 @@ class ConverterJSON{
     void putAnswers(vector<vector<pair<int, float>>>answers){}
   
   private:
+    json jData;
     // Service* pService = nullptr;
     // shared_ptr<Service>shrdPtrServ;
 };
