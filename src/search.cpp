@@ -1,7 +1,14 @@
 #include"search.h"
 using namespace std;
-void SearchServer::SetObjServ(shared_ptr<Service> _shrdPtrServ){
-  shrdPtrServ = _shrdPtrServ;  
+
+// void SearchServer::SetObjServ(shared_ptr<Service> _shrdPtrServ){
+//   shrdPtrServ = _shrdPtrServ;  
+// }
+
+string SearchServer::makeRegExpSpace(){
+  string ret;
+  ret =  "(\\b(?! )\\w+)";
+  return ret;
 }
 
 void SearchServer::SetObjInvInd(InvertedIndex* _shrdPtrInvInd){
@@ -213,7 +220,7 @@ cout << t << endl;
 
 //уникальные слова получаются из строки string t
 
-const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
+const regex rgxSpaces(makeRegExpSpace());
     std::ptrdiff_t const match_count(distance(sregex_iterator(t.begin(), t.end(), rgxSpaces),sregex_iterator()));
     for( sregex_iterator itrgx(t.begin(), t.end(), rgxSpaces), it_end; itrgx != it_end; ++itrgx ){
     size_t v;//любое значение 
@@ -312,7 +319,7 @@ const regex rgxSpaces (shrdPtrServ->makeRegExpSpace());
 #endif
 // exit(0);
   //число документов
-  int cntDoc = shrdPtrServ->numbRespFiles();
+  // int cntDoc = shrdPtrServ->numbRespFiles();
   cout << "size vec docs is " << uDocsIdx.get()->size() << endl;//два раза где-то повторяется
 
   //новый вариант расчета
@@ -669,7 +676,7 @@ void SearchServer::search1(){
       cout << value[i].doc_id << "," << value[i].count << "}";
     }  
 
-  json j = shrdPtrServ->GetRequests();
+  // json j = shrdPtrServ->GetRequests();
   // cout << "request is " << j << endl;
   json::iterator it = j.begin();
   cout << "key " << it.key() << " value ";
@@ -694,8 +701,8 @@ void SearchServer::GetInvIndMap(){
 }
 
 void SearchServer::GetInvIndDocs(){
-  vector<string>& vDocsInvInd = ptrInvInd->GetDocs();
-  uDocsIdx = make_unique< vector<string> >(vDocsInvInd);
+  // vector<string>& vDocsInvInd = ptrInvInd->GetDocs();
+  // uDocsIdx = make_unique< vector<string> >(vDocsInvInd);
   size_t sizeDocs = uDocsIdx.get()->size();
   cout << "size vec is " << sizeDocs << endl;
 }

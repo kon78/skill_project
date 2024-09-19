@@ -230,11 +230,30 @@ void Server::GetConfig(){
   #endif
 }
 
-size_t Server::GetNumbFiles(){
-  return numbFiles;
+vector<string>& Server::GetDocs(){
+  return vecFNamesFoldResource;
+}
+
+// shared_ptr<Service>_shrdPtrServ = make_shared<Service>(argc, argv); 
+
+// shared_ptr<InvertedIndex> Server::GetObjectInvInd(){
+//   return sPtrInvInd;
+// }
+
+shared_ptr< map<string,vector<EntryThreads>> >& Server::GetMap(){
+  refMapTh = make_shared <map<string,vector<EntryThreads>>>(clInvInd->GetMap());
+  return refMapTh;
+}
+
+shared_ptr< map<string,vector<Entry>> >& Server::GetMap1(){
+  refMap = make_shared <map<string,vector<Entry>>>(clInvInd->GetMap1());
+  return refMap;
 }
 
 void Server::Run(){
+        clInvInd = new InvertedIndex();
+      // sPtrInvInd = make_shared<InvertedIndex>(clInvInd);//подклюяаем другой объект
+        
   switch(keyApp){
     case (101):{
       cout << "finded key " << "/e" << endl;
@@ -251,11 +270,15 @@ void Server::Run(){
     }
     case (104):{
       cout << confApp.appName << " version " << confApp.version << " run!" << endl;
-      // InvertedIndex* clInvInd = new InvertedIndex();
+      // clInvInd = new InvertedIndex();
+      // sPtrInvInd = make_shared<InvertedIndex*>(clInvInd);//подклюяаем другой объект
+      clInvInd->PrepareDocs(this);
       while(true){
-
+        clInvInd->Hello();
         //start here main code
-        // clInvInd->UpdateDocumentBase1();
+        clInvInd->UpdateDocumentBase1();//запускается для тестов, записываются файлы freq_dictionary.map freq_dictionaryTh.map для проверки!!!
+        clInvInd->UpdateDocumentBaseThreads();
+
         break;
       }
       break;

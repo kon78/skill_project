@@ -35,8 +35,32 @@ bool MyException::filExist(){
   }else{
     error = "";
     bfex = true;
+    fp.close();//закрываем после провекри
   }
   return bfex;
+}
+
+bool MyException::fDocsExist(string fn){
+  string path = "C:\\develop\\skill_project\\resources\\";
+  if(filenone.length() == 0) filenone.clear();
+  fstream fp;
+  fn += path;
+  fp.open(fn, ios::in);
+  if(!fp.is_open()){    
+    error = "";
+    bfdoc = true;
+    fp.close();//закрываем после провекри
+  }else{
+    error = "File is missing.\n";
+    bfdoc = false;
+    filenone += fn + " ";//отсутствующие файлы по условиям задания
+    throw errors();
+  }
+  return bfdoc;
+}
+
+const char* MyException::nonefiles(){
+  return filenone.c_str();
 }
 
 char * MyException::errors() {

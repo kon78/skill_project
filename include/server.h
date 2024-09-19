@@ -13,8 +13,9 @@
 #include<string>
 #include<typeinfo>
 #include <regex>
+#include<vector>
 #include<filesystem>
-// #include"invertindex.h"
+#include"invertindex.h"
 #include"myexception.h"
 #include"convjson.h"
 
@@ -32,6 +33,9 @@ struct ConfApp{
   string appName;
 };
 
+struct Entry;
+struct EntryThreads;
+class InvertedIndex;
 class Server{
 public:
 Server() = default;
@@ -55,7 +59,10 @@ void Service();
 void SaveFile(const int& respFiles);
 void PrepareNameFilesVec();
 void Help();
-size_t GetNumbFiles();
+shared_ptr< map<string,vector<EntryThreads>> >& GetMap();//freq_dictionary
+shared_ptr< map<string,vector<Entry>> >& GetMap1();//freq_dictionary
+// shared_ptr<InvertedIndex> GetObjectInvInd();
+vector<string>& GetDocs();
 string& ViewValue(json::iterator itValue, string& key);
 string& ViewValueFiles(json::iterator itValue, string& key);
 string makeRegExp();
@@ -64,8 +71,10 @@ size_t numbFiles;
 
 
 private:
+  // shared_ptr<InvertedIndex> sPtrInvInd;
   int argumc;
-  ConverterJSON* clConvJSON;
+  ConverterJSON* clConvJSON=nullptr;
+  InvertedIndex* clInvInd=nullptr;
   string dataTemp;
   ConfApp confApp;
   json jConf,jConfJSON;//file config.json
@@ -80,6 +89,7 @@ private:
   string fRequestsJSON;
   shared_ptr<ifstream> fin;
   shared_ptr<ofstream> fout;
-
+  shared_ptr< map<string,vector<EntryThreads>> > refMapTh;
+  shared_ptr< map<string,vector<Entry>> > refMap;
 };
 #endif

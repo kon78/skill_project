@@ -9,8 +9,9 @@
 #include<algorithm>
 #include<unordered_map>
 #include <iomanip>
+#include<filesystem>
 // #include<tuple>
-#include "service.h"
+// #include "service.h"
 #include "invertindex.h"
 
 #define do_this 1
@@ -18,6 +19,7 @@
 #define execute 1
 
 using namespace std;
+namespace fs = filesystem;
 
 struct RelativeIndex{
 size_t doc_id;
@@ -96,7 +98,7 @@ public:
   //   map<string, vector<EntryThreads>>& mapInvInd = M&;
   // }
   ~SearchServer(){}
-  void SetObjServ(shared_ptr<Service> _shrdPtrServ);
+  // void SetObjServ(shared_ptr<Service> _shrdPtrServ);
   void SetObjInvInd(InvertedIndex* _shrdPtrInvInd);
   void ReadRequests();
   void GetInvIndMap();
@@ -105,11 +107,12 @@ public:
   void search1();
   void Answers1();//выдает ответ только для одного запроса
   void Answers();
+  string makeRegExpSpace();
   template <class T> void sorting(vector<T> &t);
   // template<class T> void SetAddrObj(T* _shared);//{ptrInvInd = _shared;}
   
 private:
-  shared_ptr<Service>shrdPtrServ;
+  // shared_ptr<Service>shrdPtrServ;
   shared_ptr<InvertedIndex>shrdInvInd;
   InvertedIndex* ptrInvInd = nullptr;
   vector<string>vRequests;

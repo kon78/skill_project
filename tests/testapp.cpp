@@ -10,6 +10,7 @@
 #include<iostream>
 #include<sstream>
 #include<fstream>
+#include<memory>
 #include "server.h"
 #include "myexception.h"
 #include "convjson.h"
@@ -21,6 +22,15 @@ using namespace std;
 
 using namespace nlohmann::json_abi_v3_11_3;
 
+// std::ostream& operator <<(std::ostream &os, const Entry &c){
+//     os << "(document-->" << c.doc_id << ", count repeat-->" << c.count << ")\n";
+//     return os;
+// }
+
+// std::ostream& operator <<(std::ostream &os, const EntryThreads &c){
+//     os << "(document-->" << c.doc_id << ", count repeat-->" << c.count << ")\n";
+//     return os;
+// }
 // TEST(MultiplyTests, TestIntegerOne_One)
 // {
 //     const auto expected = 1;
@@ -155,6 +165,45 @@ TEST(TestApplication, JSONVIEW){
 
   ASSERT_EQ(22,cntWrd);
   // cout << answer << endl;
+}
+
+TEST(TestApplication, EQUAL_MAP){
+  //file config.json должен находиться в папке C:\develop\skill_project\build\tests
+  int argc=2; char* argv[] = {"SkillboxSearchEngine", "/r"};
+  bool equalMap;
+  vector<string>vKey;
+  Server* clServ = new Server(argc,argv);
+    if(clServ->Ready()){
+      clServ->Run();
+  }
+  shared_ptr< map< string, vector<EntryThreads> >>shrdMapThrd = clServ->GetMap();
+  shared_ptr< map< string, vector<Entry> >>shrdMap = clServ->GetMap1();
+
+  ASSERT_EQ(shrdMapThrd.get()->size(),shrdMap.get()->size());
+  MyMapTh::iterator it;
+    EditMyMapTh edMyMapTh(*shrdMapThrd.get());
+    EditMyMap edMyPap(*shrdMap.get());
+    for(auto &k : *shrdMapThrd.get()){
+      vKey.push_back(k.first);
+    }
+
+      int err=0;
+      int key = 0; int val = 0;
+    for(auto &s : vKey){
+      MyVectorTh value = edMyMapTh.GetMapValue(*shrdMapThrd.get(),s);//"is"
+      MyVector value1 = edMyPap.GetMapValue(*shrdMap.get(),s);//"is"
+      bool equal; 
+      key++;
+
+    if(value.size() == value1.size()){
+      for(size_t sz = 0; sz < value.size(); ++sz){
+        val++;
+        (value[sz] == value1[sz])?equal=true:equal=false;
+        if(!equal)++err;
+      }
+  }  
+}
+        ASSERT_EQ(err,0);
 }
 
 int main(int argc, char** argv)
