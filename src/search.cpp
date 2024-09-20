@@ -1,17 +1,23 @@
 #include"search.h"
 using namespace std;
 
-// void SearchServer::SetObjServ(shared_ptr<Service> _shrdPtrServ){
+// void SearchService::SetObjServ(shared_ptr<Service> _shrdPtrServ){
 //   shrdPtrServ = _shrdPtrServ;  
 // }
 
-string SearchServer::makeRegExpSpace(){
+string SearchService::makeRegExpSpace(){
   string ret;
   ret =  "(\\b(?! )\\w+)";
   return ret;
 }
 
-void SearchServer::SetObjInvInd(InvertedIndex* _shrdPtrInvInd){
+void SearchService::PrepareMap(Server* pServObj){
+assert(pServObj != nullptr);//проверка на нулевой указатель
+// refMapTh = pServObj->GetMap();
+cout << "Hello! SearchService\n";
+}
+
+void SearchService::SetObjInvInd(InvertedIndex* _shrdPtrInvInd){
   ptrInvInd = _shrdPtrInvInd;
 }
 
@@ -139,7 +145,7 @@ vCalcRel vecElem = vecRel[elem];
     return vecRabs;
   }
 
-vector<vector<RelativeIndex>> SearchServer::search(const vector<string>& queries_input){
+vector<vector<RelativeIndex>> SearchService::search(const vector<string>& queries_input){
   unordered_map<std::string, int> filterWords;//уникальные слова получаемые из запроса
   MyMapTh::iterator itMapIdx = uMapIdx.get()->begin();
   MyMapTh::iterator itMapIdxEnd = uMapIdx.get()->end();
@@ -521,7 +527,7 @@ for(auto & vec:vecRelIdx){
   return vecRelIdx;
 }
 
-void SearchServer::Answers(){
+void SearchService::Answers(){
 
 jAnswJSON = {{"answers",{}}};
   json::iterator it = jAnswJSON.begin();
@@ -598,7 +604,7 @@ jAnswJSON = {{"answers",{}}};
   cout << jAnswJSON << endl;
   }
 
-void SearchServer::Answers1(){
+void SearchService::Answers1(){
 jAnswJSON = {
   {
     "answers",{
@@ -657,37 +663,37 @@ jAnswJSON = {
 }
 
 //можно обращаться к коллекции и через обычный указатель
-void SearchServer::search1(){
-  map<string, vector<EntryThreads>>& mapInvInd = ptrInvInd->GetMap();
-  MyMapTh::iterator itK = mapInvInd.begin();
-  string strSrch = "milk";
-  // try{
-  //   itK = mapInvInd->find(strSrch);
-  // }catch(exception &ex){
-  //   cout << "can't find in object map\n" << ex.what() << endl;
-  // }
-  cout << "key " << itK->first << "\nvalue ";
-  // cout << "size map is " << editM.MapSize(*uMapIdx);//выдает неверный результат - отказаться!!!
-  cout << "size value is " << itK->second.size() << endl;
-  MyVectorTh value;
-  value = itK->second;
-    for(int i = 0; i < value.size(); i++){
-      cout << "{";
-      cout << value[i].doc_id << "," << value[i].count << "}";
-    }  
+// void SearchService::search1(){
+//   map<string, vector<EntryThreads>>& mapInvInd = ptrInvInd->GetMap();
+//   MyMapTh::iterator itK = mapInvInd.begin();
+//   string strSrch = "milk";
+//   // try{
+//   //   itK = mapInvInd->find(strSrch);
+//   // }catch(exception &ex){
+//   //   cout << "can't find in object map\n" << ex.what() << endl;
+//   // }
+//   cout << "key " << itK->first << "\nvalue ";
+//   // cout << "size map is " << editM.MapSize(*uMapIdx);//выдает неверный результат - отказаться!!!
+//   cout << "size value is " << itK->second.size() << endl;
+//   MyVectorTh value;
+//   value = itK->second;
+//     for(int i = 0; i < value.size(); i++){
+//       cout << "{";
+//       cout << value[i].doc_id << "," << value[i].count << "}";
+//     }  
 
-  // json j = shrdPtrServ->GetRequests();
-  // cout << "request is " << j << endl;
-  json::iterator it = j.begin();
-  cout << "key " << it.key() << " value ";
-  size_t jsize = it.value().size();
-  for(size_t ind = 0; ind < jsize; ++ind){
-    cout << it.value()[ind] << " ";
-  }
-  cout << endl;
-}
+//   // json j = shrdPtrServ->GetRequests();
+//   // cout << "request is " << j << endl;
+//   json::iterator it = j.begin();
+//   cout << "key " << it.key() << " value ";
+//   size_t jsize = it.value().size();
+//   for(size_t ind = 0; ind < jsize; ++ind){
+//     cout << it.value()[ind] << " ";
+//   }
+//   cout << endl;
+// }
 
-void SearchServer::GetInvIndMap(){
+void SearchService::GetInvIndMap(){
     map<string, vector<EntryThreads>>& mapInvInd = ptrInvInd->GetMap();
     // size_t sizeMap;
   // try{
@@ -700,7 +706,7 @@ void SearchServer::GetInvIndMap(){
   // }
 }
 
-void SearchServer::GetInvIndDocs(){
+void SearchService::GetInvIndDocs(){
   // vector<string>& vDocsInvInd = ptrInvInd->GetDocs();
   // uDocsIdx = make_unique< vector<string> >(vDocsInvInd);
   size_t sizeDocs = uDocsIdx.get()->size();
@@ -715,7 +721,7 @@ void SearchServer::GetInvIndDocs(){
       }
 */
 
-void SearchServer::ReadRequests(){
+void SearchService::ReadRequests(){
 #if(do_this == do_not)
   shared_ptr<ifstream> fin;
   char buff[255];

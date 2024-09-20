@@ -251,9 +251,8 @@ shared_ptr< map<string,vector<Entry>> >& Server::GetMap1(){
 }
 
 void Server::Run(){
-        clInvInd = new InvertedIndex();
       // sPtrInvInd = make_shared<InvertedIndex>(clInvInd);//подклюяаем другой объект
-        
+
   switch(keyApp){
     case (101):{
       cout << "finded key " << "/e" << endl;
@@ -269,6 +268,8 @@ void Server::Run(){
       break;
     }
     case (104):{
+        clInvInd = new InvertedIndex();
+        clSearchServ = new SearchService();
       cout << confApp.appName << " version " << confApp.version << " run!" << endl;
       // clInvInd = new InvertedIndex();
       // sPtrInvInd = make_shared<InvertedIndex*>(clInvInd);//подклюяаем другой объект
@@ -278,7 +279,8 @@ void Server::Run(){
         //start here main code
         clInvInd->UpdateDocumentBase1();//запускается для тестов, записываются файлы freq_dictionary.map freq_dictionaryTh.map для проверки!!!
         clInvInd->UpdateDocumentBaseThreads();
-
+        clSearchServ->PrepareMap(this);
+        
         break;
       }
       break;

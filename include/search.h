@@ -13,6 +13,7 @@
 // #include<tuple>
 // #include "service.h"
 #include "invertindex.h"
+#include"server.h"
 
 #define do_this 1
 #define do_not 0
@@ -91,20 +92,25 @@ vector<pair<size_t,size_t>> calculate(const size_t& beg, const size_t& elem);
   // }
 };
 
-class SearchServer{
+// class SearchServer{
+struct EntryThreads;
+class Server;
+class InvertedIndex;
+class SearchService{
 public:
-  SearchServer(){}
+  SearchService(){}
   // template<class M> SearchServer(M&){
   //   map<string, vector<EntryThreads>>& mapInvInd = M&;
   // }
-  ~SearchServer(){}
+  ~SearchService(){}
   // void SetObjServ(shared_ptr<Service> _shrdPtrServ);
   void SetObjInvInd(InvertedIndex* _shrdPtrInvInd);
+  void PrepareMap(Server* pServObj);
   void ReadRequests();
   void GetInvIndMap();
   void GetInvIndDocs();
   vector<vector<RelativeIndex>> search(const vector<string>& queries_input);
-  void search1();
+  // void search1();
   void Answers1();//выдает ответ только для одного запроса
   void Answers();
   string makeRegExpSpace();
@@ -128,11 +134,12 @@ private:
   json jAnswJSON;
   vector<vector<bool>>vResult;//для файла answers.json результат найденного ответа true-ответы есть false-ответов нет
   vector<bool>result;//этот вектор для метода Answers1()
+  shared_ptr< map<string,vector<EntryThreads>> > refMapTh;
   // map<string, vector<EntryThreads>>& mapInvInd;
 };
 
 //bubblesorting
-template <class T> void SearchServer::sorting(vector<T> &t) {
+template <class T> void SearchService::sorting(vector<T> &t) {
   T value, value1, _swap;
   typename vector<T>::iterator it = t.begin();
   size_t size = t.size();

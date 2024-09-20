@@ -97,7 +97,7 @@ void InvertedIndex::Hello(){
   std::cout << "Hello!\n";
 }
 
-map<string,vector<EntryThreads>>&  InvertedIndex::GetMap(){
+map<string,vector<EntryThreads>>& InvertedIndex::GetMap(){
   return freq_dictionaryTh;
 }
 
@@ -106,11 +106,11 @@ map<string,vector<Entry>>& InvertedIndex::GetMap1(){
 }
 
 void InvertedIndex::PrepareDocs(Server* pServObj){
+  assert(pServObj != nullptr);//проверка на нулевой указатель
   MyException myexcep;
   bool bNone;
   fstream fp;
   string temp;
-  assert(pServObj != nullptr);//проверка на нулевой указатель
   vecFNames = pServObj->GetDocs();
 
   for(auto &d : vecFNames){

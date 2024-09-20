@@ -12,12 +12,13 @@
 #include<fstream>
 #include<string>
 #include<typeinfo>
-#include <regex>
+#include<regex>
 #include<vector>
 #include<filesystem>
 #include"invertindex.h"
 #include"myexception.h"
 #include"convjson.h"
+#include"search.h"
 
 
 #define do_this 1
@@ -36,6 +37,7 @@ struct ConfApp{
 struct Entry;
 struct EntryThreads;
 class InvertedIndex;
+class SearchService;
 class Server{
 public:
 Server() = default;
@@ -59,6 +61,7 @@ void Service();
 void SaveFile(const int& respFiles);
 void PrepareNameFilesVec();
 void Help();
+
 shared_ptr< map<string,vector<EntryThreads>> >& GetMap();//freq_dictionary
 shared_ptr< map<string,vector<Entry>> >& GetMap1();//freq_dictionary
 // shared_ptr<InvertedIndex> GetObjectInvInd();
@@ -75,6 +78,7 @@ private:
   int argumc;
   ConverterJSON* clConvJSON=nullptr;
   InvertedIndex* clInvInd=nullptr;
+  SearchService* clSearchServ=nullptr;
   string dataTemp;
   ConfApp confApp;
   json jConf,jConfJSON;//file config.json
