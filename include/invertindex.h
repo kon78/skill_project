@@ -106,6 +106,7 @@ class InvertedIndex{
     void go();
     void Hello();
     bool MapIsEqual();
+    vector<string>& GetDocs();
 
   private:
   vector<string> vecFNames;

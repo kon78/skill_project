@@ -23,9 +23,12 @@ class ConverterJSON{
     // vector<string> GetTextDocuments();
   void ReadJsonfile(const char* fname);
   void TestRead(const char* fname);
+  void prepareReqFile();
     json GetJSON();
     // ConverterJSON(){}
     void ParamApp();
+    void PrepareQueries(const char* fname);
+    void Hello();
     // void SetObjServ(shared_ptr<Service> _shrdPtrServ);
 
 
@@ -35,6 +38,7 @@ class ConverterJSON{
   
   private:
     json jData;
+    json jRequestsJSON;
     // Service* pService = nullptr;
     // shared_ptr<Service>shrdPtrServ;
 };

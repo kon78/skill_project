@@ -173,11 +173,18 @@ TEST(TestApplication, EQUAL_MAP){
   bool equalMap;
   vector<string>vKey;
   Server* clServ = new Server(argc,argv);
-    if(clServ->Ready()){
-      clServ->Run();
-  }
-  shared_ptr< map< string, vector<EntryThreads> >>shrdMapThrd = clServ->GetMap();
-  shared_ptr< map< string, vector<Entry> >>shrdMap = clServ->GetMap1();
+  cout << boolalpha << clServ->Ready() << endl;
+  SearchService* clSearchServ = new SearchService();
+  InvertedIndex* clInvInd = new InvertedIndex();
+  clServ->SetObj(clInvInd);//TEST
+
+
+  clInvInd->PrepareDocs(clServ);
+  clInvInd->UpdateDocumentBase1();//запускается для тестов, записываются файлы freq_dictionary.map freq_dictionaryTh.map для проверки!!!
+  clInvInd->UpdateDocumentBaseThreads();
+  
+  shared_ptr< map< string, vector<EntryThreads> >>shrdMapThrd = clServ->GetMapTst();
+  shared_ptr< map< string, vector<Entry> >>shrdMap = clServ->GetMap1Tst();
 
   ASSERT_EQ(shrdMapThrd.get()->size(),shrdMap.get()->size());
   MyMapTh::iterator it;
@@ -190,8 +197,8 @@ TEST(TestApplication, EQUAL_MAP){
       int err=0;
       int key = 0; int val = 0;
     for(auto &s : vKey){
-      MyVectorTh value = edMyMapTh.GetMapValue(*shrdMapThrd.get(),s);//"is"
-      MyVector value1 = edMyPap.GetMapValue(*shrdMap.get(),s);//"is"
+      MyVectorTh value = edMyMapTh.GetMapValue(*shrdMapThrd.get(),s);
+      MyVector value1 = edMyPap.GetMapValue(*shrdMap.get(),s);
       bool equal; 
       key++;
 
@@ -204,6 +211,24 @@ TEST(TestApplication, EQUAL_MAP){
   }  
 }
         ASSERT_EQ(err,0);
+
+///////TEST search
+  const vector<vector<RelativeIndex>> expected = { {{7,1.0},{14,1.0}} };
+  clSearchServ->SetObjInvInd(clInvInd);
+  clSearchServ->GetInvIndDocs();
+  clSearchServ->GetInvIndMap();
+  vector<string>queries={"moscow is the capital of russia"};
+  vector<vector<RelativeIndex>>result;
+  result = clSearchServ->search(queries);
+  size_t ind = 0;
+  typedef RelativeIndex value;
+  typedef RelativeIndex valueC;
+  valueC vC;
+  for(auto &v : result){
+    vC = expected[0][ind];
+    ASSERT_EQ(vC , v[ind]);
+    ind++;
+  }
 }
 
 int main(int argc, char** argv)

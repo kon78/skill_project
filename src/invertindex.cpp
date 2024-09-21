@@ -94,7 +94,7 @@ string InvertedIndex::_makeRegExp(const string &word){
 }
 
 void InvertedIndex::Hello(){
-  std::cout << "Hello!\n";
+  std::cout << "Hello from class InvertedIndex!\n";
 }
 
 map<string,vector<EntryThreads>>& InvertedIndex::GetMap(){
@@ -142,6 +142,9 @@ void InvertedIndex::PrepareDocs(Server* pServObj){
 }
 }
 
+vector<string>& InvertedIndex::GetDocs(){
+  return docs;
+}
 void InvertedIndex::DocBaseThreadNew(size_t &numDocs /*,const vector<string> &docs*/){
 unique_lock<std::mutex> lck(global);
 string str,key, strC;

@@ -73,6 +73,7 @@ bool Server::Ready(){
   if(!stop && start && !startfName){
     run = true;
   }
+  delete clConvJSON;
   return run;
 }
 
@@ -240,19 +241,37 @@ vector<string>& Server::GetDocs(){
 //   return sPtrInvInd;
 // }
 
-shared_ptr< map<string,vector<EntryThreads>> >& Server::GetMap(){
+//TEST
+void Server::SetObj(InvertedIndex* ptr){
+  assert(ptr != nullptr);
+  clInvIndTst = ptr;
+}
+
+shared_ptr< map<string,vector<EntryThreads>> > Server::GetMap(){
   refMapTh = make_shared <map<string,vector<EntryThreads>>>(clInvInd->GetMap());
   return refMapTh;
 }
 
-shared_ptr< map<string,vector<Entry>> >& Server::GetMap1(){
+shared_ptr< map<string,vector<EntryThreads>> > Server::GetMapTst(){
+  refMapThTst = make_shared <map<string,vector<EntryThreads>>>(clInvIndTst->GetMap());
+  return refMapThTst;
+}
+
+shared_ptr< map<string,vector<Entry>> > Server::GetMap1(){
   refMap = make_shared <map<string,vector<Entry>>>(clInvInd->GetMap1());
   return refMap;
 }
 
+shared_ptr< map<string,vector<Entry>> > Server::GetMap1Tst(){
+  refMapTst = make_shared <map<string,vector<Entry>>>(clInvIndTst->GetMap1());
+  return refMapTst;
+}
+
 void Server::Run(){
       // sPtrInvInd = make_shared<InvertedIndex>(clInvInd);//подклюяаем другой объект
-
+        clSearchServ = new SearchService();
+        clInvInd = new InvertedIndex();
+        clConvJSON = new ConverterJSON();
   switch(keyApp){
     case (101):{
       cout << "finded key " << "/e" << endl;
@@ -268,19 +287,34 @@ void Server::Run(){
       break;
     }
     case (104):{
-        clInvInd = new InvertedIndex();
-        clSearchServ = new SearchService();
       cout << confApp.appName << " version " << confApp.version << " run!" << endl;
       // clInvInd = new InvertedIndex();
       // sPtrInvInd = make_shared<InvertedIndex*>(clInvInd);//подклюяаем другой объект
       clInvInd->PrepareDocs(this);
+        // clSearchServ->PrepareMap(clInvInd);
       while(true){
         clInvInd->Hello();
         //start here main code
         clInvInd->UpdateDocumentBase1();//запускается для тестов, записываются файлы freq_dictionary.map freq_dictionaryTh.map для проверки!!!
         clInvInd->UpdateDocumentBaseThreads();
-        clSearchServ->PrepareMap(this);
+        // clSearchServ->PrepareMap(clInvInd);
+        refMapTh = GetMap();//работаем с reference map полученной от работы потоков
+        if(refMapTh.get()->size() > 0){
+          //разрешаем работу SearchService
+          //!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+          clSearchServ->SetObjInvInd(clInvInd);
+          clSearchServ->GetInvIndDocs();
+          clSearchServ->GetInvIndMap();//валится!!!!
+            vector<string>queries={"moscow is the capital of russia"};
+  vector<vector<RelativeIndex>>result;
+  result = clSearchServ->search(queries);
+
+          //!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+        }
+        // refMap = GetMap1();
         
+        cout << "size map freq_dictionaryTh is " << refMapTh.get()->size() << endl;
         break;
       }
       break;

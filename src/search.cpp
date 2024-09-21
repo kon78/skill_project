@@ -11,10 +11,14 @@ string SearchService::makeRegExpSpace(){
   return ret;
 }
 
-void SearchService::PrepareMap(Server* pServObj){
-assert(pServObj != nullptr);//проверка на нулевой указатель
-// refMapTh = pServObj->GetMap();
+void SearchService::PrepareMap(InvertedIndex* pInvIndObj){
+assert(pInvIndObj != nullptr);//проверка на нулевой указатель
+refMapTh = pInvIndObj->GetMap();
 cout << "Hello! SearchService\n";
+}
+
+void SearchService::Hello(){
+  cout << "Hello from SearchService!\n";
 }
 
 void SearchService::SetObjInvInd(InvertedIndex* _shrdPtrInvInd){
@@ -326,7 +330,7 @@ const regex rgxSpaces(makeRegExpSpace());
 // exit(0);
   //число документов
   // int cntDoc = shrdPtrServ->numbRespFiles();
-  cout << "size vec docs is " << uDocsIdx.get()->size() << endl;//два раза где-то повторяется
+  // cout << "size vec docs is " << uDocsIdx.get()->size() << endl;//два раза где-то повторяется
 
   //новый вариант расчета
   vdoc.clear();
@@ -523,7 +527,7 @@ for(auto & vec:vecRelIdx){
   cout << "logic is " << res.size() << " vResult is " << vResult.size() << endl;
   assert(result.size() == vecRelIdx.size());//число ответов не совпадает!!!
   // Answers1();
-  Answers();
+  // Answers();
   return vecRelIdx;
 }
 
@@ -659,7 +663,7 @@ jAnswJSON = {
       it.value().push_back(jb);
     }
   }
-  cout << jAnswJSON << endl;
+  // cout << jAnswJSON << endl;
 }
 
 //можно обращаться к коллекции и через обычный указатель
@@ -694,21 +698,15 @@ jAnswJSON = {
 // }
 
 void SearchService::GetInvIndMap(){
-    map<string, vector<EntryThreads>>& mapInvInd = ptrInvInd->GetMap();
-    // size_t sizeMap;
-  // try{
-    // sizeMap = mapInvInd.size();
-    uMapIdx = make_unique< map<string, vector<EntryThreads>> >(mapInvInd);
-    size_t sizeMap = uMapIdx.get()->size();
-    cout << "size map is " << sizeMap << endl;
-    // }catch(exception &ex){
-      // cout << "can't do this!" << ex.what() << endl;
-  // }
+    // map<string, vector<EntryThreads>>& mapInvInd = ptrInvInd->GetMap();//выполняется
+    uMapIdx = make_unique< map<string, vector<EntryThreads>> >(ptrInvInd->GetMap());//для связи метода SearchService::search()
+    // size_t sizeMap = uMapIdx.get()->size();
+    // cout << "size map is " << sizeMap << endl;
 }
 
 void SearchService::GetInvIndDocs(){
   // vector<string>& vDocsInvInd = ptrInvInd->GetDocs();
-  // uDocsIdx = make_unique< vector<string> >(vDocsInvInd);
+  uDocsIdx = make_unique< vector<string> >(ptrInvInd->GetDocs());
   size_t sizeDocs = uDocsIdx.get()->size();
   cout << "size vec is " << sizeDocs << endl;
 }

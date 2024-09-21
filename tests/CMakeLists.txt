@@ -20,14 +20,11 @@ FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download
 FetchContent_MakeAvailable(json)
 
 add_executable(TestApplication testapp.cpp
-# ../src/multiply.cpp
-#  ../src/service.cpp
  ../src/invertindex.cpp
-#  ../src/myexception.cpp
  ../src/server.cpp
  ../src/myexception.cpp
  ../src/convjson.cpp
-  # ../src/appparam.cpp
+ ../src/search.cpp
   )
 
 target_link_libraries(TestApplication

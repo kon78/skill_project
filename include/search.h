@@ -105,7 +105,7 @@ public:
   ~SearchService(){}
   // void SetObjServ(shared_ptr<Service> _shrdPtrServ);
   void SetObjInvInd(InvertedIndex* _shrdPtrInvInd);
-  void PrepareMap(Server* pServObj);
+  void PrepareMap(InvertedIndex* pInvIndObj);
   void ReadRequests();
   void GetInvIndMap();
   void GetInvIndDocs();
@@ -114,6 +114,7 @@ public:
   void Answers1();//выдает ответ только для одного запроса
   void Answers();
   string makeRegExpSpace();
+  void Hello();
   template <class T> void sorting(vector<T> &t);
   // template<class T> void SetAddrObj(T* _shared);//{ptrInvInd = _shared;}
   
@@ -134,7 +135,7 @@ private:
   json jAnswJSON;
   vector<vector<bool>>vResult;//для файла answers.json результат найденного ответа true-ответы есть false-ответов нет
   vector<bool>result;//этот вектор для метода Answers1()
-  shared_ptr< map<string,vector<EntryThreads>> > refMapTh;
+  map<string,vector<EntryThreads>> refMapTh;
   // map<string, vector<EntryThreads>>& mapInvInd;
 };
 

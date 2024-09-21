@@ -21,6 +21,23 @@ json ConverterJSON::GetJSON(){
   return jData;
 }
 
+void ConverterJSON::Hello(){
+  cout << "Hello from class ConverterJSON!\n";
+}
+
+void ConverterJSON::prepareReqFile(){
+  cout << "Prepare file requests.json!\n";
+  jRequestsJSON = {
+    {"requests",{
+    }
+    }
+  };
+}
+
+void ConverterJSON::PrepareQueries(const char* fname){
+  MyException myexcep;
+  assert(fname != nullptr);
+}
 // vector<string> ConverterJSON::GetTextDocuments(){
 //   vector<string> ret;
 //   string temp;

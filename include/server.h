@@ -1,6 +1,6 @@
 #pragma once
-#ifndef SEVER_H
-#define SEVER_H
+#ifndef SERVER_H
+#define SERVER_H
 
 #include<vector>
 #include<cassert>
@@ -61,9 +61,11 @@ void Service();
 void SaveFile(const int& respFiles);
 void PrepareNameFilesVec();
 void Help();
-
-shared_ptr< map<string,vector<EntryThreads>> >& GetMap();//freq_dictionary
-shared_ptr< map<string,vector<Entry>> >& GetMap1();//freq_dictionary
+void SetObj(InvertedIndex* ptr);
+shared_ptr< map< string, vector<EntryThreads> >> GetMap();//freq_dictionaryTh
+shared_ptr< map< string, vector<EntryThreads> >> GetMapTst();//freq_dictionaryTh
+shared_ptr< map< string, vector<Entry> >> GetMap1();//freq_dictionary
+shared_ptr< map<string,vector<Entry>> > GetMap1Tst();
 // shared_ptr<InvertedIndex> GetObjectInvInd();
 vector<string>& GetDocs();
 string& ViewValue(json::iterator itValue, string& key);
@@ -79,6 +81,7 @@ private:
   ConverterJSON* clConvJSON=nullptr;
   InvertedIndex* clInvInd=nullptr;
   SearchService* clSearchServ=nullptr;
+  InvertedIndex* clInvIndTst=nullptr;//TEST
   string dataTemp;
   ConfApp confApp;
   json jConf,jConfJSON;//file config.json
@@ -93,7 +96,9 @@ private:
   string fRequestsJSON;
   shared_ptr<ifstream> fin;
   shared_ptr<ofstream> fout;
-  shared_ptr< map<string,vector<EntryThreads>> > refMapTh;
-  shared_ptr< map<string,vector<Entry>> > refMap;
+  shared_ptr< map< string, vector<EntryThreads> >> refMapTh;
+  shared_ptr< map< string, vector<EntryThreads> >> refMapThTst;
+  shared_ptr< map< string, vector<Entry> >> refMap;
+  shared_ptr< map< string, vector<Entry> >>refMapTst;
 };
 #endif
