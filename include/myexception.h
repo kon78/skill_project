@@ -14,6 +14,7 @@ private:
     char * error;
     bool bfex;//bool file exist
     bool bwfn;//bool wrong file name
+    bool bfnr;//bool file name request
     bool bfdoc;
 public:
     MyException(){}
@@ -23,6 +24,7 @@ public:
     bool filExist();
     bool SetFName(string fn);
     bool fDocsExist(string fn);
+    bool readjson(const char* fname);
     const char* what() const noexcept override;
 };
 #endif

@@ -34,9 +34,73 @@ void ConverterJSON::prepareReqFile(){
   };
 }
 
+void ConverterJSON::ViewJSON(){
+  cout << jRequestsJSON << endl;
+}
+
+void ConverterJSON::TouchFile(const char* fname){
+  assert(fname != nullptr);
+  fout = make_shared<ofstream>(fname,ios::out);
+}
+
+void ConverterJSON::SaveJSON(json& j2f, const char* fname){
+  assert(fname != nullptr);
+  TouchFile(fname);
+  string temp = j2f.dump();
+  const char* str = temp.c_str();
+  fout.get()->write(str,temp.length());
+  fout.get()->close();
+}
+
 void ConverterJSON::PrepareQueries(const char* fname){
   MyException myexcep;
+  bool fexist;
+  string key = "requests";
   assert(fname != nullptr);
+  try{
+    fexist = myexcep.readjson(fname);//bool MyException::readjson();
+  }catch(char const * error){
+    cout << myexcep.errors();
+  }
+  if(!fexist){
+    json::iterator itReq;
+    fstream fp;
+    string temp;
+    // string path = "..\\skill_project\\";
+    // path += fname;
+    fp.open(fname, ios::in);
+    if(fp.is_open()){
+      itReq = jRequestsJSON.find(key);
+      assert(itReq != jRequestsJSON.end());
+      while(!fp.eof()){
+        getline(fp,temp);
+        cout << temp << endl;
+        itReq.value().push_back(temp);
+      }
+    }
+    else{
+      cout << "file not open!\n";
+    }
+  }
+}
+
+vector<string>& ConverterJSON::GetRequest(){
+  string key = "requests";
+  json::iterator itReq;
+  itReq = jRequestsJSON.find(key);
+  assert(itReq != jRequestsJSON.end());
+  // string valueS;
+  for(size_t ind = 0; ind < itReq.value().size(); ++ind){
+    // valueS = itReq.value()[ind];
+    vReq.push_back(itReq.value()[ind]);
+
+  }
+  // string valueS = itReq.value();
+  // SearchSubStrng clSubStr(s,"");
+
+  // for(auto &s : clSubStr.GetVec())
+
+  return vReq;
 }
 // vector<string> ConverterJSON::GetTextDocuments(){
 //   vector<string> ret;

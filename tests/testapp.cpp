@@ -167,6 +167,30 @@ TEST(TestApplication, JSONVIEW){
   // cout << answer << endl;
 }
 
+TEST(TestApplication, JSONQUERIES){
+  ConverterJSON* clConvJSON = new ConverterJSON();
+  clConvJSON->prepareReqFile();
+  vector<string>ref;
+  const vector<string> except = {"moscow is the capital of russia","bern is the capital of switzerland","tallinn is the capital of estonia",
+  "alice in wonderland","moscow never sleeps","paris is the capital of france","now you understand that moscow is behind us and we have nowhere to retreat"};
+  const char* fname="C:\\develop\\skill_project\\requests.txt";
+  clConvJSON->PrepareQueries(fname);
+  ref = clConvJSON->GetRequest();
+  size_t err = 100;
+  bool equal;
+  size_t step = except.size();
+  size_t ind = 0;
+  if(except.size() == ref.size()){
+    err = 0;
+    while(step!=0){
+      (except[ind] == ref[ind])?equal=true:equal=false;
+      if(!equal)++err;
+      --step;
+    }
+  }
+  ASSERT_EQ(err,0);
+}
+
 TEST(TestApplication, EQUAL_MAP){
   //file config.json должен находиться в папке C:\develop\skill_project\build\tests
   int argc=2; char* argv[] = {"SkillboxSearchEngine", "/r"};
@@ -194,7 +218,7 @@ TEST(TestApplication, EQUAL_MAP){
       vKey.push_back(k.first);
     }
 
-      int err=0;
+      int err=100;
       int key = 0; int val = 0;
     for(auto &s : vKey){
       MyVectorTh value = edMyMapTh.GetMapValue(*shrdMapThrd.get(),s);
@@ -203,6 +227,7 @@ TEST(TestApplication, EQUAL_MAP){
       key++;
 
     if(value.size() == value1.size()){
+      err = 0;
       for(size_t sz = 0; sz < value.size(); ++sz){
         val++;
         (value[sz] == value1[sz])?equal=true:equal=false;

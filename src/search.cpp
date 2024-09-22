@@ -527,8 +527,30 @@ for(auto & vec:vecRelIdx){
   cout << "logic is " << res.size() << " vResult is " << vResult.size() << endl;
   assert(result.size() == vecRelIdx.size());//число ответов не совпадает!!!
   // Answers1();
-  // Answers();
+  Answers();
   return vecRelIdx;
+}
+
+void SearchService::SaveVector(){
+  const char* fname = "vrelidx.txt";
+  shared_ptr<ofstream> fout;
+  fout = make_shared<ofstream>(fname,ios::out);
+  string svec;
+  string ent="\n";
+
+  for(auto &v : vecRelIdx){
+    for(auto &d : v){
+      svec = to_string(d.doc_id) + " " + to_string(d.rank);
+      fout.get()->write(svec.c_str(),svec.length());
+    }
+    fout.get()->write(ent.c_str(),ent.length());
+  }
+  fout.get()->close();
+  fout.reset();
+}
+
+json& SearchService::GetJson(){
+  return jAnswJSON;
 }
 
 void SearchService::Answers(){
@@ -606,6 +628,9 @@ jAnswJSON = {{"answers",{}}};
     ++vecInd;
   }
   cout << jAnswJSON << endl;
+
+  //запись в файл
+
   }
 
 void SearchService::Answers1(){
@@ -663,7 +688,7 @@ jAnswJSON = {
       it.value().push_back(jb);
     }
   }
-  // cout << jAnswJSON << endl;
+  cout << jAnswJSON << endl;
 }
 
 //можно обращаться к коллекции и через обычный указатель

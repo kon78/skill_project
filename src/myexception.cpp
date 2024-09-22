@@ -59,6 +59,21 @@ bool MyException::fDocsExist(string fn){
   return bfdoc;
 }
 
+bool MyException::readjson(const char* fname){
+  string fn;
+  fn = fname;
+  if(!(fn == "requests.txt")){
+    error = "wrong filename\n";
+    bfnr = true;//error
+    throw errors();
+  }else{
+    (*this).fname = fn;
+    error = "";
+    bfnr = false;
+  }
+  return bfnr;
+}
+
 const char* MyException::nonefiles(){
   return filenone.c_str();
 }

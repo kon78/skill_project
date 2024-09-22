@@ -6,6 +6,7 @@
 #include<string>
 #include<iostream>
 #include<nlohmann/json.hpp>
+// #include"invertindex.h"
 
 // #include<memory>
 // #include"service.h"
@@ -20,17 +21,17 @@ class ConverterJSON{
   public:
     ConverterJSON() = default;// ConverterJSON(){}
     ~ConverterJSON(){}
-    // vector<string> GetTextDocuments();
   void ReadJsonfile(const char* fname);
   void TestRead(const char* fname);
   void prepareReqFile();
-    json GetJSON();
-    // ConverterJSON(){}
-    void ParamApp();
-    void PrepareQueries(const char* fname);
-    void Hello();
-    // void SetObjServ(shared_ptr<Service> _shrdPtrServ);
-
+  json GetJSON();
+  void ParamApp();
+  void PrepareQueries(const char* fname);
+  void Hello();
+  void ViewJSON();
+  void TouchFile(const char* fname);
+  vector<string>& GetRequest();
+  void SaveJSON(json& j2f, const char* fname);
 
     int GetResponsesLimit(){return 0;}
     // vector<string> GetRequests(){}
@@ -39,6 +40,8 @@ class ConverterJSON{
   private:
     json jData;
     json jRequestsJSON;
+    vector<string> vReq;
+    shared_ptr<ofstream> fout;
     // Service* pService = nullptr;
     // shared_ptr<Service>shrdPtrServ;
 };

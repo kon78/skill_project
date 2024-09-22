@@ -14,7 +14,6 @@ void Server::ArgumSet(char* argv[]){
 string Server::makeRegExpKey(){
   string ret;
   ret = "(\\/\\w)";
-  // cout << ret << endl;
   return ret;
 }
 
@@ -50,7 +49,6 @@ void Server::examination(const string& fname){
           start ? cout << boolalpha << start << " file exist!\n":cout << endl;
       } catch (char const * error){
           cout << myexcep.errors();
-          // exit(0);
       }
 }
 
@@ -287,13 +285,14 @@ void Server::Run(){
       break;
     }
     case (104):{
+
       cout << confApp.appName << " version " << confApp.version << " run!" << endl;
       // clInvInd = new InvertedIndex();
       // sPtrInvInd = make_shared<InvertedIndex*>(clInvInd);//подклюяаем другой объект
       clInvInd->PrepareDocs(this);
         // clSearchServ->PrepareMap(clInvInd);
       while(true){
-        clInvInd->Hello();
+        clInvInd->Hello();//для проверки, можно убрать
         //start here main code
         clInvInd->UpdateDocumentBase1();//запускается для тестов, записываются файлы freq_dictionary.map freq_dictionaryTh.map для проверки!!!
         clInvInd->UpdateDocumentBaseThreads();
@@ -305,13 +304,25 @@ void Server::Run(){
 
           clSearchServ->SetObjInvInd(clInvInd);
           clSearchServ->GetInvIndDocs();
-          clSearchServ->GetInvIndMap();//валится!!!!
-            vector<string>queries={"moscow is the capital of russia"};
-  vector<vector<RelativeIndex>>result;
-  result = clSearchServ->search(queries);
+          clSearchServ->GetInvIndMap();//
 
-          //!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-        }
+          vector<vector<RelativeIndex>>result;//вектор ответов
+//одиночный поиск ответов на запрос 
+          // vector<string>queries={"moscow is the capital of russia"};
+          // result = clSearchServ->search(queries);//result - 
+
+          //!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      clConvJSON->prepareReqFile();
+      const char* fname1 = "requests.txt";
+      clConvJSON->PrepareQueries(fname1);
+      vector<string>queries = clConvJSON->GetRequest();
+      result = clSearchServ->search(queries);
+      clSearchServ->SaveVector();
+      //запись ответов в файл
+      const char* fname = "answers.json";
+      clConvJSON->TouchFile(fname);
+      clConvJSON->SaveJSON(clSearchServ->GetJson(),fname);
+    }
         // refMap = GetMap1();
         
         cout << "size map freq_dictionaryTh is " << refMapTh.get()->size() << endl;

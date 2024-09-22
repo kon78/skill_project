@@ -14,6 +14,7 @@
 // #include "service.h"
 #include "invertindex.h"
 #include"server.h"
+#include"convjson.h"
 
 #define do_this 1
 #define do_not 0
@@ -115,6 +116,8 @@ public:
   void Answers();
   string makeRegExpSpace();
   void Hello();
+  json& GetJson();
+  void SaveVector();
   template <class T> void sorting(vector<T> &t);
   // template<class T> void SetAddrObj(T* _shared);//{ptrInvInd = _shared;}
   
