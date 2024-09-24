@@ -364,7 +364,9 @@ const regex rgxSpaces(makeRegExpSpace());
   pair<vector<string>,vector<RelativeIndex>>prLinks;
 
   for(itvPhr = uniqueWordsDocID.begin(); itvPhr != uniqueWordsDocID.end(); ++itvPhr){
+    cout << itvPhr->first << " ";
     for(auto &v : itvPhr->second){//число документов для расчета релевантностей
+      cout << v << " ";
       if(! [v,vCalcRel](){
         bool wasCalc = false;
         for(auto &vec : vCalcRel){
@@ -422,6 +424,7 @@ const regex rgxSpaces(makeRegExpSpace());
   prLinks.second = vecRel;
   vecLinks.push_back(prLinks);
     }
+    cout << endl;
   }
 
 
@@ -540,7 +543,7 @@ void SearchService::SaveVector(){
 
   for(auto &v : vecRelIdx){
     for(auto &d : v){
-      svec = to_string(d.doc_id) + " " + to_string(d.rank);
+      svec = to_string(d.doc_id) + " " + to_string(d.rank) + " ";
       fout.get()->write(svec.c_str(),svec.length());
     }
     fout.get()->write(ent.c_str(),ent.length());
