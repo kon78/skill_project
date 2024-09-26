@@ -214,6 +214,7 @@ void Server::GetConfig(){
   confApp.version = stod(ViewValue(it,key));
   key = "files";
   data = ViewValueFiles(it, key);
+  if(data.length() == 0){
   const regex rgxSpaces (makeRegExp());
   std::ptrdiff_t const match_count(distance(sregex_iterator(data.begin(), data.end(), rgxSpaces),sregex_iterator()));
     for( sregex_iterator itrgx(data.begin(), data.end(), rgxSpaces), it_end; itrgx != it_end; ++itrgx ){
@@ -221,6 +222,9 @@ void Server::GetConfig(){
     }
   data.clear();//стоку можно очистить
   numbFiles = vecFNamesFoldResource.size();//для метода void InvertedIndex::PrepareDocs()
+  }else{
+
+  }
   #if(do_this == do_not)
   for(auto &s : vecFNamesFoldResource){
     cout << s << " ";
@@ -316,7 +320,11 @@ void Server::Run(){
       const char* fname1 = "requests.txt";
       clConvJSON->PrepareQueries(fname1);
       vector<string>queries = clConvJSON->GetRequest();
-      result = clSearchServ->search(queries);
+
+      //result = clSearchServ->search(queries);
+      result = clSearchServ->searchTh(queries);
+      exit(0);
+
       clSearchServ->SaveVector();
       //запись ответов в файл
       const char* fname = "answers.json";

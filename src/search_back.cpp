@@ -149,240 +149,12 @@ vCalcRel vecElem = vecRel[elem];
     return vecRabs;
   }
 
-void SearchService::go(){
-  std::unique_lock<std::mutex> lck(global);
-  ready = true;
-  cv.notify_all();
-}
-
-vector<vector<RelativeIndex>> SearchService::searchTh(const vector<string>& queries_input){
-  vector<thread>vecThSearchBase;
-  size_t countThreads = queries_input.size();
-  size_t fieldQueries = -1;//start index
-
-  for(size_t i = 0; i < countThreads; ++i){
-    vecThSearchBase.emplace_back(thread(CalculateRelative,this,ref(fieldQueries),ref(queries_input),ref(vecUncnownWord)));
-  }
-
-  go();
-
-  for (auto& t: vecThSearchBase) {
-    t.join();
-    }
-
-  cout << "size vector threads is " << vecThSearchBase.size() << " " << "fieldQueries is " << fieldQueries << endl;
-  cout << "size map filterWords is " << filterWords.size() << endl;
-  #if(do_this == do_not)
-  for(auto &m : filterWords){
-    cout << m.first << " ";
-  }
-  cout << endl;
-  #endif
-
-#if(do_this == do_not)
-  for(auto &v : vecUncnownWord){
-    cout << v << " ";
-  }
-  cout << endl;
-#endif
-
-  cout << "size vector vecView is " << vecView.size() << endl;
-#if(do_this == do_not)
-  typedef pair<string,vector<size_t>> value;
-  value val;
-  for(auto & vec : vecView){
-    for(auto &v : vec){
-      val = v;
-      cout << val.first << " ";
-      for(auto &d : val.second){
-        cout << d << " ";
-      }
-      cout << endl;
-    }
-  }
-#endif
-
-  cout << "size vector vRelIndx is " << vecRelIdx.size() << endl;
-  #if(do_this == execute)
-  size_t sizeAnswer = 5;
-  size_t ind = 0;
-  for(auto &vec : vecRelIdx){
-    for(auto &v : vec){
-      cout << "doc_id " << v.doc_id << " " << v.rank << " ";
-      ++ind;
-      // if(ind == sizeAnswer)break;
-    }
-    cout << "\n-------------------------------------------------------" << endl;
-    ind = 0;
-  }
-  #endif
-  return vecRelIdx;
-}
-
-void SearchService::CalculateRelative(size_t& fieldQueries, const vector<string>& queries_input, vector<string>& vecUncnownWord){
-unique_lock<std::mutex> lck(global);
-unordered_map<std::string, int> filterWords;
-string t;
-MyMapTh::iterator itMapIdx = uMapIdx.get()->begin();
-MyMapTh::iterator itMapIdxEnd = uMapIdx.get()->end();
-MyVectorTh value;
-// vector<string>vecUncnownWord;
-
-while (!ready) cv.wait(lck);
-  ++fieldQueries;
-
-  t = queries_input[fieldQueries];
-
-  vector<string>queries;
-  const regex rgxSpaces(makeRegExpSpace());
-  std::ptrdiff_t const match_count(distance(sregex_iterator(t.begin(), t.end(), rgxSpaces),sregex_iterator()));
-    for( sregex_iterator itrgx(t.begin(), t.end(), rgxSpaces), it_end; itrgx != it_end; ++itrgx ){
-      size_t v;//любое значение 
-      filterWords[itrgx->str()] = v;
-      queries.push_back(itrgx->str());//этот вектор необходим для дальнейшей работы!!!
-    }
-
-  vector<pair<string,size_t>>uniqueWords;
-  for(auto& m : filterWords){
-    itMapIdx = uMapIdx.get()->find(m.first);
-    if(itMapIdx == itMapIdxEnd){
-      vecUncnownWord.push_back(m.first);//неизвестные слова
-      continue;}    
-
-    value = itMapIdx->second;
-    // uniqueWords.push_back(make_pair(m.first,value[1].count));
-    uniqueWords.push_back(make_pair(m.first,[value](){
-    size_t count = 0;
-      for(auto &v : value)
-        count += v.count;
-        return count;
-}() ));
-  }
-
-//сортировка слов от меньшего к бльшему (по числу упоминаний)
-  sort(
-    uniqueWords.begin(),
-    uniqueWords.end(),
-    [](const auto& p1, const auto& p2){
-      return tie(p2.second, p1.first) > tie(p1.second, p2.first);
-    }
-  );
-
-  vector<pair<string,vector<size_t>>>uniqueWordsDocID;
-  vector<size_t> vdoc;
-  pair<string,vector<size_t>>vecUDOCID;
-  // cout << "size vec is " << uniqueWords.size() << endl;
-  for(auto &k : uniqueWords){
-    itMapIdx = uMapIdx.get()->find(k.first);
-    vecUDOCID = make_pair(k.first,vdoc);
-    vecUDOCID.first=k.first;
-    value = itMapIdx->second;
-    for(auto &v : value){
-      vdoc.push_back(
-      //lambda
-      [v](){
-        size_t doc = v.doc_id;
-        return doc;
-      }());
-      vecUDOCID.second=vdoc;
-    }
-      uniqueWordsDocID.push_back(vecUDOCID);
-      vdoc.clear();
-  }
-
-  vecView.push_back(uniqueWordsDocID);//этот веткор для просмотра работы потоков
-
-size_t Rabs = 0;
-double maxRabs = 0;
-vector<pair<string,vector<size_t>>>::iterator itvPhr;
-vector<size_t>vCalcRel;
-pair<size_t,size_t>prVecRabs;
-RelativeIndex relIndx;
-vector<pair<size_t,size_t>>vecRabs;//вектор посчитанных релевантностей для документов
-vector<RelativeIndex>vecRel;
-vector<pair<vector<string>,vector<RelativeIndex>>>vecLinks;//связи запроса с релевантностями
-pair<vector<string>,vector<RelativeIndex>>prLinks;
-vector<RelativeIndex>vRelIndx;
-
-  for(itvPhr = uniqueWordsDocID.begin(); itvPhr != uniqueWordsDocID.end(); ++itvPhr){
-    for(auto &v : itvPhr->second){//число документов для расчета релевантностей
-      if(! [v,vCalcRel](){
-        bool wasCalc = false;
-        for(auto &vec : vCalcRel){
-          if(v == vec)
-            wasCalc = true;
-        }
-        return wasCalc;
-      }() ){
-      prVecRabs.first = v;
-      relIndx.doc_id = v;//номер документа в струтуру ответа
-      string s = uDocsIdx.get()->at(v);
-      //считаем Rabs для полученного документа
-      SearchSubStrng schSubStrng(s,"");
-      vector<string>vecWordsDoc = schSubStrng.GetVec();//возврат по ссылке
-          Rabs = 0;
-      for(auto &s :vecWordsDoc){
-        // cout << s << " ";
-        itMapIdx = uMapIdx.get()->find(s);
-        if(itMapIdx == itMapIdxEnd){
-          continue;
-        }else{        
-          value = itMapIdx->second;
-          // prLinks.first = queries;//запрос для пары связи запроса и ветора релевантностей
-          for(auto &d : value){
-            if(d.doc_id == v && [queries,itMapIdx](){
-              bool compare = false;
-              for(auto &s : queries){//queries не очищается
-                // cout << s << " ";
-                if(s == itMapIdx->first)
-                  compare = true;            
-                  }
-                return compare;  
-            }() ){
-              if(d.count == 1)
-                Rabs += d.count;
-              else
-                Rabs += (d.count / d.count);
-                vCalcRel.push_back(v);//уже посчитанные ранее значения
-            // break;
-            }
-            }        
-        }
-      }
-      // cout << endl;
-      // vecWordsDoc.clear();
-          // cout << " " << Rabs << endl;
-          prVecRabs.second = Rabs;
-          vecRabs.push_back(prVecRabs);
-          relIndx.rank = Rabs;
-          vecRel.push_back(relIndx);
-          (Rabs > maxRabs)?maxRabs = Rabs:maxRabs = maxRabs;
-}
-  // vecRelIdx.push_back(vecRel);
-  prLinks.second = vecRel;
-  vecLinks.push_back(prLinks);
-    }
-    // cout << endl;
-  }
-
-  // vector<RelativeIndex>vRelIndx;
-  RelativeIndex rind;
-  for(auto &v : vecRabs){
-    rind.doc_id = v.first;
-    rind.rank = v.second / maxRabs;
-    vRelIndx.push_back(rind);
-  }
-  vecRelIdx.push_back(vRelIndx);
-
-}
-
 vector<vector<RelativeIndex>> SearchService::search(const vector<string>& queries_input){
-  // unordered_map<std::string, int> filterWords;//уникальные слова получаемые из запроса
+  unordered_map<std::string, int> filterWords;//уникальные слова получаемые из запроса
   MyMapTh::iterator itMapIdx = uMapIdx.get()->begin();
   MyMapTh::iterator itMapIdxEnd = uMapIdx.get()->end();
   MyVectorTh value;
-    vector<string>vecUncnownWord;
-  // vector<string>queries;
+  vector<string>queries;
   vector<bool>res;//этот вектор в конце положить в вектор vResult для Answers()
 //начитка строки из вектора в лямбде
 size_t sizeQ = queries_input.size();//для проверки
@@ -405,7 +177,7 @@ for(auto &vT : queries_input){
         pos1=pos;
 
         // temp.erase(temp.length()-1);
-  // cout << t << endl;
+  cout << t << endl;
 // }
 // while(sizeQ != 0){
 
@@ -457,8 +229,7 @@ cout << t << endl;
 // for(auto &t : queries_input){
 
 //уникальные слова получаются из строки string t
-vector<string>queries;
-unordered_map<std::string, int> filterWords;//уникальные слова получаемые из запроса
+
 const regex rgxSpaces(makeRegExpSpace());
     std::ptrdiff_t const match_count(distance(sregex_iterator(t.begin(), t.end(), rgxSpaces),sregex_iterator()));
     for( sregex_iterator itrgx(t.begin(), t.end(), rgxSpaces), it_end; itrgx != it_end; ++itrgx ){
@@ -478,9 +249,9 @@ const regex rgxSpaces(makeRegExpSpace());
   unordered_map<std::string, int>::iterator itFiltWrdE = filterWords.end();
   
   //vector уникальных слов pair<word,count> количество слов по всем документам
-  // vector<string>vecUncnownWord;
-  size_t doc_id;
   vector<pair<string,size_t>>uniqueWords;
+  vector<string>vecUncnownWord;
+  size_t doc_id;
   for(auto& m : filterWords){
     itMapIdx = uMapIdx.get()->find(m.first);
     if(itMapIdx == itMapIdxEnd){
@@ -568,6 +339,7 @@ cout << "-------------------------------------\n";
   // int cntDoc = shrdPtrServ->numbRespFiles();
   // cout << "size vec docs is " << uDocsIdx.get()->size() << endl;//два раза где-то повторяется
 
+  //новый вариант расчета
   vdoc.clear();
   vector<pair<string,vector<size_t>>>vecPhrase;
   pair<string,vector<size_t>>prDataInVec;
@@ -587,7 +359,6 @@ cout << "-------------------------------------\n";
     }
   }
 
-  //новый вариант расчета
   size_t Rabs = 0;
   double maxRabs = 0;
   vector<size_t>vCalcRel;
@@ -745,10 +516,10 @@ for(auto & vec:vecRelIdx){
   vResult.push_back(res);//сохраняем в векторе вектор ответов bool
   res.clear();//очищаем вектор перед новым проходом
   vRelIndx.clear();
-  // queries.clear();
+  queries.clear();
   vecRabs.clear();
-  // uniqueWords.clear();
-  // filterWords.clear();//очищаем уникальные слова
+  uniqueWords.clear();
+  filterWords.clear();//очищаем уникальные слова
   vdoc.clear();
   maxRabs = 0;
   --sizeQ;//если все правильно 0
