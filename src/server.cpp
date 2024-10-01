@@ -23,29 +23,26 @@ void Server::KeyApplication(){
     std::ptrdiff_t const countWord(distance(sregex_iterator(argumv.begin(), argumv.end(), findRegCntWord),sregex_iterator()));
   sregex_iterator itrgx(argumv.begin(), argumv.end(), findRegCntWord);
 
-    if(countWord != 0 && itrgx->str() == "/e"){
-      keyApp = 101;
-    }else if(countWord != 0 && itrgx->str() == "/i"){
-      keyApp = 102;
-    }else if(countWord != 0 && itrgx->str() == "/s"){
+    if(countWord != 0 && itrgx->str() == "/s"){
       keyApp = 103;
-    }else if(countWord != 0 && itrgx->str() == "/r"){
+    }
+    else if(countWord != 0 && itrgx->str() == "/r"){
       keyApp = 104;
     }else if(countWord != 0 && itrgx->str() == "/h"){
       keyApp = 105;
-    }
-    else{
-      cout << "wrong key! uses only /e /i /s /r /h\n";
+    }else{
+      cout << "wrong key! uses only /r /h /s\n";
     }
 }
 
 void Server::examination(const string& fname){
       MyException myexcep;
+      // myexcep.SetObjServ(this);
         try{
   cout << "examination file " << fname << ". ";
           startfName = myexcep.SetFName(fname);
           start = myexcep.filExist();
-          start ? stop = false:stop = true;
+          start ? stop = true:stop = false;
           start ? cout << boolalpha << start << " file exist!\n":cout << endl;
       } catch (char const * error){
           cout << myexcep.errors();
@@ -60,38 +57,67 @@ void Server::TouchFile(char* fname){
 bool Server::Ready(){
     clConvJSON = new ConverterJSON();
     KeyApplication();
-  if(!startfName){
+  if(!start && keyApp == 103){
+      Service();
+  }
+  else if(!start && !stop && !startfName){
     clConvJSON->ReadJsonfile(fConfJSON.c_str());
     jConf = clConvJSON->GetJSON();
+    cout << eventException << endl;
     GetConfig();
-  }else if(keyApp == 103){
-    Service();
-  }
-
-  if(!stop && start && !startfName){
     run = true;
   }
   delete clConvJSON;
   return run;
 }
 
+void Server::listening(size_t& eventException){
+  unique_lock<std::mutex> lck(global);
+
+  if(eventException > 0){
+    // return;
+  while (!ready) cv.wait(lck);
+    cout << "was error!";
+    --eventException;
+    }
+    ready=false;
+}
+
+void Server::MyWaitTh(){
+  // thread Th(listening,this,ref(eventException));
+  Th = new thread(listening,this,ref(eventException));
+  // Th->detach();
+}
+
+void Server::go(){
+  std::unique_lock<std::mutex> lck(global);
+  ready = true;
+  cv.notify_all();
+}
+
+void Server::Signal(){
+  cout << "Signal! Working now!\n";
+  
+  // cout << msg << endl;
+  if(Th->joinable()){
+  go();
+    Th->join();
+  }
+
+  ++eventException;
+
+  if(eventException == 0)
+    Th->detach();
+  //редактируем в памяти jConfJSON
+  // EditConfig(msg);
+  // ++event;
+  // mssg = msg;
+}
+
 void Server::Service(){
   int respFiles, nf;
   string strRespFiles;
   char q;
-  // cout << "Creat config.json file? (y/n) :";
-/*
-while(std::cout << "Small Pizza Price: " && not(std::cin >> small)) {
-        // if(std::cin.eof() || std::cin.bad()) {    or:
-        if(std::cin.rdstate() & (std::ios::badbit | std::ios::eofbit)) {
-            std::cout << "aborted\n";
-            return 1;
-        }
-        std::cout << "please enter a valid price\n";
-        std::cin.clear();                            // clear the fail state
-        // remove any lingering characters in the istream:
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }*/
    cout << "Creat config.json file? (y/n) :";
   while(cin >> q){
     if(q == 'y' || q == 'n')break;
@@ -203,6 +229,17 @@ string& Server::ViewValueFiles(json::iterator itV, string& key){
   return dataTemp;
 }
 
+void Server::EditConfig(string& s){
+  string data, key;
+  json::iterator it=jConf.begin();
+  key = "files";
+  data = ViewValueFiles(it, key);
+  string::size_type pos;
+  pos = data.find(s);
+  data.erase(pos,s.length());
+  cout << data << endl;
+}
+
 void Server::GetConfig(){
   string data, key;
   json::iterator it=jConf.begin();
@@ -214,7 +251,7 @@ void Server::GetConfig(){
   confApp.version = stod(ViewValue(it,key));
   key = "files";
   data = ViewValueFiles(it, key);
-  if(data.length() == 0){
+
   const regex rgxSpaces (makeRegExp());
   std::ptrdiff_t const match_count(distance(sregex_iterator(data.begin(), data.end(), rgxSpaces),sregex_iterator()));
     for( sregex_iterator itrgx(data.begin(), data.end(), rgxSpaces), it_end; itrgx != it_end; ++itrgx ){
@@ -222,9 +259,6 @@ void Server::GetConfig(){
     }
   data.clear();//стоку можно очистить
   numbFiles = vecFNamesFoldResource.size();//для метода void InvertedIndex::PrepareDocs()
-  }else{
-
-  }
   #if(do_this == do_not)
   for(auto &s : vecFNamesFoldResource){
     cout << s << " ";
@@ -249,6 +283,11 @@ void Server::SetObj(InvertedIndex* ptr){
   clInvIndTst = ptr;
 }
 
+void Server::SetObjEvent(MyEvent* ptr){
+  assert(ptr != nullptr);
+  pEvent = ptr;
+}
+
 shared_ptr< map<string,vector<EntryThreads>> > Server::GetMap(){
   refMapTh = make_shared <map<string,vector<EntryThreads>>>(clInvInd->GetMap());
   return refMapTh;
@@ -270,10 +309,14 @@ shared_ptr< map<string,vector<Entry>> > Server::GetMap1Tst(){
 }
 
 void Server::Run(){
+      // clMyEvent = new MyEvent();
+      // clMyEvent->SetObjServ(this);
       // sPtrInvInd = make_shared<InvertedIndex>(clInvInd);//подклюяаем другой объект
-        clSearchServ = new SearchService();
-        clInvInd = new InvertedIndex();
-        clConvJSON = new ConverterJSON();
+  clSearchServ = new SearchService();
+  clInvInd = new InvertedIndex();
+  clConvJSON = new ConverterJSON();
+
+  clInvInd->SetObjEvent(pEvent);
   switch(keyApp){
     case (101):{
       cout << "finded key " << "/e" << endl;
@@ -289,14 +332,19 @@ void Server::Run(){
       break;
     }
     case (104):{
+      MyWaitTh();//будет висеть программа
 
       cout << confApp.appName << " version " << confApp.version << " run!" << endl;
+        // thread Th(listening,this,ref(eventException));
+      // Th.join();
       // clInvInd = new InvertedIndex();
       // sPtrInvInd = make_shared<InvertedIndex*>(clInvInd);//подклюяаем другой объект
       clInvInd->PrepareDocs(this);
+      
         // clSearchServ->PrepareMap(clInvInd);
       while(true){
         clInvInd->Hello();//для проверки, можно убрать
+        
         //start here main code
         clInvInd->UpdateDocumentBase1();//запускается для тестов, записываются файлы freq_dictionary.map freq_dictionaryTh.map для проверки!!!
         clInvInd->UpdateDocumentBaseThreads();
@@ -323,7 +371,7 @@ void Server::Run(){
 
       //result = clSearchServ->search(queries);
       result = clSearchServ->searchTh(queries);
-      exit(0);
+      for(;;);//cycle
 
       clSearchServ->SaveVector();
       //запись ответов в файл

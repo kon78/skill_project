@@ -33,9 +33,9 @@ class ConverterJSON{
   vector<string>& GetRequest();
   void SaveJSON(json& j2f, const char* fname);
 
-    int GetResponsesLimit(){return 0;}
-    // vector<string> GetRequests(){}
-    void putAnswers(vector<vector<pair<int, float>>>answers){}
+  int GetResponsesLimit(){return 0;}
+  // vector<string> GetRequests(){}
+  void putAnswers(vector<vector<pair<int, float>>>answers){}
   
   private:
     json jData;

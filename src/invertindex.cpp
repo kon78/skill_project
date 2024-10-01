@@ -105,25 +105,36 @@ map<string,vector<Entry>>& InvertedIndex::GetMap1(){
   return freq_dictionary;
 }
 
+void InvertedIndex::SetObjEvent(MyEvent* ptr){
+  assert(ptr != nullptr);
+  pEvent = ptr;
+}
+
 void InvertedIndex::PrepareDocs(Server* pServObj){
   assert(pServObj != nullptr);//проверка на нулевой указатель
   MyException myexcep;
-  bool bNone;
+  myexcep.SetObjEvent(pEvent);
+  myexcep.SetObjServ(pServObj);
+  bool bNone, bWrongName;
   fstream fp;
   string temp;
   vecFNames = pServObj->GetDocs();
+  size_t i = 0;
 
   for(auto &d : vecFNames){
+    bWrongName = true;
+    bNone = false;
     try{
+      bWrongName = myexcep.fDocsNames(d);
       bNone = myexcep.fDocsExist(d);
     }catch (char const * error){
-      cout << myexcep.errors();
+      cout << myexcep.errors() << endl;
     }
-    }
-      
+      ++i;
+
   //читаем документы в вектор docs
     if(bNone){
-      for(auto &d : vecFNames){
+      // for(auto &d : vecFNames){
         string fn = "C:\\develop\\skill_project\\resources\\";
         fn += d;
         fp.open(fn, ios::in);
@@ -135,14 +146,15 @@ void InvertedIndex::PrepareDocs(Server* pServObj){
     }
     fp.close();
       }
-    }
+    // }
     }else{
       string none = myexcep.nonefiles();//отсутствующие файлы
-      cout << "This files are none " << none << endl;
+      cout << "This files are none " << ((none!="")?none:"- empty") << endl;
 }
+    }
 }
 
-vector<string>& InvertedIndex::GetDocs(){
+vector<string>& InvertedIndex::GetDocs(){  
   return docs;
 }
 

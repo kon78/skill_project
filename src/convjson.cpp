@@ -1,14 +1,18 @@
 #include"convjson.h"
 #include"myexception.h"
-// using namespace std;
-//void ReadJsonfile(char* fname)
+
 void ConverterJSON::ReadJsonfile(const char* fname){
   MyException myexcep;
   assert(fname != nullptr);
   myexcep.SetFName(fname);
-  ifstream f(fname);
-  jData = json::parse(f);
-  // cout << data << endl;
+  try{
+    ifstream f(fname);
+    myexcep.filExist();
+    jData = json::parse(f);
+  }catch(char const * error){
+    cout << myexcep.errors();
+    exit(0);
+  }
 }
 
 void ConverterJSON::TestRead(const char* fname){
@@ -89,50 +93,12 @@ vector<string>& ConverterJSON::GetRequest(){
   json::iterator itReq;
   itReq = jRequestsJSON.find(key);
   assert(itReq != jRequestsJSON.end());
-  // string valueS;
   for(size_t ind = 0; ind < itReq.value().size(); ++ind){
-    // valueS = itReq.value()[ind];
     vReq.push_back(itReq.value()[ind]);
 
   }
-  // string valueS = itReq.value();
-  // SearchSubStrng clSubStr(s,"");
-
-  // for(auto &s : clSubStr.GetVec())
-
   return vReq;
 }
-// vector<string> ConverterJSON::GetTextDocuments(){
-//   vector<string> ret;
-//   string temp;
-//   char result[256]{};
-//   string::size_type pos;
-
-  // int iCntRespFiles = shrdPtrServ.get()->numbRespFiles();
-
-  // cout << "class ConverterJSON->GetTextDocuments()\n";
-  // cout << "count files is " << iCntRespFiles << endl;
-  // temp = shrdPtrServ.get()->prepareNameFiles();
-  // cout << temp << endl;
-  // while(iCntRespFiles != 0){
-  //   pos = temp.find(" ");
-  //   if(pos < temp.length()){
-  //     temp.copy(result,pos);
-  //     temp.erase(0,pos+1);      
-  //     ret.push_back(string(result));
-  //     result[0] = '\0';
-  //   }
-  //   --iCntRespFiles;
-  // }
-
-  //printing filenames string
-  // for(auto p:ret){
-  //   cout << p << " ";
-  // }
-  // cout << endl;
-
-// return ret;
-// }
 
 void ConverterJSON::ParamApp(){
   // shrdPtrServ.get()->Start();

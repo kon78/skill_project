@@ -18,8 +18,8 @@ include(FetchContent)
 FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
 FetchContent_MakeAvailable(json)
 
-# add_executable(SkillboxSearchEngine src/main.cpp src/convjson.cpp src/invertindex.cpp src/server.cpp src/search.cpp src/myexception.cpp src/service.cpp)
-add_executable(SkillboxSearchEngine src/main.cpp src/convjson.cpp src/invertindex.cpp src/search.cpp src/server.cpp src/myexception.cpp)
+# add_executable(SkillboxSearchEngine src/main.cpp src/convjson.cpp src/invertindex.cpp src/server.cpp src/search.cpp src/myexception.cpp  src/event.cpp src/service.cpp)
+add_executable(SkillboxSearchEngine src/main.cpp src/convjson.cpp src/invertindex.cpp src/search.cpp src/server.cpp src/myexception.cpp src/event.cpp)
 target_link_libraries(SkillboxSearchEngine PRIVATE nlohmann_json::nlohmann_json)
 target_include_directories(SkillboxSearchEngine PUBLIC ${MY_INCLUDE_DIR})
 

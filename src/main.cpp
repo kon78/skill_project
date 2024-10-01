@@ -4,6 +4,7 @@
 #include "invertindex.h"
 // #include "search.h"
 #include "server.h"
+#include "event.h"
 // #include "myexception.h"
 
 #define Application 1
@@ -14,17 +15,21 @@
 using namespace std;
 
 char Bunner[] = "Usage: SkillboxSearchEngine [keys /r]";
-char keys[] = "\n/r run\n";
+char keys[] = "\n/r run\n \n/h help\n \n/s service\n";
 
 int main(int argc, char *argv[]){
+// MyException myexcep;
+
+MyEvent* myevent = new MyEvent;
 
 #if(Application == do_this)
   if(argc < 2){
     cout << Bunner << keys;
   }else{
     Server* clServ = new Server(argc,argv);
+    clServ->SetObjEvent(myevent);
     if(clServ->Ready()){
-      clServ->Run();
+      clServ->Run();    
   }
   }
 

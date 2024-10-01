@@ -15,10 +15,12 @@
 #include<regex>
 #include<vector>
 #include<filesystem>
+#include<condition_variable>
 #include"invertindex.h"
 #include"myexception.h"
 #include"convjson.h"
 #include"search.h"
+#include"event.h"
 
 
 #define do_this 1
@@ -38,10 +40,11 @@ struct Entry;
 struct EntryThreads;
 class InvertedIndex;
 class SearchService;
+class MyEvent;
 class Server{
 public:
 Server() = default;
-Server(int argc, char* argv[]):argumc(argc),start(false),startfName(false),stop(true),run(false){
+Server(int argc, char* argv[]):argumc(argc),start(false),startfName(false),stop(true),run(false),eventException(0),ready(false){
   fConfJSON = "config.json"; fRequestsJSON = "requests.json";
   ArgumSet(argv);
   examination(fConfJSON);
@@ -50,6 +53,7 @@ Server(int argc, char* argv[]):argumc(argc),start(false),startfName(false),stop(
   delete clConvJSON;
 }
 string makeRegExpKey();
+void go();
 void ArgumSet(char* argv[]);
 void examination(const string& fname);
 void TouchFile(char* fname);
@@ -62,6 +66,11 @@ void SaveFile(const int& respFiles);
 void PrepareNameFilesVec();
 void Help();
 void SetObj(InvertedIndex* ptr);
+void SetObjEvent(MyEvent* ptr);
+// void Signal(string& msg);
+void Signal();
+void MyWaitTh();
+void listening(size_t& eventException);
 shared_ptr< map< string, vector<EntryThreads> >> GetMap();//freq_dictionaryTh
 shared_ptr< map< string, vector<EntryThreads> >> GetMapTst();//freq_dictionaryTh
 shared_ptr< map< string, vector<Entry> >> GetMap1();//freq_dictionary
@@ -70,6 +79,7 @@ shared_ptr< map<string,vector<Entry>> > GetMap1Tst();
 vector<string>& GetDocs();
 string& ViewValue(json::iterator itValue, string& key);
 string& ViewValueFiles(json::iterator itValue, string& key);
+void EditConfig(string& s);
 string makeRegExp();
 size_t numbFiles;
 // bool filExist(string f);
@@ -78,10 +88,13 @@ size_t numbFiles;
 private:
   // shared_ptr<InvertedIndex> sPtrInvInd;
   int argumc;
+  size_t eventException;
+  string mssg;
   ConverterJSON* clConvJSON=nullptr;
   InvertedIndex* clInvInd=nullptr;
   SearchService* clSearchServ=nullptr;
   InvertedIndex* clInvIndTst=nullptr;//TEST
+  MyEvent* pEvent=nullptr;
   string dataTemp;
   ConfApp confApp;
   json jConf,jConfJSON;//file config.json
@@ -100,5 +113,10 @@ private:
   shared_ptr< map< string, vector<EntryThreads> >> refMapThTst;
   shared_ptr< map< string, vector<Entry> >> refMap;
   shared_ptr< map< string, vector<Entry> >>refMapTst;
+    bool ready;
+  mutex global;
+  condition_variable cv;
+  thread* Th=nullptr;
+
 };
 #endif

@@ -25,6 +25,7 @@ add_executable(TestApplication testapp.cpp
  ../src/myexception.cpp
  ../src/convjson.cpp
  ../src/search.cpp
+ ../src/event.cpp
   )
 
 target_link_libraries(TestApplication

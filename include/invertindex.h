@@ -7,10 +7,11 @@
 #include<map>
 #include<cassert>
 #include<server.h>
-#include<myexception.h>
 #include<thread>
 #include<mutex>
 #include<condition_variable>
+#include"myexception.h"
+#include"event.h"
 
 using namespace std;
 
@@ -87,6 +88,8 @@ private:
 };
 
 class Server;
+class MyEvent;
+class MyException;
 class InvertedIndex{
   public:
     InvertedIndex(){}
@@ -107,6 +110,7 @@ class InvertedIndex{
     void Hello();
     bool MapIsEqual();
     vector<string>& GetDocs();
+    void SetObjEvent(MyEvent* ptr);
 
   private:
   vector<string> vecFNames;
@@ -118,6 +122,7 @@ class InvertedIndex{
   bool ready;
   mutex global;
   thread Th;
+  MyEvent* pEvent=nullptr;
 };
 
 template <class K, class V, class N> void InvertedIndex::SaveMap(map<K, V>& this_map, N fn){
