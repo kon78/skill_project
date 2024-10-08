@@ -4,6 +4,7 @@
 #include<iostream>
 #include<cassert>
 #include<vector>
+#include<cassert>
 #include"myexception.h"
 #include"server.h"
 
@@ -17,7 +18,8 @@ class MyEvent{
     ~MyEvent(){}
     void Exceptions(MyException* pObjExcep);
     void SetEvent(const size_t ev);
-    // void SetObjServ(Server* ptrObj);
+    void SetObjServ(Server* ptr);
+    void Signal();
   private:
     size_t evCode;
     MyException* pMyExcep=nullptr;

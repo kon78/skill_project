@@ -8,6 +8,7 @@
 // #include "myexception.h"
 
 #define Application 1
+#define TestEqualMap 1
 #define Editing 0
 #define do_this 1
 #define do_not 0
@@ -22,7 +23,7 @@ int main(int argc, char *argv[]){
 
 MyEvent* myevent = new MyEvent;
 
-#if(Application == do_this)
+#if(Application == do_not)
   if(argc < 2){
     cout << Bunner << keys;
   }else{
@@ -33,6 +34,13 @@ MyEvent* myevent = new MyEvent;
   }
   }
 
+#endif
+
+#if(TestEqualMap == do_this)
+    Server* clServ = new Server(argc,argv);
+    clServ->SetObjEvent(myevent);
+    myevent->SetObjServ(clServ);
+    clServ->ReadyTest();
 #endif
 
 #if(Editing == do_this)

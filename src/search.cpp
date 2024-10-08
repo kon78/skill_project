@@ -158,9 +158,10 @@ void SearchService::go(){
 vector<vector<RelativeIndex>> SearchService::searchTh(const vector<string>& queries_input){
   vector<thread>vecThSearchBase;
   size_t countThreads = queries_input.size();
-  size_t fieldQueries = -1;//start index
+  size_t fieldQueries = 1;//start index
 
   for(size_t i = 0; i < countThreads; ++i){
+    cout << queries_input[i] << endl;
     vecThSearchBase.emplace_back(thread(CalculateRelative,this,ref(fieldQueries),ref(queries_input),ref(vecUncnownWord)));
   }
 
@@ -228,10 +229,10 @@ MyMapTh::iterator itMapIdxEnd = uMapIdx.get()->end();
 MyVectorTh value;
 // vector<string>vecUncnownWord;
 
-while (!ready) cv.wait(lck);
+// while (!ready) cv.wait(lck);
   ++fieldQueries;
 
-  t = queries_input[fieldQueries];
+  t = queries_input[fieldQueries-2];
 
   vector<string>queries;
   const regex rgxSpaces(makeRegExpSpace());
@@ -267,6 +268,17 @@ while (!ready) cv.wait(lck);
       return tie(p2.second, p1.first) > tie(p1.second, p2.first);
     }
   );
+
+#if(do_this == do_not)
+  vector<pair<string,size_t>>::iterator itVecUW;//iterator uniqueWords
+cout << "-------------sorting----------------";
+      for(itVecUW = uniqueWords.begin(); itVecUW != uniqueWords.end(); ++itVecUW){
+        std::cout << itVecUW->first << " ";
+        std::cout << itVecUW->second << '\n';
+    }
+cout << "-------------------------------------\n";
+exit(0);
+#endif
 
   vector<pair<string,vector<size_t>>>uniqueWordsDocID;
   vector<size_t> vdoc;
@@ -514,16 +526,16 @@ const regex rgxSpaces(makeRegExpSpace());
   );
 
 //вывод содержимого вектора на экран
+#if(do_this == do_not)
 cout << "-------------sorting----------------";
   vector<pair<string,size_t>>::iterator itVecUW;//iterator uniqueWords
-#if(do_this == execute)
       for(itVecUW = uniqueWords.begin(); itVecUW != uniqueWords.end(); ++itVecUW){
         std::cout << itVecUW->first << " ";
         std::cout << itVecUW->second << '\n';
     }
+cout << "-------------------------------------\n";
 #endif
 
-cout << "-------------------------------------\n";
 
 
 //}//vector queries 
@@ -792,6 +804,57 @@ json& SearchService::GetJson(){
   return jAnswJSON;
 }
 
+void SearchService::AnswersJSON(){
+  jAnswJSON = {{"answers",{}}};
+  json jfield;
+  json::iterator it = jAnswJSON.begin();
+  size_t vecInd = 0;//для формирования ответов из результатов vecRelIdx
+  //число ответов
+  size_t i, ind;
+  ind = 1;
+  for(auto &vec : vecRelIdx){
+  string field = "request";
+    //request001 request 002 ... lambda
+        field += [ind](){
+      string temp;
+      temp = to_string(ind);
+      if(temp.length() == 1){
+        temp.clear();temp += "00";temp += to_string(ind);
+      }else if(temp.length() == 2){
+        temp.clear();temp += "0";temp += to_string(ind);
+      }else if(temp.length() == 3){
+        temp.clear();temp += to_string(ind);}
+      return temp;
+    }();
+    it.value().push_back(field);
+    jfield[field] = it.value();
+    field.clear();
+
+    if(vec.size() > 0){    
+        json jb = { "result" , true };
+      it.value().push_back(jb);
+
+      json j;
+      json jr;
+      json::iterator itRel = jr.begin();
+      size_t i = 0;
+
+      for(auto &r : vec){  
+    j[i] = {{"doc_id",r.doc_id},{"rank",r.rank}};
+    jr["relevance"] = j;
+    ++i;
+    }
+    it.value().push_back(jr);
+    }else{
+     json jb = { "result" , false };
+      it.value().push_back(jb);
+
+    }
+    ++ind;
+  }
+  
+}
+
 void SearchService::Answers(){
 
 jAnswJSON = {{"answers",{}}};
@@ -805,7 +868,7 @@ jAnswJSON = {{"answers",{}}};
       pair<size_t,double>jp;
 
   for(auto &vec : vResult){
-    vector<RelativeIndex>& tempV = vecRelIdx[vecInd];
+    vector<RelativeIndex>& tempV = vecRelIdx[vecInd];//не совсем понятная запись???
     for(size_t i = 0; i < vec.size(); ++i){
     string field = "request";
     json jfield;
@@ -832,7 +895,7 @@ jAnswJSON = {{"answers",{}}};
     json::iterator itRel = jr.begin();
     size_t i = 0;
 
-#if(do_this == execute)
+#if(do_this == do_not)
   for(auto &v : tempV){
     j[i] = {{"doc_id",v.doc_id},{"rank",[v](){
       double t;//floor(v.rank * 1e+4) / 1e+4
@@ -866,11 +929,11 @@ jAnswJSON = {{"answers",{}}};
     }
     ++vecInd;
   }
-  cout << jAnswJSON << endl;
+  // cout << jAnswJSON << endl;
 
   //запись в файл
 
-  }
+}
 
 void SearchService::Answers1(){
 jAnswJSON = {
@@ -910,8 +973,8 @@ jAnswJSON = {
       json jb = { "result" , true };
       it.value().push_back(jb);
       
-    json jr;
     // json jparse,jdoc,jrel;
+    json jr;
     json::iterator itRel = jr.begin();
     size_t i = 0;
     for(auto &vec:vecRelIdx){
@@ -927,7 +990,7 @@ jAnswJSON = {
       it.value().push_back(jb);
     }
   }
-  cout << jAnswJSON << endl;
+  // cout << jAnswJSON << endl;
 }
 
 //можно обращаться к коллекции и через обычный указатель
@@ -972,7 +1035,7 @@ void SearchService::GetInvIndDocs(){
   // vector<string>& vDocsInvInd = ptrInvInd->GetDocs();
   uDocsIdx = make_unique< vector<string> >(ptrInvInd->GetDocs());
   size_t sizeDocs = uDocsIdx.get()->size();
-  cout << "size vec is " << sizeDocs << endl;
+  // cout << "size vec is " << sizeDocs << endl;
 }
 
 /*

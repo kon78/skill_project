@@ -9,6 +9,10 @@ void MyEvent::Exceptions(MyException* pObjExcep){
       wrongName.push_back(msg);
       break;
     }
+    case 0 : {
+      msg = "Stop!\n";
+      break;
+    }
   }
 }
 
@@ -22,10 +26,11 @@ vector<string>& MyEvent::GetWrongNames(){
   return wrongName;
 }
 
+void MyEvent::Signal(){
+  pServ->Signal(evCode);
+}
 
-
-// void MyEvent::SetObjServ(Server* ptrObj){
-//   assert(ptrObj != nullptr);
-//   pServ = ptrObj;
-//   pServ->Signal(msg);
-// }
+void MyEvent::SetObjServ(Server* ptr){
+  assert(ptr != nullptr);
+  pServ = ptr;
+}

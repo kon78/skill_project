@@ -38,6 +38,7 @@ public:
     bool SetFName(string fn);
     bool fDocsExist(string fn);
     bool fDocsNames(string fn);
+    bool ReadDocument(const string& doc);
     bool readjson(const char* fname);
     string& GetWrongNames();
     const char* what() const noexcept override;

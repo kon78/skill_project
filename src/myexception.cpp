@@ -20,7 +20,7 @@ return bwfn;
 void MyException::SetObjServ(Server* ptrObj){
   assert(ptrObj != nullptr);
   pServObj = ptrObj;
-  pServObj->Signal();
+  // pServObj->Signal();
 }
 
 string& MyException::GetWrongNames(){
@@ -64,10 +64,14 @@ bool MyException::filExist(){
   fstream fp;
   fp.open(fname, ios::in);
   if(!fp.is_open()){    
-    error = "Config file is missing.\n";
     bfex = true;
+    error = "Config file is missing.\n";
     // throw "Config file is missing.\n";
+    pServObj->SetExcep();
+    pEvent->SetEvent(0);//wrong name
+    pEvent->Signal();
     throw errors();
+    // errors();
   }else{
     error = "";
     bfex = false;
@@ -92,8 +96,32 @@ bool MyException::fDocsExist(string fn){
     bfdoc = false;
     filenone += fn + " ";//отсутствующие файлы по условиям задания
     throw errors();
+    // errors();
   }
   return bfdoc;
+}
+
+bool MyException::ReadDocument(const string& doc){
+  vector<string> englwords;
+  bool longWord = false;//good < 100
+  bool countWord = false;//good < 1000
+  error = "";
+  const regex findRegCntWord("([a-zA-Z\\'\\&\\-\\@]+|![а-я]+|![0-9]+)");
+  std::ptrdiff_t const match_count(distance(sregex_iterator(doc.begin(), doc.end(), findRegCntWord),sregex_iterator()));
+    for( sregex_iterator itrgx(doc.begin(), doc.end(), findRegCntWord), it_end; itrgx != it_end; ++itrgx ){
+      if(itrgx->str().length() > 100){
+        error = "No more than 100 characters per word are allowed.";
+        countWord = true;
+        throw errors();
+        }
+      englwords.push_back(itrgx->str());
+    }
+  if(englwords.size() > 1000){
+    error = "No more than 1000 words allowed.";
+    longWord = true;
+    throw errors();
+    }
+  return (longWord || countWord);
 }
 
 bool MyException::readjson(const char* fname){

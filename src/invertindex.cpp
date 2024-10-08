@@ -110,20 +110,39 @@ void InvertedIndex::SetObjEvent(MyEvent* ptr){
   pEvent = ptr;
 }
 
+// bool InvertedIndex::ReadDocument(const string& doc){
+//   vector<string> englwords;
+//   bool longWord = false;//good < 100
+//   bool countWord = false;//good < 1000
+//   const regex findRegCntWord("([a-zA-Z\\'\\&\\-\\@]+|![а-я]+|![0-9]+)");
+//   std::ptrdiff_t const match_count(distance(sregex_iterator(doc.begin(), doc.end(), findRegCntWord),sregex_iterator()));
+//     for( sregex_iterator itrgx(doc.begin(), doc.end(), findRegCntWord), it_end; itrgx != it_end; ++itrgx ){
+//       if(itrgx->str().length() > 100)
+//         countWord = true;
+//       englwords.push_back(itrgx->str());
+//     }
+//   if(englwords.size() > 1000)
+//     longWord = true;
+  
+//   return (longWord || countWord);
+// }
+
+//1000 words 100 symbols
 void InvertedIndex::PrepareDocs(Server* pServObj){
   assert(pServObj != nullptr);//проверка на нулевой указатель
   MyException myexcep;
   myexcep.SetObjEvent(pEvent);
   myexcep.SetObjServ(pServObj);
-  bool bNone, bWrongName;
+  bool bNone, bWrongName, bDocs;
   fstream fp;
-  string temp;
+  string temp,temp1;
   vecFNames = pServObj->GetDocs();
   size_t i = 0;
 
   for(auto &d : vecFNames){
     bWrongName = true;
     bNone = false;
+    bDocs = false;
     try{
       bWrongName = myexcep.fDocsNames(d);
       bNone = myexcep.fDocsExist(d);
@@ -137,21 +156,40 @@ void InvertedIndex::PrepareDocs(Server* pServObj){
       // for(auto &d : vecFNames){
         string fn = "C:\\develop\\skill_project\\resources\\";
         fn += d;
+
         fp.open(fn, ios::in);
           if(fp.is_open()){
+//проходит условия 1000 слов 100 символов в слове 
+//слова разделены пробелами (одно или несколько) и состоят из латинсских букв              
+//файл может состоять из нескольких строк, для этого их надо объеденить в одну строку
             while(!fp.eof()){
               getline(fp,temp);
-              // cout << temp << endl;
-              docs.push_back(temp);
-    }
+              temp1 += temp + " ";
+            }
+            try{
+              bDocs = myexcep.ReadDocument(temp1);  //excep.ReadDocument(temp1);
+              if(!bDocs)
+                docs.push_back(temp1);
+            }catch(char const * error){
+              cout << myexcep.errors() << endl;
+            }
     fp.close();
       }
+      temp.clear();
+      temp1.clear();
     // }
     }else{
       string none = myexcep.nonefiles();//отсутствующие файлы
       cout << "This files are none " << ((none!="")?none:"- empty") << endl;
 }
     }
+
+#if(do_this == do_not)
+  for(auto &d : docs){
+    cout << d << endl;
+  }
+  cout << endl;
+#endif
 }
 
 vector<string>& InvertedIndex::GetDocs(){  
@@ -239,7 +277,7 @@ void InvertedIndex::UpdateDocumentBaseThreads(){
     t.join();
     }
  
-  cout << "size freq_dictionaryTh is " << freq_dictionaryTh.size() << endl;
+  // cout << "size freq_dictionaryTh is " << freq_dictionaryTh.size() << endl;
 
 //здесь определяем число повторений в map freq_dictionaryTh
   vector<string> vDubl;
@@ -305,7 +343,6 @@ void InvertedIndex::UpdateDocumentBase1(){
     ++index;//index увеличиваем на 1 после прохождения цикла  
   }//for
 //save map to file
-  cout << freq_dictionary.size() << endl;
   SaveMap(freq_dictionary,"freq_dictionary.map");
 
 }

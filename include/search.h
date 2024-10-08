@@ -8,7 +8,7 @@
 #include<cmath>
 #include<algorithm>
 #include<unordered_map>
-#include <iomanip>
+#include<iomanip>
 #include<filesystem>
 #include<thread>
 #include<mutex>
@@ -120,6 +120,7 @@ public:
   // void search1();
   void Answers1();//выдает ответ только для одного запроса
   void Answers();
+  void AnswersJSON();
   string makeRegExpSpace();
   void Hello();
   json& GetJson();

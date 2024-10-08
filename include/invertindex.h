@@ -90,6 +90,7 @@ private:
 class Server;
 class MyEvent;
 class MyException;
+//tactical communication
 class InvertedIndex{
   public:
     InvertedIndex(){}
@@ -98,6 +99,7 @@ class InvertedIndex{
     void UpdateDocumentBaseThreads();
     string makeRegExp(const string &word);
     string _makeRegExp(const string &word);
+    // bool ReadDocument(const string& doc);
     void PrepareDocs(Server* pServObj);//vector с именами документов в классе Server
     map<string,vector<EntryThreads>>& GetMap();
     map<string,vector<Entry>>& GetMap1();

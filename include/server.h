@@ -41,11 +41,13 @@ struct EntryThreads;
 class InvertedIndex;
 class SearchService;
 class MyEvent;
+class MyException;
 class Server{
 public:
 Server() = default;
 Server(int argc, char* argv[]):argumc(argc),start(false),startfName(false),stop(true),run(false),eventException(0),ready(false){
-  fConfJSON = "config.json"; fRequestsJSON = "requests.json";
+  fConfJSON = "config.json"; fRequestsJSON = "requests.json"; fTestFile = "text.txt";
+
   ArgumSet(argv);
   examination(fConfJSON);
 }
@@ -57,6 +59,7 @@ void go();
 void ArgumSet(char* argv[]);
 void examination(const string& fname);
 void TouchFile(char* fname);
+void ReadyTest();
 bool Ready();
 void Run();
 void KeyApplication();
@@ -68,7 +71,8 @@ void Help();
 void SetObj(InvertedIndex* ptr);
 void SetObjEvent(MyEvent* ptr);
 // void Signal(string& msg);
-void Signal();
+void Signal(size_t event);
+void SetExcep(MyException* ptr);
 void MyWaitTh();
 void listening(size_t& eventException);
 shared_ptr< map< string, vector<EntryThreads> >> GetMap();//freq_dictionaryTh
@@ -95,6 +99,7 @@ private:
   SearchService* clSearchServ=nullptr;
   InvertedIndex* clInvIndTst=nullptr;//TEST
   MyEvent* pEvent=nullptr;
+  MyException* pExcep=nullptr;
   string dataTemp;
   ConfApp confApp;
   json jConf,jConfJSON;//file config.json
@@ -106,6 +111,7 @@ private:
   bool stop;//общий стоп
   bool run;//разрешение на запуск
   string fConfJSON;
+  string fTestFile;
   string fRequestsJSON;
   shared_ptr<ifstream> fin;
   shared_ptr<ofstream> fout;
