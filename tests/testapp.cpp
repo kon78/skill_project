@@ -195,7 +195,20 @@ TEST(TestApplication, JSONVIEW){
 //для проверки работы метода ConverterJSON::PrepareQueries(...)
 //для успешного прохождения содержимое векторов должно быть одинаковым
 TEST(TestApplication, JSONQUERIES){
+  MyEvent* myevent = new MyEvent;
+  MyException* myexcep = new MyException;
+
+  int argc=2; char* argv[] = {"SkillboxSearchEngine", "/r"};
+  Server* clServ = new Server(argc,argv);
+  SearchService* clSearchServ = new SearchService();
+  InvertedIndex* clInvInd = new InvertedIndex();
+    clServ->SetObjEvent(myevent);
+    clServ->SetExcep(myexcep);
+    myevent->SetObjServ(clServ);
+
   ConverterJSON* clConvJSON = new ConverterJSON();
+  clConvJSON->SetObjEvent(myevent);
+  clConvJSON->SetObjExcep(myexcep);
   clConvJSON->prepareReqFile();//jRequestsJSON null
   vector<string>ref;
   const vector<string> except = {"moscow is the capital of russia","bern is the capital of switzerland","tallinn is the capital of estonia",
@@ -221,17 +234,25 @@ TEST(TestApplication, JSONQUERIES){
 TEST(TestApplication, EQUAL_MAP){
   //file config.json должен находиться в папке C:\develop\skill_project\build\tests
   MyEvent* myevent = new MyEvent;
-  int argc=2; char* argv[] = {"SkillboxSearchEngine", "/r"};
+  MyException* myexcep = new MyException;
   bool equalMap;
   vector<string>vKey;
+  int argc=2; char* argv[] = {"SkillboxSearchEngine", "/r"};
   Server* clServ = new Server(argc,argv);
-  cout << boolalpha << clServ->Ready() << endl;
   SearchService* clSearchServ = new SearchService();
   InvertedIndex* clInvInd = new InvertedIndex();
-  clServ->SetObjEvent(myevent);
+    clServ->SetObjEvent(myevent);
+    clServ->SetExcep(myexcep);
+    myevent->SetObjServ(clServ);
+
+  cout << boolalpha << clServ->Ready() << endl;
+  // clServ->SetObjEvent(myevent);
+  // clServ->SetExcep(myexcep);
   clServ->SetObj(clInvInd);//TEST
   clInvInd->SetObjEvent(myevent);
   clServ->MyWaitTh();//ожидает изменения в документах на диске
+  clInvInd->SetObjEvent(myevent);
+  clInvInd->SetObjExcep(myexcep);
   clInvInd->PrepareDocs(clServ);
   clInvInd->UpdateDocumentBase1();//запускается для тестов, записываются файлы freq_dictionary.map freq_dictionaryTh.map для проверки!!!
 
@@ -460,10 +481,13 @@ cout << endl;
 
 TEST(TestApplication, ReadDocument){
   MyEvent* myevent = new MyEvent;
+  MyException* myexcep = new MyException;
   
   int argc=2; char* argv[] = {"SkillboxSearchEngine", "/r"};
   Server* clServ = new Server(argc,argv);
-  clServ->SetObjEvent(myevent);
+    clServ->SetObjEvent(myevent);
+    clServ->SetExcep(myexcep);
+    myevent->SetObjServ(clServ);
     if(clServ->Ready()){
       clServ->Run();    
   }
@@ -473,11 +497,21 @@ TEST(TestApplication, ReadDocument){
 
 //проверка работы оповещения об ошибках в server
 TEST(TestApplication, MyEvent_Exception){
-  MyEvent* myevent = new MyEvent;
-  int argc=2; char* argv[] = {"SkillboxSearchEngine", "/r"};
-  Server* clServ = new Server(argc,argv);
+MyEvent* myevent = new MyEvent;
+MyException* myexcep = new MyException;
 
-  cout << boolalpha << clServ->Ready() << endl;
+  int argc=2; char* argv[] = {"SkillboxSearchEngine", "/r"};
+    Server* clServ = new Server(argc,argv);
+    clServ->SetObjEvent(myevent);
+    clServ->SetExcep(myexcep);
+    myevent->SetObjServ(clServ);
+    while(true){
+      clServ->ReadyTest();
+
+      if(!clServ->GetException())
+        break;
+    };
+    ASSERT_EQ(clServ->GetException(),0);
 }
 
 int main(int argc, char** argv)

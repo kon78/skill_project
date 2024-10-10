@@ -55,20 +55,27 @@ void Server::TouchFile(char* fname){
 }
 
 void Server::ReadyTest(){
+  MyWaitTh();
+  // Th->detach();
   clConvJSON = new ConverterJSON();
   clConvJSON->SetObjEvent(pEvent);
+  clConvJSON->SetObjExcep(pExcep);
   clConvJSON->SetObjServ(this);
   clConvJSON->ReadTextfile(fTestFile.c_str());
 
+  // pEvent->Exceptions(pExcep);
 }
 
 bool Server::Ready(){
     clConvJSON = new ConverterJSON();
+    clInvInd = new InvertedIndex();
     KeyApplication();
   if(!start && keyApp == 103){
       Service();
   }
   else if(!start && !stop && !startfName){
+    clConvJSON->SetObjExcep(pExcep);
+    clInvInd->SetObjEvent(pEvent);
     clConvJSON->ReadJsonfile(fConfJSON.c_str());
     jConf = clConvJSON->GetJSON();
     // cout << eventException << endl;
@@ -79,14 +86,22 @@ bool Server::Ready(){
   return run;
 }
 
+size_t& Server::GetException(){
+  return eventException;
+}
+
 void Server::listening(size_t& eventException){
   unique_lock<std::mutex> lck(global);
 
+  while (!ready) cv.wait(lck);
+
   if(eventException > 0){
     // return;
-  while (!ready) cv.wait(lck);
-    cout << "was error!";
+    cout << "listening - was error!\n";
     --eventException;
+
+    if(eventException < 0)
+      eventException = 0;
     }
     ready=false;
 }
@@ -109,27 +124,11 @@ void Server::SetExcep(MyException* ptr){
 }
 
 void Server::Signal(size_t event){
-  cout << "Signal! Working now!\n";
-
+  // cout << "Signal! Working now!\n";
   ++eventException;
-  
   pEvent->Exceptions(pExcep);
-  //этот механизм пока выключил, мешал прохождению теста TEST(TestApplication, EQUAL_MAP)
-  // cout << msg << endl;
-  // if(Th->joinable()){
-  // go();
-  //   Th->join();
-  // }
-  
-
-//этот механизм пока выключил, мешал прохождению теста TEST(TestApplication, EQUAL_MAP)
-  // if(eventException == 0)
-  //   Th->detach();
-
-  //редактируем в памяти jConfJSON
-  // EditConfig(msg);
-  // ++event;
-  // mssg = msg;
+  Th->detach();
+  go();
 }
 
 void Server::Service(){
@@ -331,7 +330,7 @@ void Server::Run(){
       // clMyEvent->SetObjServ(this);
       // sPtrInvInd = make_shared<InvertedIndex>(clInvInd);//подклюяаем другой объект
   clSearchServ = new SearchService();
-  clInvInd = new InvertedIndex();
+  // clInvInd = new InvertedIndex();
   clConvJSON = new ConverterJSON();
 
   clInvInd->SetObjEvent(pEvent);
@@ -357,6 +356,11 @@ void Server::Run(){
       // Th.join();
       // clInvInd = new InvertedIndex();
       // sPtrInvInd = make_shared<InvertedIndex*>(clInvInd);//подклюяаем другой объект
+      clInvInd->SetObjEvent(pEvent);
+      clInvInd->SetObjExcep(pExcep);
+      clConvJSON->SetObjEvent(pEvent);
+      clConvJSON->SetObjExcep(pExcep);
+
       clInvInd->PrepareDocs(this);
       
         // clSearchServ->PrepareMap(clInvInd);
@@ -435,7 +439,6 @@ void Server::Run(){
 
   // }
 }
-
 
 // bool Server::filExist(string f){
 //   fileConfError = false;

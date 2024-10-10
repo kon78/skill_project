@@ -101,13 +101,18 @@ map<string,vector<EntryThreads>>& InvertedIndex::GetMap(){
   return freq_dictionaryTh;
 }
 
-map<string,vector<Entry>>& InvertedIndex::GetMap1(){
-  return freq_dictionary;
+void InvertedIndex::SetObjExcep(MyException* ptr){
+  assert(ptr != nullptr);
+  pExcep = ptr;
 }
 
 void InvertedIndex::SetObjEvent(MyEvent* ptr){
   assert(ptr != nullptr);
   pEvent = ptr;
+}
+
+map<string,vector<Entry>>& InvertedIndex::GetMap1(){
+  return freq_dictionary;
 }
 
 // bool InvertedIndex::ReadDocument(const string& doc){
@@ -130,9 +135,9 @@ void InvertedIndex::SetObjEvent(MyEvent* ptr){
 //1000 words 100 symbols
 void InvertedIndex::PrepareDocs(Server* pServObj){
   assert(pServObj != nullptr);//проверка на нулевой указатель
-  MyException myexcep;
-  myexcep.SetObjEvent(pEvent);
-  myexcep.SetObjServ(pServObj);
+  // MyException myexcep;
+  // pExcep->SetObjEvent(pEvent);
+  // pExcep->SetObjServ(pServObj);
   bool bNone, bWrongName, bDocs;
   fstream fp;
   string temp,temp1;
@@ -144,10 +149,10 @@ void InvertedIndex::PrepareDocs(Server* pServObj){
     bNone = false;
     bDocs = false;
     try{
-      bWrongName = myexcep.fDocsNames(d);
-      bNone = myexcep.fDocsExist(d);
+      bWrongName = pExcep->fDocsNames(d);
+      bNone = pExcep->fDocsExist(d);
     }catch (char const * error){
-      cout << myexcep.errors() << endl;
+      cout << pExcep->errors() << endl;
     }
       ++i;
 
@@ -167,11 +172,11 @@ void InvertedIndex::PrepareDocs(Server* pServObj){
               temp1 += temp + " ";
             }
             try{
-              bDocs = myexcep.ReadDocument(temp1);  //excep.ReadDocument(temp1);
+              bDocs = pExcep->ReadDocument(temp1);  //excep.ReadDocument(temp1);
               if(!bDocs)
                 docs.push_back(temp1);
             }catch(char const * error){
-              cout << myexcep.errors() << endl;
+              cout << pExcep->errors() << endl;
             }
     fp.close();
       }
@@ -179,7 +184,7 @@ void InvertedIndex::PrepareDocs(Server* pServObj){
       temp1.clear();
     // }
     }else{
-      string none = myexcep.nonefiles();//отсутствующие файлы
+      string none = pExcep->nonefiles();//отсутствующие файлы
       cout << "This files are none " << ((none!="")?none:"- empty") << endl;
 }
     }

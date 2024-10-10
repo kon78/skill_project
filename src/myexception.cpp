@@ -67,7 +67,7 @@ bool MyException::filExist(){
     bfex = true;
     error = "Config file is missing.\n";
     // throw "Config file is missing.\n";
-    pServObj->SetExcep();
+    // pServObj->SetExcep(this);
     pEvent->SetEvent(0);//wrong name
     pEvent->Signal();
     throw errors();

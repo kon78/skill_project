@@ -85,6 +85,7 @@ string& ViewValue(json::iterator itValue, string& key);
 string& ViewValueFiles(json::iterator itValue, string& key);
 void EditConfig(string& s);
 string makeRegExp();
+size_t& GetException();
 size_t numbFiles;
 // bool filExist(string f);
 

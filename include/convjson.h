@@ -21,6 +21,7 @@ using namespace nlohmann::json_abi_v3_11_3;
 
 struct RelativeIndex;
 class MyEvent;
+class MyException;
 class Server;
 class ConverterJSON{
   public:
@@ -43,6 +44,7 @@ class ConverterJSON{
   // vector<string> GetRequests(){}
   void putAnswers(vector<vector<pair<int, float>>>answers){}
   void SetObjEvent(MyEvent* ptr);
+  void SetObjExcep(MyException* ptr);
   void SetObjServ(Server* ptr);
   
   private:
@@ -52,6 +54,7 @@ class ConverterJSON{
     vector<string> vReq;
     shared_ptr<ofstream> fout;
     MyEvent* pEvent=nullptr;
+    MyException* pExcep=nullptr;
     Server* pServ=nullptr;
     // Service* pService = nullptr;
     // shared_ptr<Service>shrdPtrServ;

@@ -112,6 +112,7 @@ class InvertedIndex{
     void Hello();
     bool MapIsEqual();
     vector<string>& GetDocs();
+    void SetObjExcep(MyException* ptr);
     void SetObjEvent(MyEvent* ptr);
 
   private:
@@ -125,6 +126,7 @@ class InvertedIndex{
   mutex global;
   thread Th;
   MyEvent* pEvent=nullptr;
+  MyException* pExcep=nullptr;
 };
 
 template <class K, class V, class N> void InvertedIndex::SaveMap(map<K, V>& this_map, N fn){

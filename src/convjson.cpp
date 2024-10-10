@@ -2,15 +2,16 @@
 #include"myexception.h"
 
 void ConverterJSON::ReadJsonfile(const char* fname){
-  MyException myexcep;
+  // MyException myexcep;
+  assert(pExcep != nullptr);
   assert(fname != nullptr);
-  myexcep.SetFName(fname);
+  pExcep->SetFName(fname);
   try{
     ifstream f(fname);
-    myexcep.filExist();
+    pExcep->filExist();
     jData = json::parse(f);
   }catch(char const * error){
-    cout << myexcep.errors();
+    cout << pExcep->errors();
     exit(0);//по условиям задания
   }
 }
@@ -20,21 +21,27 @@ void ConverterJSON::SetObjEvent(MyEvent* ptr){
   pEvent = ptr;
 }
 
+void ConverterJSON::SetObjExcep(MyException* ptr){
+  assert(ptr != nullptr);
+  pExcep = ptr;
+}
+
 void ConverterJSON::SetObjServ(Server* ptr){
   assert(ptr != nullptr);
   pServ = ptr;
 }
 
 void ConverterJSON::ReadTextfile(const char* fname){
-  MyException myexcep;
-  myexcep.SetObjEvent(pEvent);
+  // MyException myexcep;
+  bool res;
+  pExcep->SetObjEvent(pEvent);
   assert(fname != nullptr);
   try{
     ifstream f(fname);
-    myexcep.filExist();
+    res = pExcep->filExist();
   }catch(char const * error){
     
-    cout << myexcep.errors();
+    cout << pExcep->errors();
   }
 }
 
@@ -80,14 +87,14 @@ void ConverterJSON::SaveJSON(json& j2f, const char* fname){
 }
 
 void ConverterJSON::PrepareQueries(const char* fname){
-  MyException myexcep;
+  // MyException myexcep;
   bool fexist;
   string key = "requests";
   assert(fname != nullptr);
   try{
-    fexist = myexcep.readjson(fname);//bool MyException::readjson();
+    fexist = pExcep->readjson(fname);//bool MyException::readjson();
   }catch(char const * error){
-    cout << myexcep.errors();
+    cout << pExcep->errors();
   }
   if(!fexist){
     json::iterator itReq;
