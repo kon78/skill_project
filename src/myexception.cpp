@@ -27,6 +27,16 @@ string& MyException::GetWrongNames(){
   return fileWrong;
 }
 
+bool MyException::ChangedFiles(const time_t& difftime){
+  const time_t etalon = 0;
+  if(difftime > etalon){
+    error = "was changed file.\n";
+    bwcf = true;//event
+    pEvent->SetEvent(1010);//wrong name
+    pEvent->Signal();
+  }
+}
+
 string& MyException::GetWrongName(){
   return fileWrong;
 }

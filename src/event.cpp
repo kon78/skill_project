@@ -4,6 +4,11 @@ void MyEvent::Exceptions(MyException* pObjExcep){
   assert(pObjExcep != nullptr);
   pMyExcep = pObjExcep;
   switch(evCode){
+    case 1010 : {
+      // pServ->Signal(evCode);
+      cout << "was changed!\n";
+      break;
+    }
     case 100 : {//wrong name
       msg = pObjExcep->GetWrongNames();
       wrongName.push_back(msg);

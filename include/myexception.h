@@ -23,6 +23,7 @@ private:
     bool bfnr;//bool file name request
     bool bfdoc;//bool files docs folder skill_project\\resources
     bool bfwn;//bool files wrong name
+    bool bwcf;//bool was changed file
     Server* pServObj = nullptr;
     MyEvent* pEvent = nullptr;
 public:
@@ -41,6 +42,7 @@ public:
     bool ReadDocument(const string& doc);
     bool readjson(const char* fname);
     string& GetWrongNames();
+    bool ChangedFiles(const time_t& difftime);
     const char* what() const noexcept override;
 };
 #endif

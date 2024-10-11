@@ -20,12 +20,12 @@ class MyEvent{
     void SetEvent(const size_t ev);
     void SetObjServ(Server* ptr);
     void Signal();
+    vector<string>& GetWrongNames();
   private:
     size_t evCode;
     MyException* pMyExcep=nullptr;
     vector<string>wrongName;
     Server* pServ=nullptr;
     string msg;
-    vector<string>& GetWrongNames();
 };
 #endif

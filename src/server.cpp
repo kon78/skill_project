@@ -49,14 +49,103 @@ void Server::examination(const string& fname){
       }
 }
 
-void Server::TouchFile(char* fname){
+void Server::TouchFile(const char* fname){
   assert(fname != nullptr);
   fout = make_shared<ofstream>(fname,ios::out);
 }
 
+void Server::GetResourcesInfo(){
+  string fname = "C:\\develop\\skill_project\\resfiles.inf";
+  TouchFile(fname.c_str());
+  ViewFolder(fname);
+}
+
+void Server::ViewFolder(string& fname){
+  filesystem::file_time_type ftime;
+  vector<string>vecFold;
+  vector<pair<string,time_t>>vecFilesInfoTime;
+  pair<string,time_t>prFileDate;
+  string fdata;
+
+  string path = "C:\\develop\\skill_project\\resources";
+    
+  for(auto &p : fs::directory_iterator(path)){
+    vecFold.push_back(p.path().filename().generic_string());
+    prFileDate.first = p.path().filename().generic_string();
+    ftime = std::filesystem::last_write_time(p);
+    auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
+    prFileDate.second = cftime;
+    vecFilesInfoTime.push_back(prFileDate);
+  }
+  
+  size_t ind = 0;
+  for(auto &d : vecFold){
+    auto cftime = vecFilesInfoTime[ind].second;
+
+    fdata += d + " ";
+    fdata += to_string(cftime) + "\n";
+    fout.get()->write(fdata.c_str(),fdata.length());
+    ++ind;
+    fdata.clear();
+  }
+  fout.get()->close();
+}
+
+void Server::ReadInfoResourcesFiles(){
+  fstream fp;
+  string fname = "C:\\develop\\skill_project\\resexample\\resfiles.inf";
+  pair<string,time_t>prFileDate;
+    string temp;
+    string fn;
+    fp.open(fname.c_str(), ios::in);
+    if(fp.is_open()){
+      while(!fp.eof()){
+        getline(fp,temp);
+        string::size_type pos;
+        pos = temp.find(".txt");
+        if(pos > temp.length()){
+          continue;}
+        else{
+          prFileDate.first = temp.substr(0,pos+4);
+          temp.erase(0,pos+4);
+          prFileDate.second = stol(temp);
+          vecFiles.push_back(prFileDate);
+        }
+      }
+    }
+}
+
+void Server::EventChangedFiles(){
+  cout << "EventChangedFiles()\n";
+  time_t difftime;
+  bool bwcf;
+  filesystem::file_time_type ftime;
+  string path = "C:\\develop\\skill_project\\resexample";
+  while(true){
+  for(auto &v : vecFiles){
+  
+    for(auto &p : fs::directory_iterator(path)){
+      if(v.first == p.path().filename().generic_string()){
+        ftime = std::filesystem::last_write_time(p);
+        auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
+
+          try{
+            difftime = cftime - v.second;            
+            bwcf = pExcep->ChangedFiles(difftime);//bool was changed file
+          }catch(char const * error){
+            cout << pExcep->errors();
+          }
+        if(bwcf)
+          vecChangedFiles.push_back(v.first);//если попался, то сюда
+      }
+    }
+  }
+  }
+}
+
 void Server::ReadyTest(){
   MyWaitTh();
-  // Th->detach();
+  ThChange->detach();
   clConvJSON = new ConverterJSON();
   clConvJSON->SetObjEvent(pEvent);
   clConvJSON->SetObjExcep(pExcep);
@@ -67,9 +156,12 @@ void Server::ReadyTest(){
 }
 
 bool Server::Ready(){
+    KeyApplication();
+    GetResourcesInfo();//resfiles.inf - информация о файлах ресурсов files001.txt и т.д. датаи время создания
+    ReadInfoResourcesFiles();//данные о файлах в вектор vecFiles
+    MyWaitTh();
     clConvJSON = new ConverterJSON();
     clInvInd = new InvertedIndex();
-    KeyApplication();
   if(!start && keyApp == 103){
       Service();
   }
@@ -83,6 +175,7 @@ bool Server::Ready(){
     run = true;
   }
   delete clConvJSON;
+  ThChange->detach();
   return run;
 }
 
@@ -97,7 +190,7 @@ void Server::listening(size_t& eventException){
 
   if(eventException > 0){
     // return;
-    cout << "listening - was error!\n";
+    cout << "listening - was signal!\n";
     --eventException;
 
     if(eventException < 0)
@@ -109,6 +202,7 @@ void Server::listening(size_t& eventException){
 void Server::MyWaitTh(){
   // thread Th(listening,this,ref(eventException));
   Th = new thread(listening,this,ref(eventException));
+  ThChange = new thread(EventChangedFiles,this);
   // Th->detach();
 }
 
@@ -124,8 +218,12 @@ void Server::SetExcep(MyException* ptr){
 }
 
 void Server::Signal(size_t event){
-  // cout << "Signal! Working now!\n";
   ++eventException;
+  if(event == 1010){
+    pEvent->Exceptions(pExcep);
+    // ThChange->detach();
+  }
+  // cout << "Signal! Working now!\n";
   pEvent->Exceptions(pExcep);
   Th->detach();
   go();
@@ -326,13 +424,8 @@ shared_ptr< map<string,vector<Entry>> > Server::GetMap1Tst(){
 }
 
 void Server::Run(){
-      // clMyEvent = new MyEvent();
-      // clMyEvent->SetObjServ(this);
-      // sPtrInvInd = make_shared<InvertedIndex>(clInvInd);//подклюяаем другой объект
   clSearchServ = new SearchService();
-  // clInvInd = new InvertedIndex();
   clConvJSON = new ConverterJSON();
-
   clInvInd->SetObjEvent(pEvent);
   switch(keyApp){
     case (101):{
@@ -349,8 +442,8 @@ void Server::Run(){
       break;
     }
     case (104):{
-      MyWaitTh();//будет висеть программа
-
+      // MyWaitTh();//будет висеть программа
+      // ThChange->join();
       cout << confApp.appName << " version " << confApp.version << " run!" << endl;
         // thread Th(listening,this,ref(eventException));
       // Th.join();
@@ -402,9 +495,6 @@ void Server::Run(){
 // size_t fieldQueries=1;
 // clSearchServ->CalculateRelative(fieldQueries,queries,vecUncnownWord);
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // for(;;);//cycle
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       clSearchServ->SaveVector();//для проверки глазами
       // clSearchServ->AnswersJSON();
@@ -417,6 +507,11 @@ void Server::Run(){
         // refMap = GetMap1();
         
         cout << "size map freq_dictionaryTh is " << refMapTh.get()->size() << endl;
+        // ThChange->detach();
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // ThChange->detach();
+      for(;;);
         break;
       }
       break;

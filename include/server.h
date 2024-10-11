@@ -58,7 +58,11 @@ string makeRegExpKey();
 void go();
 void ArgumSet(char* argv[]);
 void examination(const string& fname);
-void TouchFile(char* fname);
+void TouchFile(const char* fname);
+void GetResourcesInfo();
+void ViewFolder(string& fname);
+void ReadInfoResourcesFiles();
+void EventChangedFiles();
 void ReadyTest();
 bool Ready();
 void Run();
@@ -120,10 +124,13 @@ private:
   shared_ptr< map< string, vector<EntryThreads> >> refMapThTst;
   shared_ptr< map< string, vector<Entry> >> refMap;
   shared_ptr< map< string, vector<Entry> >>refMapTst;
-    bool ready;
+  bool ready;
   mutex global;
   condition_variable cv;
   thread* Th=nullptr;
+  thread* ThChange=nullptr;
+  vector<pair<string,time_t>>vecFiles;//resources
+  vector<string>vecChangedFiles;//was changed files folder resources
 
 };
 #endif
