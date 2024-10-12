@@ -4,7 +4,7 @@ void MyEvent::Exceptions(MyException* pObjExcep){
   assert(pObjExcep != nullptr);
   pMyExcep = pObjExcep;
   switch(evCode){
-    case 1010 : {
+    case 1010 : {//was changed files!
       // pServ->Signal(evCode);
       cout << "was changed!\n";
       break;

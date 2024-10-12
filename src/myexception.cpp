@@ -27,14 +27,19 @@ string& MyException::GetWrongNames(){
   return fileWrong;
 }
 
-bool MyException::ChangedFiles(const time_t& difftime){
+void MyException::ChangedFiles(const time_t& difftime){
   const time_t etalon = 0;
   if(difftime > etalon){
     error = "was changed file.\n";
     bwcf = true;//event
     pEvent->SetEvent(1010);//wrong name
     pEvent->Signal();
-  }
+  throw errors();
+}else{
+  bwcf = false;
+  error = "";
+  return;
+}
 }
 
 string& MyException::GetWrongName(){
@@ -46,7 +51,7 @@ void MyException::SetObjEvent(MyEvent* ptr){
   pEvent = ptr;
 }
 
-bool MyException::fDocsNames(string fn){
+void MyException::fDocsNames(string fn){
   string name,extension;
   string::size_type posPnt;
   // MyEvent* myevent = new MyEvent;
@@ -57,17 +62,23 @@ bool MyException::fDocsNames(string fn){
   if(fn == ""){
     error = "no file name\n";
     bfwn = true;//error
-    throw "no file name\n";
-  }else if(!(extension == "txt")){
+    // throw errors();//throw временно выключил
+  }else if(extension != "txt"){
     error = "wrong file name\n";
     bfwn = true;//error
     fileWrong += fn + " ";
     // myevent->Exceptions(this);
     pEvent->SetEvent(100);//wrong name
-    throw errors();
+    pEvent->Signal();
+    // throw errors();
+  }else{
+    error = "";
+    bfwn = false;
+    return;
   }
+  throw errors();
 
-  return bfwn;
+  // return bfwn;
 }
 
 bool MyException::filExist(){

@@ -63,6 +63,7 @@ void GetResourcesInfo();
 void ViewFolder(string& fname);
 void ReadInfoResourcesFiles();
 void EventChangedFiles();
+void EventChangedFilesWithoutThrow();
 void ReadyTest();
 bool Ready();
 void Run();

@@ -161,7 +161,7 @@ vector<vector<RelativeIndex>> SearchService::searchTh(const vector<string>& quer
   size_t fieldQueries = 1;//start index
 
   for(size_t i = 0; i < countThreads; ++i){
-    cout << queries_input[i] << endl;
+    // cout << queries_input[i] << endl;
     vecThSearchBase.emplace_back(thread(CalculateRelative,this,ref(fieldQueries),ref(queries_input),ref(vecUncnownWord)));
   }
 
@@ -171,8 +171,8 @@ vector<vector<RelativeIndex>> SearchService::searchTh(const vector<string>& quer
     t.join();
     }
 
-  cout << "size vector threads is " << vecThSearchBase.size() << " " << "fieldQueries is " << fieldQueries << endl;
-  cout << "size map filterWords is " << filterWords.size() << endl;
+  // cout << "size vector threads is " << vecThSearchBase.size() << " " << "fieldQueries is " << fieldQueries << endl;
+  // cout << "size map filterWords is " << filterWords.size() << endl;
   #if(do_this == do_not)
   for(auto &m : filterWords){
     cout << m.first << " ";
@@ -187,7 +187,7 @@ vector<vector<RelativeIndex>> SearchService::searchTh(const vector<string>& quer
   cout << endl;
 #endif
 
-  cout << "size vector vecView is " << vecView.size() << endl;
+  // cout << "size vector vecView is " << vecView.size() << endl;
 #if(do_this == do_not)
   typedef pair<string,vector<size_t>> value;
   value val;
@@ -203,8 +203,8 @@ vector<vector<RelativeIndex>> SearchService::searchTh(const vector<string>& quer
   }
 #endif
 
-  cout << "size vector vRelIndx is " << vecRelIdx.size() << endl;
-  #if(do_this == execute)
+  // cout << "size vector vRelIndx is " << vecRelIdx.size() << endl;
+  #if(do_this == do_not)
   size_t sizeAnswer = 5;
   size_t ind = 0;
   for(auto &vec : vecRelIdx){

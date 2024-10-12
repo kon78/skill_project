@@ -93,7 +93,7 @@ void Server::ViewFolder(string& fname){
 
 void Server::ReadInfoResourcesFiles(){
   fstream fp;
-  string fname = "C:\\develop\\skill_project\\resexample\\resfiles.inf";
+  string fname = "C:\\develop\\skill_project\\resfiles.inf";
   pair<string,time_t>prFileDate;
     string temp;
     string fn;
@@ -113,14 +113,14 @@ void Server::ReadInfoResourcesFiles(){
         }
       }
     }
+    cout << "size vecFiles is " << vecFiles.size() << endl;
 }
 
 void Server::EventChangedFiles(){
-  cout << "EventChangedFiles()\n";
+  // cout << "EventChangedFiles() - event\n";
   time_t difftime;
-  bool bwcf;
   filesystem::file_time_type ftime;
-  string path = "C:\\develop\\skill_project\\resexample";
+  string path = "C:\\develop\\skill_project\\resources";
   while(true){
   for(auto &v : vecFiles){
   
@@ -131,12 +131,48 @@ void Server::EventChangedFiles(){
 
           try{
             difftime = cftime - v.second;            
-            bwcf = pExcep->ChangedFiles(difftime);//bool was changed file
+            pExcep->ChangedFiles(difftime);//bool was changed file
           }catch(char const * error){
+            vecChangedFiles.push_back(v.first);//если попался, то сюда
             cout << pExcep->errors();
           }
-        if(bwcf)
-          vecChangedFiles.push_back(v.first);//если попался, то сюда
+      }
+    }
+  }
+  }
+}
+
+void Server::EventChangedFilesWithoutThrow(){
+  time_t difftime;
+  filesystem::file_time_type ftime;
+  string path = "C:\\develop\\skill_project\\resources";
+  // cout << "EventChangedFilesWithoutThrow() - run!\n";
+  const time_t etalon = 0;
+  // cout << "size vecFiles is " << vecFiles.size() << endl;
+  while(true){
+        // cout << "method working\n";
+  for(auto &v : vecFiles){
+  
+    for(auto &p : fs::directory_iterator(path)){
+      if(v.first == p.path().filename().generic_string()){
+        ftime = std::filesystem::last_write_time(p);
+        auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
+
+        // difftime = cftime - v.second;
+        // if(difftime > etalon){
+        //   vecChangedFiles.push_back(v.first);//если попался, то сюда
+        //   pEvent->SetEvent(1010);//wrong name
+        //   pEvent->Signal();
+        // }
+
+          try{
+            difftime = cftime - v.second;            
+            pExcep->ChangedFiles(difftime);//bool was changed file
+          }catch(char const * error){
+            vecChangedFiles.push_back(v.first);//если попался, то сюда
+            cout << pExcep->errors();
+          }
+
       }
     }
   }
@@ -159,7 +195,6 @@ bool Server::Ready(){
     KeyApplication();
     GetResourcesInfo();//resfiles.inf - информация о файлах ресурсов files001.txt и т.д. датаи время создания
     ReadInfoResourcesFiles();//данные о файлах в вектор vecFiles
-    MyWaitTh();
     clConvJSON = new ConverterJSON();
     clInvInd = new InvertedIndex();
   if(!start && keyApp == 103){
@@ -168,6 +203,7 @@ bool Server::Ready(){
   else if(!start && !stop && !startfName){
     clConvJSON->SetObjExcep(pExcep);
     clInvInd->SetObjEvent(pEvent);
+    pExcep->SetObjEvent(pEvent);
     clConvJSON->ReadJsonfile(fConfJSON.c_str());
     jConf = clConvJSON->GetJSON();
     // cout << eventException << endl;
@@ -175,7 +211,8 @@ bool Server::Ready(){
     run = true;
   }
   delete clConvJSON;
-  ThChange->detach();
+    // MyWaitTh();
+  // ThChange->detach();
   return run;
 }
 
@@ -186,7 +223,7 @@ size_t& Server::GetException(){
 void Server::listening(size_t& eventException){
   unique_lock<std::mutex> lck(global);
 
-  while (!ready) cv.wait(lck);
+  // while (!ready) cv.wait(lck);//выключаю
 
   if(eventException > 0){
     // return;
@@ -202,7 +239,8 @@ void Server::listening(size_t& eventException){
 void Server::MyWaitTh(){
   // thread Th(listening,this,ref(eventException));
   Th = new thread(listening,this,ref(eventException));
-  ThChange = new thread(EventChangedFiles,this);
+  // ThChange = new thread(EventChangedFiles,this);
+  ThChange = new thread(EventChangedFilesWithoutThrow,this);//EventChangedFilesWithoutThrow
   // Th->detach();
 }
 
@@ -220,13 +258,18 @@ void Server::SetExcep(MyException* ptr){
 void Server::Signal(size_t event){
   ++eventException;
   if(event == 1010){
+    cout << "event " << event << endl;
     pEvent->Exceptions(pExcep);
     // ThChange->detach();
+  }else if(event == 100){
+    cout << "event " << event << endl;
+    pEvent->Exceptions(pExcep);//wrong names
   }
   // cout << "Signal! Working now!\n";
-  pEvent->Exceptions(pExcep);
-  Th->detach();
-  go();
+  // pEvent->Exceptions(pExcep);
+
+  // Th->detach();//ломается после события 1010
+  // go();
 }
 
 void Server::Service(){
@@ -426,7 +469,7 @@ shared_ptr< map<string,vector<Entry>> > Server::GetMap1Tst(){
 void Server::Run(){
   clSearchServ = new SearchService();
   clConvJSON = new ConverterJSON();
-  clInvInd->SetObjEvent(pEvent);
+  // clInvInd->SetObjEvent(pEvent);
   switch(keyApp){
     case (101):{
       cout << "finded key " << "/e" << endl;
@@ -442,7 +485,6 @@ void Server::Run(){
       break;
     }
     case (104):{
-      // MyWaitTh();//будет висеть программа
       // ThChange->join();
       cout << confApp.appName << " version " << confApp.version << " run!" << endl;
         // thread Th(listening,this,ref(eventException));
@@ -454,13 +496,17 @@ void Server::Run(){
       clConvJSON->SetObjEvent(pEvent);
       clConvJSON->SetObjExcep(pExcep);
 
+      MyWaitTh();//будет висеть программа
+
+      Th->detach();//listening
+      ThChange->detach();
       clInvInd->PrepareDocs(this);
       
         // clSearchServ->PrepareMap(clInvInd);
 
       while(true){//!!!!!!!!!!!!!!!!!!!!!!!!!! FALSE - STOP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        clInvInd->Hello();//для проверки, можно убрать
+        // clInvInd->Hello();//для проверки, можно убрать
         
         //start here main code
         clInvInd->UpdateDocumentBase1();//запускается для тестов, записываются файлы freq_dictionary.map freq_dictionaryTh.map для проверки!!!

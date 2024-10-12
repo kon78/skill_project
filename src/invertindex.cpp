@@ -93,9 +93,9 @@ string InvertedIndex::_makeRegExp(const string &word){
   return ret;
 }
 
-void InvertedIndex::Hello(){
-  std::cout << "Hello from class InvertedIndex!\n";
-}
+// void InvertedIndex::Hello(){
+//   std::cout << "Hello from class InvertedIndex!\n";
+// }
 
 map<string,vector<EntryThreads>>& InvertedIndex::GetMap(){
   return freq_dictionaryTh;
@@ -149,7 +149,8 @@ void InvertedIndex::PrepareDocs(Server* pServObj){
     bNone = false;
     bDocs = false;
     try{
-      bWrongName = pExcep->fDocsNames(d);
+      // bWrongName = pExcep->fDocsNames(d);
+      pExcep->fDocsNames(d);
       bNone = pExcep->fDocsExist(d);
     }catch (char const * error){
       cout << pExcep->errors() << endl;

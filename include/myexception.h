@@ -38,11 +38,11 @@ public:
     bool filExist();
     bool SetFName(string fn);
     bool fDocsExist(string fn);
-    bool fDocsNames(string fn);
+    void fDocsNames(string fn);
     bool ReadDocument(const string& doc);
     bool readjson(const char* fname);
     string& GetWrongNames();
-    bool ChangedFiles(const time_t& difftime);
+    void ChangedFiles(const time_t& difftime);
     const char* what() const noexcept override;
 };
 #endif

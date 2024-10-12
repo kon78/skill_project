@@ -109,7 +109,7 @@ class InvertedIndex{
                                     /*const vector<string> &docs*/);
     void ThreadSleep();
     void go();
-    void Hello();
+    // void Hello();
     bool MapIsEqual();
     vector<string>& GetDocs();
     void SetObjExcep(MyException* ptr);
