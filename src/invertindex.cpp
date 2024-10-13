@@ -142,6 +142,7 @@ void InvertedIndex::PrepareDocs(Server* pServObj){
   fstream fp;
   string temp,temp1;
   vecFNames = pServObj->GetDocs();
+  
   size_t i = 0;
 
   for(auto &d : vecFNames){

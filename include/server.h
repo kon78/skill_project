@@ -45,7 +45,8 @@ class MyException;
 class Server{
 public:
 Server() = default;
-Server(int argc, char* argv[]):argumc(argc),start(false),startfName(false),stop(true),run(false),eventException(0),ready(false){
+Server(int argc, char* argv[]):argumc(argc),start(false),startfName(false),stop(true),run(false),eventException(0),srvEvent(0),ready(false),
+                              prepare(false){
   fConfJSON = "config.json"; fRequestsJSON = "requests.json"; fTestFile = "text.txt";
 
   ArgumSet(argv);
@@ -63,6 +64,7 @@ void GetResourcesInfo();
 void ViewFolder(string& fname);
 void ReadInfoResourcesFiles();
 void EventChangedFiles();
+void ChangedResourcesFiles();
 void EventChangedFilesWithoutThrow();
 void ReadyTest();
 bool Ready();
@@ -76,10 +78,10 @@ void Help();
 void SetObj(InvertedIndex* ptr);
 void SetObjEvent(MyEvent* ptr);
 // void Signal(string& msg);
-void Signal(size_t event);
+void Signal(size_t& event);
 void SetExcep(MyException* ptr);
 void MyWaitTh();
-void listening(size_t& eventException);
+void listening(size_t& eventException, size_t& srvEvent);
 shared_ptr< map< string, vector<EntryThreads> >> GetMap();//freq_dictionaryTh
 shared_ptr< map< string, vector<EntryThreads> >> GetMapTst();//freq_dictionaryTh
 shared_ptr< map< string, vector<Entry> >> GetMap1();//freq_dictionary
@@ -99,6 +101,7 @@ private:
   // shared_ptr<InvertedIndex> sPtrInvInd;
   int argumc;
   size_t eventException;
+  size_t srvEvent;
   string mssg;
   ConverterJSON* clConvJSON=nullptr;
   InvertedIndex* clInvInd=nullptr;
@@ -116,6 +119,7 @@ private:
   bool startfName;//проверка имен файлов
   bool stop;//общий стоп
   bool run;//разрешение на запуск
+  bool prepare;
   string fConfJSON;
   string fTestFile;
   string fRequestsJSON;

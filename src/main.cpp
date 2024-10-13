@@ -163,7 +163,8 @@ MyException* myexcep = new MyException;
     myevent->SetObjServ(clServ);
 
     if(clServ->Ready()){
-      clServ->Run();  
+      while(true)
+        clServ->Run();  
       // clServ->ReadyTest();
   }
   }

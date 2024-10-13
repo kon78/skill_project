@@ -54,6 +54,32 @@ void Server::TouchFile(const char* fname){
   fout = make_shared<ofstream>(fname,ios::out);
 }
 
+void Server::ChangedResourcesFiles(){
+  filesystem::file_time_type ftime;
+  cout << "ChangedResourcesFiles()\n";
+  string fileNumb;
+  size_t numb;
+  for(auto &f : vecChangedFiles){
+    fileNumb = f;
+    string::size_type pos = fileNumb.find(".txt");
+    fileNumb.erase(pos,fileNumb.length());
+    fileNumb.erase(0,4);
+    cout << fileNumb << endl;
+    if(fileNumb.length() == 3){
+      //good
+      numb = stoi(fileNumb);//перевод в число
+      cout << vecFiles[numb-1].first << " this file was changed!\n";
+      auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
+      vecFiles[numb-1].second = cftime;//здесь обовляем время
+      
+    }
+    else{
+      cout << "error!" << endl;
+    }
+  }
+  // for(;;);
+}
+
 void Server::GetResourcesInfo(){
   string fname = "C:\\develop\\skill_project\\resfiles.inf";
   TouchFile(fname.c_str());
@@ -134,6 +160,7 @@ void Server::EventChangedFiles(){
             pExcep->ChangedFiles(difftime);//bool was changed file
           }catch(char const * error){
             vecChangedFiles.push_back(v.first);//если попался, то сюда
+            ChangedResourcesFiles();
             cout << pExcep->errors();
           }
       }
@@ -211,7 +238,7 @@ bool Server::Ready(){
     run = true;
   }
   delete clConvJSON;
-    // MyWaitTh();
+    MyWaitTh();
   // ThChange->detach();
   return run;
 }
@@ -220,27 +247,53 @@ size_t& Server::GetException(){
   return eventException;
 }
 
-void Server::listening(size_t& eventException){
+void Server::listening(size_t& eventException, size_t& srvEvent){
   unique_lock<std::mutex> lck(global);
 
   // while (!ready) cv.wait(lck);//выключаю
+  while(eventException == 0){  }
 
   if(eventException > 0){
     // return;
     cout << "listening - was signal!\n";
-    --eventException;
+    // --eventException;
 
+
+    switch(srvEvent){
+      case 100 : {
+        cout << "files wrong name!\n";
+        srvEvent = 0;
+        --eventException;
+        break;
+      }
+      case 1010 : {
+        //запустить метод по обработке события
+        // ChangedResourcesFiles();
+        srvEvent = 0;
+        --eventException;
+        break;
+      }
+      default : {cout << "something wrong!?\n";
+                break;
+      }
+    }
     if(eventException < 0)
       eventException = 0;
     }
+
+    // for(;;);
+
     ready=false;
+    cout << "srvEvent=" << srvEvent << endl;
+    
+    
 }
 
 void Server::MyWaitTh(){
   // thread Th(listening,this,ref(eventException));
-  Th = new thread(listening,this,ref(eventException));
-  // ThChange = new thread(EventChangedFiles,this);
-  ThChange = new thread(EventChangedFilesWithoutThrow,this);//EventChangedFilesWithoutThrow
+  // Th = new thread(listening,this,ref(eventException),ref(srvEvent));
+  ThChange = new thread(EventChangedFiles,this);
+  // ThChange = new thread(EventChangedFilesWithoutThrow,this);//EventChangedFilesWithoutThrow
   // Th->detach();
 }
 
@@ -255,8 +308,11 @@ void Server::SetExcep(MyException* ptr){
   pExcep = ptr;
 }
 
-void Server::Signal(size_t event){
+void Server::Signal(size_t& event){
+
+  srvEvent = event;
   ++eventException;
+
   if(event == 1010){
     cout << "event " << event << endl;
     pEvent->Exceptions(pExcep);
@@ -265,11 +321,13 @@ void Server::Signal(size_t event){
     cout << "event " << event << endl;
     pEvent->Exceptions(pExcep);//wrong names
   }
+
   // cout << "Signal! Working now!\n";
   // pEvent->Exceptions(pExcep);
 
   // Th->detach();//ломается после события 1010
   // go();
+  // cout << "go\n";
 }
 
 void Server::Service(){
@@ -469,6 +527,8 @@ shared_ptr< map<string,vector<Entry>> > Server::GetMap1Tst(){
 void Server::Run(){
   clSearchServ = new SearchService();
   clConvJSON = new ConverterJSON();
+  
+    // MyWaitTh();
   // clInvInd->SetObjEvent(pEvent);
   switch(keyApp){
     case (101):{
@@ -486,26 +546,32 @@ void Server::Run(){
     }
     case (104):{
       // ThChange->join();
-      cout << confApp.appName << " version " << confApp.version << " run!" << endl;
+      if(!prepare){
+        cout << confApp.appName << " version " << confApp.version << " run!" << endl;
+        clInvInd->SetObjEvent(pEvent);
+        clInvInd->SetObjExcep(pExcep);
+        clConvJSON->SetObjEvent(pEvent);
+        clConvJSON->SetObjExcep(pExcep);
+        clInvInd->PrepareDocs(this);
+        ThChange->detach();
+        prepare = true;
+      }
         // thread Th(listening,this,ref(eventException));
       // Th.join();
       // clInvInd = new InvertedIndex();
       // sPtrInvInd = make_shared<InvertedIndex*>(clInvInd);//подклюяаем другой объект
-      clInvInd->SetObjEvent(pEvent);
-      clInvInd->SetObjExcep(pExcep);
-      clConvJSON->SetObjEvent(pEvent);
-      clConvJSON->SetObjExcep(pExcep);
 
-      MyWaitTh();//будет висеть программа
+      // MyWaitTh();//будет висеть программа
 
-      Th->detach();//listening
-      ThChange->detach();
-      clInvInd->PrepareDocs(this);
+      // Th->detach();//listening
+      // go();
+
+
       
         // clSearchServ->PrepareMap(clInvInd);
 
-      while(true){//!!!!!!!!!!!!!!!!!!!!!!!!!! FALSE - STOP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+      while(!ready){//!!!!!!!!!!!!!!!!!!!!!!!!!! FALSE - STOP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        
         // clInvInd->Hello();//для проверки, можно убрать
         
         //start here main code
@@ -557,8 +623,8 @@ void Server::Run(){
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         // ThChange->detach();
-      for(;;);
-        break;
+        ready = true;//останавливаемся и ждем событий
+        // break;
       }
       break;
     }
