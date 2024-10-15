@@ -46,7 +46,7 @@ class Server{
 public:
 Server() = default;
 Server(int argc, char* argv[]):argumc(argc),start(false),startfName(false),stop(true),run(false),eventException(0),srvEvent(0),ready(false),
-                              prepare(false){
+                              prepare(false),brfwc(false){
   fConfJSON = "config.json"; fRequestsJSON = "requests.json"; fTestFile = "text.txt";
 
   ArgumSet(argv);
@@ -62,8 +62,10 @@ void examination(const string& fname);
 void TouchFile(const char* fname);
 void GetResourcesInfo();
 void ViewFolder(string& fname);
+void ReadInfoRequest();
 void ReadInfoResourcesFiles();
 void EventChangedFiles();
+void EventChangedRequest();
 void ChangedResourcesFiles();
 void EventChangedFilesWithoutThrow();
 void ReadyTest();
@@ -103,6 +105,8 @@ private:
   size_t eventException;
   size_t srvEvent;
   string mssg;
+  string timeReq;
+  time_t tmReqFile;
   ConverterJSON* clConvJSON=nullptr;
   InvertedIndex* clInvInd=nullptr;
   SearchService* clSearchServ=nullptr;
@@ -120,6 +124,7 @@ private:
   bool stop;//общий стоп
   bool run;//разрешение на запуск
   bool prepare;
+  bool brfwc;//bool requests file was changed
   string fConfJSON;
   string fTestFile;
   string fRequestsJSON;
@@ -130,11 +135,13 @@ private:
   shared_ptr< map< string, vector<Entry> >> refMap;
   shared_ptr< map< string, vector<Entry> >>refMapTst;
   bool ready;
-  mutex global;
+  mutex global,globalReq;
   condition_variable cv;
   thread* Th=nullptr;
   thread* ThChange=nullptr;
+  thread* ThCnangeRq=nullptr;
   vector<pair<string,time_t>>vecFiles;//resources
+  vector<pair<string,time_t>>vecReq;//requests
   vector<string>vecChangedFiles;//was changed files folder resources
   vector<size_t>vecChngFlsNumb;
 

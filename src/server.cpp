@@ -81,10 +81,39 @@ void Server::ChangedResourcesFiles(){
   // for(;;);
 }
 
+
 void Server::GetResourcesInfo(){
   string fname = "C:\\develop\\skill_project\\resfiles.inf";
   TouchFile(fname.c_str());
   ViewFolder(fname);
+  string fNameReq = "C:\\develop\\skill_project\\requests.inf";
+  TouchFile(fNameReq.c_str());
+  ReadInfoRequest();
+}
+
+void Server::ReadInfoRequest(){
+  filesystem::file_time_type ftime;
+  string path = "C:\\develop\\skill_project";
+  string fName = "requests.txt";
+  string fdata;
+  pair<string,time_t>prFileDate;
+  for(auto &p : fs::directory_iterator(path)){
+    if(p.path().filename().generic_string() == fName){
+      prFileDate.first = p.path().filename().generic_string();
+      ftime = std::filesystem::last_write_time(p);
+      auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
+      prFileDate.second = cftime;
+      tmReqFile = cftime;
+      break;
+    }else{
+      continue;
+    }
+  }
+  fdata = prFileDate.first + " " + to_string(prFileDate.second);
+  timeReq = fdata;
+  fout.get()->write(fdata.c_str(),fdata.length());
+  fout.get()->close();
+  fout.reset();
 }
 
 void Server::ViewFolder(string& fname){
@@ -116,6 +145,7 @@ void Server::ViewFolder(string& fname){
     fdata.clear();
   }
   fout.get()->close();
+  fout.reset();
 }
 
 void Server::ReadInfoResourcesFiles(){
@@ -143,6 +173,27 @@ void Server::ReadInfoResourcesFiles(){
     cout << "size vecFiles is " << vecFiles.size() << endl;
 }
 
+void Server::EventChangedRequest(){
+  unique_lock<std::mutex> lck(globalReq);
+  // cout << "EventChangedRequest()" << endl;
+  string pathReq = "C:\\develop\\skill_project\\requests.txt";
+  time_t difftime;
+  filesystem::file_time_type ftime;
+  while(true){
+    ftime = std::filesystem::last_write_time(pathReq);
+    auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
+    try{
+      difftime = cftime - tmReqFile;
+      pExcep->ChangedFile(difftime);//bool was changed file requests.txt
+    }catch(char const * error){
+      brfwc = true;
+      auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
+      tmReqFile = cftime;//обновляем время после закрытия
+      cout << pExcep->errors();
+    }
+  }
+}
+
 void Server::EventChangedFiles(){
   unique_lock<std::mutex> lck(global);
   // cout << "EventChangedFiles() - event\n";
@@ -160,7 +211,7 @@ void Server::EventChangedFiles(){
         auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
 
           try{
-            difftime = cftime - v.second;            
+            difftime = cftime - v.second;
             pExcep->ChangedFiles(difftime);//bool was changed file
           }catch(char const * error){
             vecChangedFiles.push_back(v.first);//если попался, то сюда
@@ -171,7 +222,7 @@ void Server::EventChangedFiles(){
     string::size_type pos = fileNumb.find(".txt");
     fileNumb.erase(pos,fileNumb.length());
     fileNumb.erase(0,4);
-    cout << fileNumb << endl;
+    // cout << fileNumb << endl;
     if(fileNumb.length() == 3){
       //good
       numb = stoi(fileNumb);//перевод в число
@@ -299,6 +350,11 @@ void Server::listening(size_t& eventException, size_t& srvEvent){
         --eventException;
         break;
       }
+      case 1011 : {
+        srvEvent = 0;
+        --eventException;
+        break;
+      }
       default : {cout << "something wrong!?\n";
                 break;
       }
@@ -319,6 +375,7 @@ void Server::MyWaitTh(){
   // thread Th(listening,this,ref(eventException));
   // Th = new thread(listening,this,ref(eventException),ref(srvEvent));
   ThChange = new thread(EventChangedFiles,this);
+  ThCnangeRq = new thread(EventChangedRequest,this);
   // ThChange = new thread(EventChangedFilesWithoutThrow,this);//EventChangedFilesWithoutThrow
   // Th->detach();
 }
@@ -338,13 +395,15 @@ void Server::Signal(size_t& event){
 
   srvEvent = event;
   ++eventException;
-
+  cout << "event " << event << endl;
   if(event == 1010){
-    cout << "event " << event << endl;
+    // cout << "event " << event << endl;
     pEvent->Exceptions(pExcep);
     // ThChange->detach();
   }else if(event == 100){
-    cout << "event " << event << endl;
+    // cout << "event " << event << endl;
+    pEvent->Exceptions(pExcep);//wrong names
+  }else if(event == 1011){
     pEvent->Exceptions(pExcep);//wrong names
   }
 
@@ -579,9 +638,10 @@ void Server::Run(){
         clConvJSON->SetObjExcep(pExcep);
         clInvInd->PrepareDocs(this);
         ThChange->detach();
+        ThCnangeRq->detach();
         prepare = true;
       }
-
+      vector<string>queries;
         //start here main code
       while(true){
 
@@ -604,7 +664,7 @@ void Server::Run(){
       clConvJSON->prepareReqFile();
       const char* fname1 = "requests.txt";
       clConvJSON->PrepareQueries(fname1);
-      vector<string>queries = clConvJSON->GetRequest();
+      queries = clConvJSON->GetRequest();
       
 
       vector<vector<RelativeIndex>>result;//вектор ответов
@@ -613,7 +673,7 @@ void Server::Run(){
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       cout << "size vector result is " << result.size() << endl;
       clSearchServ->SaveVector();//для проверки глазами
-      clConvJSON->Answers(result);//запись ответов в файл answers.json
+      clConvJSON->Answers(result);//запись ответов в файл answers.json      
     }
         ready = true;//останавливаемся и ждем событий
         }else{
@@ -657,6 +717,38 @@ void Server::Run(){
             // }
 
                 // ready = false;
+
+          }else if(srvEvent == 1011){
+            // clConvJSON->prepareReqFile();
+            bool bQueries = false;
+            const char* fname1 = "requests.txt";
+            clConvJSON->PrepareQueries(fname1);
+            vector<string>newQueries = clConvJSON->GetRequest();
+
+            size_t sizeQueries = ([queries](){
+              size_t szq=0;
+              for(auto &s : queries){
+                szq += s.length();
+              }
+              return szq;
+            }());
+
+            size_t sizeNewQueries = ([newQueries](){
+              size_t sznq=0;
+              for(auto &s : newQueries){
+                sznq += s.length();
+              }
+              return sznq;
+            }());
+
+            if(sizeQueries == sizeNewQueries && queries.size() == newQueries.size()){
+              ready = true;//ничего не делаем
+            }else{          
+            clInvInd->ClearDocs();
+            clInvInd->PrepareDocs(this);//получаем документы и смотрим файл который изменился
+clSearchServ->ClearVecRelIdx();
+              ready = false;
+            }
 
           }
         }

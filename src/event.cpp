@@ -10,6 +10,12 @@ void MyEvent::Exceptions(MyException* pObjExcep){
       evCode = 0;
       break;
     }
+    case 1011 : {//was changed files!
+      // pServ->Signal(evCode);
+      cout << "was changed!\n";
+      evCode = 0;
+      break;
+    }
     case 100 : {//wrong name
       msg = pObjExcep->GetWrongNames();
       wrongName.push_back(msg);

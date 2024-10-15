@@ -24,6 +24,7 @@ private:
     bool bfdoc;//bool files docs folder skill_project\\resources
     bool bfwn;//bool files wrong name
     bool bwcf;//bool was changed file
+    bool bwcfr;//bool was changed file requests
     Server* pServObj = nullptr;
     MyEvent* pEvent = nullptr;
 public:
@@ -43,6 +44,7 @@ public:
     bool readjson(const char* fname);
     string& GetWrongNames();
     void ChangedFiles(const time_t& difftime);
+    void ChangedFile(const time_t& difftime);
     const char* what() const noexcept override;
 };
 #endif
