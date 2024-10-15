@@ -132,6 +132,10 @@ map<string,vector<Entry>>& InvertedIndex::GetMap1(){
 //   return (longWord || countWord);
 // }
 
+void InvertedIndex::ClearDocs(){
+  if(docs.size() > 0)
+    docs.clear();
+}
 //1000 words 100 symbols
 void InvertedIndex::PrepareDocs(Server* pServObj){
   assert(pServObj != nullptr);//проверка на нулевой указатель

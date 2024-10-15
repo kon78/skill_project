@@ -159,7 +159,7 @@ vector<vector<RelativeIndex>> SearchService::searchTh(const vector<string>& quer
   vector<thread>vecThSearchBase;
   size_t countThreads = queries_input.size();
   size_t fieldQueries = 1;//start index
-
+  // cout << "size vector queries is " << queries_input.size() << endl;
   for(size_t i = 0; i < countThreads; ++i){
     // cout << queries_input[i] << endl;
     vecThSearchBase.emplace_back(thread(CalculateRelative,this,ref(fieldQueries),ref(queries_input),ref(vecUncnownWord)));
@@ -778,8 +778,12 @@ for(auto & vec:vecRelIdx){
   cout << "logic is " << res.size() << " vResult is " << vResult.size() << endl;
   assert(result.size() == vecRelIdx.size());//число ответов не совпадает!!!
   // Answers1();
-  Answers();
+  // Answers();
   return vecRelIdx;
+}
+
+void SearchService::ClearVecRelIdx(){
+  vecRelIdx.clear();
 }
 
 void SearchService::SaveVector(){
@@ -799,230 +803,6 @@ void SearchService::SaveVector(){
   fout.get()->close();
   fout.reset();
 }
-
-json& SearchService::GetJson(){
-  return jAnswJSON;
-}
-
-void SearchService::AnswersJSON(){
-  jAnswJSON = {{"answers",{}}};
-  json jfield;
-  json::iterator it = jAnswJSON.begin();
-  size_t vecInd = 0;//для формирования ответов из результатов vecRelIdx
-  //число ответов
-  size_t i, ind;
-  ind = 1;
-  for(auto &vec : vecRelIdx){
-  string field = "request";
-    //request001 request 002 ... lambda
-        field += [ind](){
-      string temp;
-      temp = to_string(ind);
-      if(temp.length() == 1){
-        temp.clear();temp += "00";temp += to_string(ind);
-      }else if(temp.length() == 2){
-        temp.clear();temp += "0";temp += to_string(ind);
-      }else if(temp.length() == 3){
-        temp.clear();temp += to_string(ind);}
-      return temp;
-    }();
-    it.value().push_back(field);
-    jfield[field] = it.value();
-    field.clear();
-
-    if(vec.size() > 0){    
-        json jb = { "result" , true };
-      it.value().push_back(jb);
-
-      json j;
-      json jr;
-      json::iterator itRel = jr.begin();
-      size_t i = 0;
-
-      for(auto &r : vec){  
-    j[i] = {{"doc_id",r.doc_id},{"rank",r.rank}};
-    jr["relevance"] = j;
-    ++i;
-    }
-    it.value().push_back(jr);
-    }else{
-     json jb = { "result" , false };
-      it.value().push_back(jb);
-
-    }
-    ++ind;
-  }
-  
-}
-
-void SearchService::Answers(){
-
-jAnswJSON = {{"answers",{}}};
-  json::iterator it = jAnswJSON.begin();
-  size_t ind = 0;
-  size_t vecInd = 0;//для формирования ответов из результатов vecRelIdx
-  json value;
-  json j;
-      vector<pair<size_t,double>>vec2j;
-      vector<string>vec2jstr;
-      pair<size_t,double>jp;
-
-  for(auto &vec : vResult){
-    vector<RelativeIndex>& tempV = vecRelIdx[vecInd];//не совсем понятная запись???
-    for(size_t i = 0; i < vec.size(); ++i){
-    string field = "request";
-    json jfield;
-   ++ind;
-    field += [ind](){
-      string temp;
-      temp = to_string(ind);
-      if(temp.length() == 1){
-        temp.clear();temp += "00";temp += to_string(ind);
-      }else if(temp.length() == 2){
-        temp.clear();temp += "0";temp += to_string(ind);
-      }else if(temp.length() == 3){
-        temp.clear();temp += to_string(ind);}
-      return temp;
-    }();
-    it.value().push_back(field);
-    jfield[field] = it.value();
-
-      if(vec[i]){
-      json jb = { "result" , true };
-      it.value().push_back(jb);
-      
-    json jr;
-    json::iterator itRel = jr.begin();
-    size_t i = 0;
-
-#if(do_this == do_not)
-  for(auto &v : tempV){
-    j[i] = {{"doc_id",v.doc_id},{"rank",[v](){
-      double t;//floor(v.rank * 1e+4) / 1e+4
-      if(v.rank < 1){
-        t = floor(v.rank * 1e+3) / 1e+3;}else{
-          t = v.rank;
-        }
-      return t;
-    }()}};
-    ++i;
-    jr["relevance"] = j;
-  }
-#endif
-
-#if(do_this == do_not)
-    for(auto &vec:vecRelIdx){
-      for(auto &v:vec){
-    j[i] = {{"doc_id",v.doc_id},{"rank",v.rank}};
-    jr["relevance"] = j;
-    ++i;
-    }
-    }
-#endif
-
-    it.value().push_back(jr);
-
-      }else{
-     json jb = { "result" , false };
-      it.value().push_back(jb);
-      }
-    }
-    ++vecInd;
-  }
-  // cout << jAnswJSON << endl;
-
-  //запись в файл
-
-}
-
-void SearchService::Answers1(){
-jAnswJSON = {
-  {
-    "answers",{
-
-    }    
-  }
-};
-  json::iterator it = jAnswJSON.begin();
-  // pair<string,bool>jp;
-  size_t ind = 0;string field = "request";
-  json value;
-  json j;
-      vector<pair<size_t,double>>vec2j;
-      vector<string>vec2jstr;
-      pair<size_t,double>jp;
-
-  for(auto &v : vecRelIdx){
-    if(result[ind]){
-    ++ind;
-    field += [ind](){
-      string temp;
-      temp = to_string(ind);
-      if(temp.length() == 1){
-        temp.clear();temp += "00";temp += to_string(ind);
-      }else if(temp.length() == 2){
-        temp.clear();temp += "0";temp += to_string(ind);
-      }else if(temp.length() == 3){
-        temp.clear();temp += to_string(ind);}
-      return temp;
-    }();
-
-    it.value().push_back(field);
-    // j = it.value();
-    // value = it.value();
-      json jb = { "result" , true };
-      it.value().push_back(jb);
-      
-    // json jparse,jdoc,jrel;
-    json jr;
-    json::iterator itRel = jr.begin();
-    size_t i = 0;
-    for(auto &vec:vecRelIdx){
-      for(auto &v:vec){
-    j[i] = {{"doc_id",v.doc_id},{"rank",v.rank}};
-    jr["relevance"] = j;
-    ++i;
-    }
-    }
-    it.value().push_back(jr);
-    }else{
-      json jb = { "result" , false };
-      it.value().push_back(jb);
-    }
-  }
-  // cout << jAnswJSON << endl;
-}
-
-//можно обращаться к коллекции и через обычный указатель
-// void SearchService::search1(){
-//   map<string, vector<EntryThreads>>& mapInvInd = ptrInvInd->GetMap();
-//   MyMapTh::iterator itK = mapInvInd.begin();
-//   string strSrch = "milk";
-//   // try{
-//   //   itK = mapInvInd->find(strSrch);
-//   // }catch(exception &ex){
-//   //   cout << "can't find in object map\n" << ex.what() << endl;
-//   // }
-//   cout << "key " << itK->first << "\nvalue ";
-//   // cout << "size map is " << editM.MapSize(*uMapIdx);//выдает неверный результат - отказаться!!!
-//   cout << "size value is " << itK->second.size() << endl;
-//   MyVectorTh value;
-//   value = itK->second;
-//     for(int i = 0; i < value.size(); i++){
-//       cout << "{";
-//       cout << value[i].doc_id << "," << value[i].count << "}";
-//     }  
-
-//   // json j = shrdPtrServ->GetRequests();
-//   // cout << "request is " << j << endl;
-//   json::iterator it = j.begin();
-//   cout << "key " << it.key() << " value ";
-//   size_t jsize = it.value().size();
-//   for(size_t ind = 0; ind < jsize; ++ind){
-//     cout << it.value()[ind] << " ";
-//   }
-//   cout << endl;
-// }
 
 void SearchService::GetInvIndMap(){
     // map<string, vector<EntryThreads>>& mapInvInd = ptrInvInd->GetMap();//выполняется

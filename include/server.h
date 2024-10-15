@@ -136,6 +136,7 @@ private:
   thread* ThChange=nullptr;
   vector<pair<string,time_t>>vecFiles;//resources
   vector<string>vecChangedFiles;//was changed files folder resources
+  vector<size_t>vecChngFlsNumb;
 
 };
 #endif

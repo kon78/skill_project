@@ -46,6 +46,8 @@ class ConverterJSON{
   void SetObjEvent(MyEvent* ptr);
   void SetObjExcep(MyException* ptr);
   void SetObjServ(Server* ptr);
+  void ClearAnswers();
+  void ClearRequest();
   
   private:
     json jData;

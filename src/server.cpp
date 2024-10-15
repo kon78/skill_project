@@ -55,6 +55,7 @@ void Server::TouchFile(const char* fname){
 }
 
 void Server::ChangedResourcesFiles(){
+  // unique_lock<std::mutex> lck(global);
   filesystem::file_time_type ftime;
   cout << "ChangedResourcesFiles()\n";
   string fileNumb;
@@ -71,7 +72,7 @@ void Server::ChangedResourcesFiles(){
       cout << vecFiles[numb-1].first << " this file was changed!\n";
       auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
       vecFiles[numb-1].second = cftime;//здесь обовляем время
-      
+      vecChngFlsNumb.push_back(numb-1);//вместо имени файла его номер
     }
     else{
       cout << "error!" << endl;
@@ -143,10 +144,13 @@ void Server::ReadInfoResourcesFiles(){
 }
 
 void Server::EventChangedFiles(){
+  unique_lock<std::mutex> lck(global);
   // cout << "EventChangedFiles() - event\n";
   time_t difftime;
   filesystem::file_time_type ftime;
   string path = "C:\\develop\\skill_project\\resources";
+  string fileNumb;
+  size_t numb;
   while(true){
   for(auto &v : vecFiles){
   
@@ -160,7 +164,29 @@ void Server::EventChangedFiles(){
             pExcep->ChangedFiles(difftime);//bool was changed file
           }catch(char const * error){
             vecChangedFiles.push_back(v.first);//если попался, то сюда
-            ChangedResourcesFiles();
+            // ChangedResourcesFiles();
+
+  for(auto &f : vecChangedFiles){
+    fileNumb = f;
+    string::size_type pos = fileNumb.find(".txt");
+    fileNumb.erase(pos,fileNumb.length());
+    fileNumb.erase(0,4);
+    cout << fileNumb << endl;
+    if(fileNumb.length() == 3){
+      //good
+      numb = stoi(fileNumb);//перевод в число
+      cout << vecFiles[numb-1].first << " this file was changed!\n";
+      auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
+      vecFiles[numb-1].second = cftime;//здесь обовляем время
+      vecChngFlsNumb.push_back(numb-1);//вместо имени файла его номер
+    }
+    else{
+      cout << "error!" << endl;
+    }
+  }
+  // for(;;);
+
+
             cout << pExcep->errors();
           }
       }
@@ -545,7 +571,6 @@ void Server::Run(){
       break;
     }
     case (104):{
-      // ThChange->join();
       if(!prepare){
         cout << confApp.appName << " version " << confApp.version << " run!" << endl;
         clInvInd->SetObjEvent(pEvent);
@@ -556,75 +581,85 @@ void Server::Run(){
         ThChange->detach();
         prepare = true;
       }
-        // thread Th(listening,this,ref(eventException));
-      // Th.join();
-      // clInvInd = new InvertedIndex();
-      // sPtrInvInd = make_shared<InvertedIndex*>(clInvInd);//подклюяаем другой объект
 
-      // MyWaitTh();//будет висеть программа
-
-      // Th->detach();//listening
-      // go();
-
-
-      
-        // clSearchServ->PrepareMap(clInvInd);
-
-      while(!ready){//!!!!!!!!!!!!!!!!!!!!!!!!!! FALSE - STOP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        
-        // clInvInd->Hello();//для проверки, можно убрать
-        
         //start here main code
+      while(true){
+
+        if(!ready){
+
         clInvInd->UpdateDocumentBase1();//запускается для тестов, записываются файлы freq_dictionary.map freq_dictionaryTh.map для проверки!!!
         clInvInd->UpdateDocumentBaseThreads();
         // clSearchServ->PrepareMap(clInvInd);
         refMapTh = GetMap();//работаем с reference map полученной от работы потоков
         if(refMapTh.get()->size() > 0){
-          //разрешаем работу SearchService
-          //!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
           clSearchServ->SetObjInvInd(clInvInd);
           clSearchServ->GetInvIndDocs();
           clSearchServ->GetInvIndMap();//
 
-          vector<vector<RelativeIndex>>result;//вектор ответов
 //одиночный поиск ответов на запрос 
           // vector<string>queries={"moscow is the capital of russia"};
           // result = clSearchServ->search(queries);//result - 
 
-          //!!!!!!!!!!!!!!!!!!!!!!!!!!!
       clConvJSON->prepareReqFile();
       const char* fname1 = "requests.txt";
       clConvJSON->PrepareQueries(fname1);
       vector<string>queries = clConvJSON->GetRequest();
+      
 
-      //result = clSearchServ->search(queries);
-
+      vector<vector<RelativeIndex>>result;//вектор ответов
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
       result = clSearchServ->searchTh(queries);//поточный метод!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// vector<string> vecUncnownWord;
-// size_t fieldQueries=1;
-// clSearchServ->CalculateRelative(fieldQueries,queries,vecUncnownWord);
-
-
+      cout << "size vector result is " << result.size() << endl;
       clSearchServ->SaveVector();//для проверки глазами
-      // clSearchServ->AnswersJSON();
       clConvJSON->Answers(result);//запись ответов в файл answers.json
-      
-      // const char* fname = "answers.json";
-      // clConvJSON->TouchFile(fname);
-      // clConvJSON->SaveJSON(clSearchServ->GetJson(),fname);
     }
-        // refMap = GetMap1();
-        
-        cout << "size map freq_dictionaryTh is " << refMapTh.get()->size() << endl;
-        // ThChange->detach();
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // ThChange->detach();
         ready = true;//останавливаемся и ждем событий
-        // break;
+        }else{
+          //здесь смотрим что изменилось - файлы, задания и т.д. и принимаем решение о выполнении нового расчета
+          if(srvEvent == 1010){
+            bool bChange = true;
+            //работаем над измененным файлом
+            string fTmpBefore, fTmpAfter;
+            vector<string>LastDocs = clInvInd->GetDocs();//тексты!!! предидущие документы, чтобы посмотреть что изменилось
+
+            // while(bChange){
+            size_t cnt = 0;
+            while(vecChngFlsNumb.size() == 0){
+              
+              ++cnt;};
+            cout << "counter " << cnt << endl;
+
+            for(auto &f : vecChngFlsNumb){
+              fTmpBefore = LastDocs[f];//получаем предыдущий файл           
+            }
+            LastDocs.clear();
+            clInvInd->ClearDocs();
+            clInvInd->PrepareDocs(this);//получаем документы и смотрим файл который изменился
+            LastDocs = clInvInd->GetDocs();//смотрим что после прочтения документов
+            for(auto &f : vecChngFlsNumb){
+              fTmpAfter = LastDocs[f];//получаем предыдущий файл           
+            }
+            if(fTmpBefore == fTmpAfter){
+              cout << fTmpBefore << " " << fTmpAfter << endl;
+              //есть изменения в содержании
+              ready = true;//ничего не делаем
+              cout << "no changes!\n";
+            }else{
+              cout << fTmpBefore << " " << fTmpAfter << endl;
+              ready = false;//начинаем новый расчет
+              bChange = false;//когда все закончится
+              clSearchServ->ClearVecRelIdx();
+              cout << "was changes!\n";
+              // break;
+            }
+            // }
+
+                // ready = false;
+
+          }
+        }
       }
       break;
     }
@@ -646,6 +681,7 @@ void Server::Run(){
 
   // }
 }
+
 
 // bool Server::filExist(string f){
 //   fileConfError = false;

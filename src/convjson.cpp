@@ -31,6 +31,10 @@ void ConverterJSON::SetObjServ(Server* ptr){
   pServ = ptr;
 }
 
+void ConverterJSON::ClearAnswers(){
+  jAnswJSON.clear();
+}
+
 void ConverterJSON::ReadTextfile(const char* fname){
   // MyException myexcep;
   bool res;
@@ -58,6 +62,10 @@ json ConverterJSON::GetJSON(){
 // void ConverterJSON::Hello(){
 //   cout << "Hello from class ConverterJSON!\n";
 // }
+
+void ConverterJSON::ClearRequest(){
+  jRequestsJSON.clear();
+}
 
 void ConverterJSON::prepareReqFile(){
   cout << "Prepare file requests.json!\n";
@@ -111,6 +119,7 @@ void ConverterJSON::PrepareQueries(const char* fname){
         // cout << temp << endl;
         itReq.value().push_back(temp);
       }
+      temp.clear();
     }
     else{
       cout << "file not open!\n";
@@ -121,6 +130,10 @@ void ConverterJSON::PrepareQueries(const char* fname){
 vector<string>& ConverterJSON::GetRequest(){
   string key = "requests";
   json::iterator itReq;
+  
+  if(vReq.size() > 0)
+    vReq.clear();
+
   itReq = jRequestsJSON.find(key);
   assert(itReq != jRequestsJSON.end());
   for(size_t ind = 0; ind < itReq.value().size(); ++ind){
@@ -137,9 +150,11 @@ void ConverterJSON::Answers(vector<vector<RelativeIndex>>& ridx){
   jAnswJSON = {{"answers",{}}};
   json jfield;
   json::iterator it = jAnswJSON.begin();
-  size_t vecInd = 0;//для формирования ответов из результатов vecRelIdx
+  // size_t vecInd = 0;//для формирования ответов из результатов vecRelIdx
   //число ответов
-  size_t i, ind;
+  // size_t i, ind;
+  size_t ind;
+  // size_t ind=0;
   ind = 1;
   for(auto &vec : ridx){
   string field = "request";
@@ -166,8 +181,8 @@ void ConverterJSON::Answers(vector<vector<RelativeIndex>>& ridx){
       json j;
       json jr;
       json::iterator itRel = jr.begin();
-      size_t i = 0;
 
+      size_t i = 0;
       for(auto &r : vec){  
     j[i] = {{"doc_id",r.doc_id},{"rank",r.rank}};
     jr["relevance"] = j;

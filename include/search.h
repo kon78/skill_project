@@ -118,22 +118,23 @@ public:
   vector<vector<RelativeIndex>> search(const vector<string>& queries_input);
   void CalculateRelative(size_t& fieldQueries, const vector<string>& queries_input, vector<string>& vecUncnownWord);
   // void search1();
-  void Answers1();//выдает ответ только для одного запроса
-  void Answers();
-  void AnswersJSON();
+  // void Answers1();//выдает ответ только для одного запроса
+  // void Answers();
+  // void AnswersJSON();
   string makeRegExpSpace();
   void Hello();
-  json& GetJson();
+  // json& GetJson();
   void SaveVector();
   template <class T> void sorting(vector<T> &t);
   void go();
+  void ClearVecRelIdx();
   // template<class T> void SetAddrObj(T* _shared);//{ptrInvInd = _shared;}
   
 private:
 // vector<RelativeIndex>vRelIndx;//ответ для релевантностей
 vector<string>vecUncnownWord;
 vector< vector< pair<string,vector<size_t> >> >vecView;
-vector<pair<string,size_t>>uniqueWords;
+// vector<pair<string,size_t>>uniqueWords;
   // shared_ptr<Service>shrdPtrServ;
   shared_ptr<InvertedIndex>shrdInvInd;
   unordered_map<std::string, int> filterWords;//уникальные слова получаемые из запроса
@@ -148,7 +149,7 @@ vector<pair<string,size_t>>uniqueWords;
   unique_ptr<vector<string>> uDocsIdx;
   vector<vector<pair<size_t,size_t>>>vecAnswerRabs;
   vector<vector<RelativeIndex>>vecRelIdx;
-  json jAnswJSON;
+  // json jAnswJSON;
   vector<vector<bool>>vResult;//для файла answers.json результат найденного ответа true-ответы есть false-ответов нет
   vector<bool>result;//этот вектор для метода Answers1()
   map<string,vector<EntryThreads>> refMapTh;
