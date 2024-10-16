@@ -11,7 +11,7 @@
 - [About the program](About...)
 - [Princeps](#princeps)
 - 
-- [CONFIGJSON](#Configjson)
+- [CONFIGJ.SON](#Config.json)
 - [Relative](#relative)
 - 
 ## About...
@@ -29,6 +29,6 @@
 6. Результаты поиска ранжируются, сортируются и отдаются пользователю, максимальное количество возможных документов в ответе задаётся в
 конфигурационном файле. В конце программа формирует файл [ANSWERS.JSON], в который записывает результаты поиска.
 
-## Configjson
+## Config.json
 
 ## Relative
