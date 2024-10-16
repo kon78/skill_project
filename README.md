@@ -50,14 +50,17 @@ skill_project\resources.
 ## Relative
 
 ## Class_InvertedIndex
-Краткое описание класса. Основной метод void UpdateDocumentBaseThreads() формирует потоки, равные числу файлов с ресурсами, в которых 
+Краткое описание класса InvertedIndex.
+Класс принимает текстовые блоки и формирует из них инвертированный индекс (хранит и индексирует слова).
+Основной метод void UpdateDocumentBaseThreads() формирует потоки, равные числу файлов с ресурсами, в которых 
+
 ```cpp
   for(size_t i = 0; i < countThreads; ++i){//(int i = 0; i < countThreads; ++i)
     vecThDocBase.emplace_back(thread(DocBaseThreadNew,this,ref(fieldDocs)/*freq_dictionaryTh, ref(docs)*/));
   }
 ```
 метод DocBaseThreadNew(size_t &numDocs) производит заполнение частотного словаря map<string, vector<EntryThreads>> freq_dictionaryTh.
-EntryThreads структура
+EntryThreads структура данных. Заполняется в DocBaseThreadNew и используется в последующем для поиска по текстам.
 ```cpp
 struct EntryThreads{
   size_t doc_id, count;
