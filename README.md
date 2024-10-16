@@ -52,4 +52,10 @@ skill_project\resources.
 Краткое описание класса. Основной метод void UpdateDocumentBaseThreads() формирует потоки, равные числу файлов с ресурсами, в которых 
 метод DocBaseThreadNew(size_t &numDocs) производит заполнение частотного словаря map<string, vector<EntryThreads>> freq_dictionaryTh. Этот метод является основным, в дальнейшей
 работе программы используется freq_dictionaryTh.
+```cpp
+  for(size_t i = 0; i < countThreads; ++i){//(int i = 0; i < countThreads; ++i)
+    vecThDocBase.emplace_back(thread(DocBaseThreadNew,this,ref(fieldDocs)/*freq_dictionaryTh, ref(docs)*/));
+  }
+
+```
 
