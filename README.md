@@ -46,10 +46,10 @@
 Программа тематически разбита на основные классы class [InvertedIndex](#class_InvertedIndex). Проихзводит обработку входных документов, расположенных в папке
 skill_project\resources. 
 
-
 ## Relative
 
 ## Class_InvertedIndex
-Краткое описание класса. Основной метод void UpdateDocumentBaseThreads().
-Поточный метод производит заполнение частотного словаря программы map<string, vector<EntryThreads>> freq_dictionaryTh.
+Краткое описание класса. Основной метод void UpdateDocumentBaseThreads() формирует потоки, равные числу файлов с ресурсами, в которых 
+метод DocBaseThreadNew(size_t &numDocs) производит заполнение частотного словаря map<string, vector<EntryThreads>> freq_dictionaryTh. Этот метод является основным, в дальнейшей
+работе программы используется freq_dictionaryTh.
 
