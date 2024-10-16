@@ -43,19 +43,28 @@
 В него записываются результаты работы поискового движка.
 
 ## Organization
-Программа тематически разбита на основные классы class [InvertedIndex](#class_InvertedIndex). Проихзводит обработку входных документов, расположенных в папке
+Основной код работы программы происходит в методе Run() класса class Server.
+Программа тематически разбита на основные классы,  class [InvertedIndex](#class_InvertedIndex),  Проихзводит обработку входных документов, расположенных в папке
 skill_project\resources. 
 
 ## Relative
 
 ## Class_InvertedIndex
 Краткое описание класса. Основной метод void UpdateDocumentBaseThreads() формирует потоки, равные числу файлов с ресурсами, в которых 
-метод DocBaseThreadNew(size_t &numDocs) производит заполнение частотного словаря map<string, vector<EntryThreads>> freq_dictionaryTh. Этот метод является основным, в дальнейшей
-работе программы используется freq_dictionaryTh.
 ```cpp
   for(size_t i = 0; i < countThreads; ++i){//(int i = 0; i < countThreads; ++i)
     vecThDocBase.emplace_back(thread(DocBaseThreadNew,this,ref(fieldDocs)/*freq_dictionaryTh, ref(docs)*/));
   }
-
 ```
-
+метод DocBaseThreadNew(size_t &numDocs) производит заполнение частотного словаря map<string, vector<EntryThreads>> freq_dictionaryTh.
+EntryThreads структура
+```cpp
+struct EntryThreads{
+  size_t doc_id, count;
+  void operator=(const EntryThreads& other){
+    count = other.count;
+    doc_id = other.doc_id;
+  }
+};
+```
+ 
