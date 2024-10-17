@@ -57,6 +57,20 @@ void MyException::ChangedFiles(const time_t& difftime){
 }
 }
 
+void MyException::DiffFilesresources(const size_t& numb1,const size_t& numb2){
+  if(numb1 == numb2){
+    error = "Number of files has changed.\n";
+    bnfc = true;//bool number files changed
+    pEvent->SetEvent(1012);//changed number files at folder
+    pEvent->Signal();
+    throw errors();
+  }else{
+    bnfc = false;
+    error = "";
+    return;
+  }
+}
+
 string& MyException::GetWrongName(){
   return fileWrong;
 }
@@ -137,27 +151,68 @@ bool MyException::fDocsExist(string fn){
   return bfdoc;
 }
 
+bool MyException::ReadRequests(const string& req){
+  bool countWord = false;//good < 11
+  bool bEnglWrds = false;
+  error = "";
+  string englWrds;
+
+  size_t strLength = req.length();
+  size_t permittedSymbols = 0;
+
+  const regex findRegCntSpaces("( )");//(\\b(?!%)\\w+)
+  std::ptrdiff_t const match_countAllSpaces(distance(sregex_iterator(req.begin(), req.end(), findRegCntSpaces),sregex_iterator()));
+
+  strLength -= (size_t)match_countAllSpaces;// -spaces
+
+  const regex findRegCntWord("([a-zA-Z\\'\\&\\-\\@]+|![а-я]+|![0-9]+)");
+  std::ptrdiff_t const match_count(distance(sregex_iterator(req.begin(), req.end(), findRegCntWord),sregex_iterator()));
+  if((size_t)match_count > 10){
+    error = "No more than 10 words allowed.\n";
+    countWord = true;
+    throw errors();}
+
+  for( sregex_iterator itrgx(req.begin(), req.end(), findRegCntWord), it_end; itrgx != it_end; ++itrgx ){
+    permittedSymbols += itrgx->str().length();
+  }
+
+  strLength -= permittedSymbols;
+
+    if(strLength > 0){
+      error = "Russian words, invalid characters or numbers!!!.\n";
+      bEnglWrds = true;
+      throw errors();
+    }
+  return (countWord || bEnglWrds);
+}
+
 bool MyException::ReadDocument(const string& doc){
-  vector<string> englwords;
+  // vector<string> englwords;
   bool longWord = false;//good < 100
   bool countWord = false;//good < 1000
+  bool bEnglWrds = false;
   error = "";
   const regex findRegCntWord("([a-zA-Z\\'\\&\\-\\@]+|![а-я]+|![0-9]+)");
   std::ptrdiff_t const match_count(distance(sregex_iterator(doc.begin(), doc.end(), findRegCntWord),sregex_iterator()));
     for( sregex_iterator itrgx(doc.begin(), doc.end(), findRegCntWord), it_end; itrgx != it_end; ++itrgx ){
       if(itrgx->str().length() > 100){
-        error = "No more than 100 characters per word are allowed.";
+        error = "No more than 100 characters per word are allowed.\n";
         countWord = true;
         throw errors();
         }
-      englwords.push_back(itrgx->str());
+      // englwords.push_back(itrgx->str());
     }
-  if(englwords.size() > 1000){
-    error = "No more than 1000 words allowed.";
+  // if(englwords.size() > 1000){
+  if((size_t)match_count > 1000){
+    error = "No more than 1000 words allowed.\n";
     longWord = true;
     throw errors();
+    }else if(match_count == 0){
+      error = "Russian words or invalid characters!!!.\n";
+      bEnglWrds = true;
+      throw errors();
     }
-  return (longWord || countWord);
+  return (longWord || countWord || bEnglWrds);
 }
 
 bool MyException::readjson(const char* fname){

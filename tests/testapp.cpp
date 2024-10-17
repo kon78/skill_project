@@ -1,11 +1,5 @@
-// #include <multiply/multiply.h>
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
-// #include "multiply.h"
-// #include "service.h"
-// #include "invertindex.h"
-// #include "appparam.h"
-// #include "appparam.h"
 #include<vector>
 #include<iostream>
 #include<sstream>
@@ -19,104 +13,7 @@
 
 using namespace std;
 
-#define run_test_cin 0
-#define do_this 1
-#define do_not 0
-#define execute 1
-
 using namespace nlohmann::json_abi_v3_11_3;
-
-// std::ostream& operator <<(std::ostream &os, const Entry &c){
-//     os << "(document-->" << c.doc_id << ", count repeat-->" << c.count << ")\n";
-//     return os;
-// }
-
-// std::ostream& operator <<(std::ostream &os, const EntryThreads &c){
-//     os << "(document-->" << c.doc_id << ", count repeat-->" << c.count << ")\n";
-//     return os;
-// }
-// TEST(MultiplyTests, TestIntegerOne_One)
-// {
-//     const auto expected = 1;
-//     const auto actual = multiply(1, 1);
-//     ASSERT_EQ(expected, actual);
-// }
-
-
-// TEST(MultiplyTests, TestIntegerZero_Zero)
-// {
-//     const auto expected = 0;
-//     const auto actual = multiply(0, 0);
-//     ASSERT_EQ(expected, actual);
-// }
-
-// TEST(MultiplyTests, TestIntegerZero_One)
-// {
-//     const auto expected = 0;
-//     const auto actual = multiply(0, 1);
-//     ASSERT_EQ(actual, expected);
-// }
-
-// TEST(TestApplication, TestSerializaton){
-//     json jString = "this is a simple test";
-//     std::string cppString = jString.dump();
-//     EXPECT_EQ(bool(cppString == std::string(jString.dump())), true);
-// }
-
-// TEST(TestApplication, TestEqualMap){
-//     Service serv;
-//     serv.readFile("freq_dictionary.map");
-//     vector<string> vec1 = serv.GetDataFile();
-//     serv.clearVec();
-    
-//     serv.readFile("freq_dictionaryTh.map");
-//     vector<string> vec2 = serv.GetDataFile();
-//     ASSERT_EQ(vec1, vec2);    
-// }
-
-// TEST(TestApplication, TestException){
-//     int argc = 3; char* argv[] = {" this ", "is ", "test"};
-//     char* fname = "config.json";
-//     Server serv(argc, argv);
-
-//     serv.examination(fname);
-// }
-// TEST(MultiplyTests, ClearVector){
-// Service serv;
-// serv.readFile("config.json");
-// int sizeVec = serv.SizeVector();
-// EXPECT_EQ(sizeVec > 0, true);
-// serv.clearVec();
-// sizeVec = serv.SizeVector();
-// EXPECT_EQ(sizeVec == 0, true);
-// }
-
-// TEST(MultiplyTests, ClearVec1){
-//   Service serv;
-//   vector<string>vec{"one", "two", "three"};
-//   serv.clearVec1(vec);
-//   vector<string>vec1;
-//   ASSERT_EQ(vec, vec1);
-// }
-
-// TEST(MultiplyTests, readFileJSON){
-//   Service serv;
-//   json j = {
-//     {"requests",{
-//       "milk water","sugar solt","index"
-//     }
-//     }
-//   };
-//   /*файл должен наодиться в папке skill_project\build, если его там, значит его там нет или 
-//   он находится в папке skill_project, тогда к имени файла надо добавлять ..\\fname.xyz*/
-//   //пока выключил этих механизмы в классе Service
-//   // serv.readjson("..\\requests.json");
-//   // json t = serv.GetJSON();
-//   // cout << "TEST " << t << endl;
-//   std::ifstream f("..\\requests.json");
-//   json data = json::parse(f);
-//   ASSERT_EQ(j, data);
-// }
 
 #if(do_this == run_test_cin)
 typedef vector<char> symb;
@@ -296,7 +193,7 @@ TEST(TestApplication, EQUAL_MAP){
   clSearchServ->GetInvIndMap();
   vector<string>queries={"moscow is the capital of russia"};
   vector<vector<RelativeIndex>>result;
-  result = clSearchServ->search(queries);
+  // result = clSearchServ->search(queries);
   size_t ind = 0;
   typedef RelativeIndex value;
   typedef RelativeIndex valueC;

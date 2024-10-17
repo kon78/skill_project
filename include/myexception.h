@@ -25,6 +25,7 @@ private:
     bool bfwn;//bool files wrong name
     bool bwcf;//bool was changed file
     bool bwcfr;//bool was changed file requests
+    bool bnfc;//bool number files changed
     Server* pServObj = nullptr;
     MyEvent* pEvent = nullptr;
 public:
@@ -40,10 +41,12 @@ public:
     bool SetFName(string fn);
     bool fDocsExist(string fn);
     void fDocsNames(string fn);
+    bool ReadRequests(const string& req);
     bool ReadDocument(const string& doc);
     bool readjson(const char* fname);
     string& GetWrongNames();
     void ChangedFiles(const time_t& difftime);
+    void DiffFilesresources(const size_t& numb1,const size_t& numb2);
     void ChangedFile(const time_t& difftime);
     const char* what() const noexcept override;
 };

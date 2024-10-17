@@ -87,7 +87,7 @@ string InvertedIndex::makeRegExp(const string &word){
 
 string InvertedIndex::_makeRegExp(const string &word){
   string ret;
-  ret = "(\\b(?!";
+  ret = "(\\b(?!";//(\\b(?!%)\\w+)
   ret += word;
   ret += ")\\w+)";
   return ret;

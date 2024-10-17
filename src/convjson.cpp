@@ -5,8 +5,8 @@ void ConverterJSON::ReadJsonfile(const char* fname){
   // MyException myexcep;
   assert(pExcep != nullptr);
   assert(fname != nullptr);
-  pExcep->SetFName(fname);
   try{
+    pExcep->SetFName(fname);
     ifstream f(fname);
     pExcep->filExist();
     jData = json::parse(f);
@@ -95,12 +95,12 @@ void ConverterJSON::SaveJSON(json& j2f, const char* fname){
 }
 
 void ConverterJSON::PrepareQueries(const char* fname){
-  // MyException myexcep;
-  bool fexist;
+  bool fexist=true;
+  bool bEnglWrds=false;
   string key = "requests";
   assert(fname != nullptr);
   try{
-    fexist = pExcep->readjson(fname);//bool MyException::readjson();
+    fexist = pExcep->readjson(fname);
   }catch(char const * error){
     cout << pExcep->errors();
   }
@@ -108,18 +108,22 @@ void ConverterJSON::PrepareQueries(const char* fname){
     json::iterator itReq;
     fstream fp;
     string temp;
-    // string path = "..\\skill_project\\";
-    // path += fname;
     fp.open(fname, ios::in);
     if(fp.is_open()){
       itReq = jRequestsJSON.find(key);
       assert(itReq != jRequestsJSON.end());
       while(!fp.eof()){
         getline(fp,temp);
-        // cout << temp << endl;
-        itReq.value().push_back(temp);
+        try{
+          bEnglWrds = pExcep->ReadRequests(temp);
+          if(!bEnglWrds)
+            itReq.value().push_back(temp);
+        }catch(const char* error){
+          cout << pExcep->errors();
+        }
       }
       temp.clear();
+      SaveJSON(jRequestsJSON, "requests.json");
     }
     else{
       cout << "file not open!\n";
@@ -128,6 +132,9 @@ void ConverterJSON::PrepareQueries(const char* fname){
 }
 
 vector<string>& ConverterJSON::GetRequest(){
+  const char* fname = "requests.json";
+  ReadJsonfile(fname);
+
   string key = "requests";
   json::iterator itReq;
   
@@ -145,7 +152,7 @@ vector<string>& ConverterJSON::GetRequest(){
 
 void ConverterJSON::Answers(vector<vector<RelativeIndex>>& ridx){
   const char* fname = "answers.json";
-  TouchFile(fname);
+  TouchFile(fname);  
 
   jAnswJSON = {{"answers",{}}};
   json jfield;
@@ -181,12 +188,22 @@ void ConverterJSON::Answers(vector<vector<RelativeIndex>>& ridx){
       json j;
       json jr;
       json::iterator itRel = jr.begin();
-
+      // assert(pServ != nullptr);
+      size_t maxRespFls = (pServ->GetResponse() - 1);
       size_t i = 0;
       for(auto &r : vec){  
     j[i] = {{"doc_id",r.doc_id},{"rank",r.rank}};
     jr["relevance"] = j;
     ++i;
+
+    if(i > maxRespFls){
+      break;
+    }else if(vec.size() < maxRespFls){
+      continue;
+    }else{
+      continue;
+    }
+    
     }
     it.value().push_back(jr);
     }else{

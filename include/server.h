@@ -8,7 +8,6 @@
 #include<cmath>
 #include<algorithm>
 #include<unordered_map>
-#include<iomanip>
 #include<fstream>
 #include<string>
 #include<typeinfo>
@@ -31,7 +30,7 @@ using namespace std;
 
 struct ConfApp{
   int files;
-  int responses;
+  size_t responses;
   double version;
   string appName;
 };
@@ -65,25 +64,23 @@ void ViewFolder(string& fname);
 void ReadInfoRequest();
 void ReadInfoResourcesFiles();
 void EventChangedFiles();
+void EventChangedNumbersFiles();
 void EventChangedRequest();
 void ChangedResourcesFiles();
-void EventChangedFilesWithoutThrow();
 void ReadyTest();
 bool Ready();
 void Run();
 void KeyApplication();
 void GetConfig();
+size_t& GetResponse();
 void Service();
 void SaveFile(const int& respFiles);
 void PrepareNameFilesVec();
-void Help();
 void SetObj(InvertedIndex* ptr);
 void SetObjEvent(MyEvent* ptr);
-// void Signal(string& msg);
 void Signal(size_t& event);
 void SetExcep(MyException* ptr);
 void MyWaitTh();
-void listening(size_t& eventException, size_t& srvEvent);
 shared_ptr< map< string, vector<EntryThreads> >> GetMap();//freq_dictionaryTh
 shared_ptr< map< string, vector<EntryThreads> >> GetMapTst();//freq_dictionaryTh
 shared_ptr< map< string, vector<Entry> >> GetMap1();//freq_dictionary
@@ -97,7 +94,6 @@ string makeRegExp();
 size_t& GetException();
 size_t numbFiles;
 // bool filExist(string f);
-
 
 private:
   // shared_ptr<InvertedIndex> sPtrInvInd;
@@ -137,13 +133,13 @@ private:
   bool ready;
   mutex global,globalReq;
   condition_variable cv;
-  thread* Th=nullptr;
+  // thread* Th=nullptr;
   thread* ThChange=nullptr;
   thread* ThCnangeRq=nullptr;
+  thread* ThNumbFilesFolder=nullptr;
   vector<pair<string,time_t>>vecFiles;//resources
   vector<pair<string,time_t>>vecReq;//requests
   vector<string>vecChangedFiles;//was changed files folder resources
   vector<size_t>vecChngFlsNumb;
-
 };
 #endif

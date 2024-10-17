@@ -1,5 +1,4 @@
 #include"server.h"
-// #include"invertindex.h"
 
 namespace fs = filesystem;
 
@@ -18,7 +17,6 @@ string Server::makeRegExpKey(){
 }
 
 void Server::KeyApplication(){
-  // cout << argumv << endl;
     const regex findRegCntWord(makeRegExpKey());
     std::ptrdiff_t const countWord(distance(sregex_iterator(argumv.begin(), argumv.end(), findRegCntWord),sregex_iterator()));
   sregex_iterator itrgx(argumv.begin(), argumv.end(), findRegCntWord);
@@ -78,7 +76,6 @@ void Server::ChangedResourcesFiles(){
       cout << "error!" << endl;
     }
   }
-  // for(;;);
 }
 
 
@@ -95,6 +92,7 @@ void Server::ReadInfoRequest(){
   filesystem::file_time_type ftime;
   string path = "C:\\develop\\skill_project";
   string fName = "requests.txt";
+  // string fName = "requests.json";
   string fdata;
   pair<string,time_t>prFileDate;
   for(auto &p : fs::directory_iterator(path)){
@@ -175,8 +173,8 @@ void Server::ReadInfoResourcesFiles(){
 
 void Server::EventChangedRequest(){
   unique_lock<std::mutex> lck(globalReq);
-  // cout << "EventChangedRequest()" << endl;
   string pathReq = "C:\\develop\\skill_project\\requests.txt";
+  // string pathReq = "C:\\develop\\skill_project\\requests.json";
   time_t difftime;
   filesystem::file_time_type ftime;
   while(true){
@@ -194,18 +192,53 @@ void Server::EventChangedRequest(){
   }
 }
 
+void Server::EventChangedNumbersFiles(){
+  // cout << "EventChangedNumbersFiles() - run!\n";
+  unique_lock<std::mutex> lck(global);
+  string path = "C:\\develop\\skill_project\\resources";  
+  size_t numbFilesResources = 0;
+  size_t memNumbFiles;
+  vector<string>vecFilesChanged;
+  bool trigNumbFiles = true;
+  while(true){
+    for(auto &p : fs::directory_iterator(path)){
+      // if(trigNumbFiles){
+        ++numbFilesResources;
+        vecFilesChanged.push_back(p.path().filename().generic_string());
+      // }
+    }
+
+    // if(trigNumbFiles)
+        memNumbFiles = numbFilesResources;
+
+    // trigNumbFiles = false;
+
+    try{
+      pExcep->DiffFilesresources(numbFilesResources,memNumbFiles);
+      numbFilesResources = 0;
+      vecFilesChanged.clear();
+      // trigNumbFiles = true;
+    }catch(char const * error){
+      cout << "was changed number files!\n";
+    }
+  }
+}
+
 void Server::EventChangedFiles(){
   unique_lock<std::mutex> lck(global);
-  // cout << "EventChangedFiles() - event\n";
   time_t difftime;
   filesystem::file_time_type ftime;
   string path = "C:\\develop\\skill_project\\resources";
   string fileNumb;
   size_t numb;
-  while(true){
+  // size_t numbFilesResources = 0;
+  // size_t memNumbFiles;
+  // bool trigNumbFiles = true;
+  while(true){    
   for(auto &v : vecFiles){
   
     for(auto &p : fs::directory_iterator(path)){
+      // ++numbFilesResources;//считаем файлы
       if(v.first == p.path().filename().generic_string()){
         ftime = std::filesystem::last_write_time(p);
         auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
@@ -213,6 +246,7 @@ void Server::EventChangedFiles(){
           try{
             difftime = cftime - v.second;
             pExcep->ChangedFiles(difftime);//bool was changed file
+            // pExcep->DiffFilesresources(numbFilesResources,memNumbFiles);//DiffFilesresources(const size_t& numb1,const size_t& numb2);
           }catch(char const * error){
             vecChangedFiles.push_back(v.first);//если попался, то сюда
             // ChangedResourcesFiles();
@@ -235,51 +269,17 @@ void Server::EventChangedFiles(){
       cout << "error!" << endl;
     }
   }
-  // for(;;);
-
-
             cout << pExcep->errors();
           }
       }
     }
+    //запоминаем и сюда больше не заходим
+    // if(trigNumbFiles)
+    //   memNumbFiles = numbFilesResources;
+
+    // numbFilesResources = 0;//обнуляем
   }
-  }
-}
-
-void Server::EventChangedFilesWithoutThrow(){
-  time_t difftime;
-  filesystem::file_time_type ftime;
-  string path = "C:\\develop\\skill_project\\resources";
-  // cout << "EventChangedFilesWithoutThrow() - run!\n";
-  const time_t etalon = 0;
-  // cout << "size vecFiles is " << vecFiles.size() << endl;
-  while(true){
-        // cout << "method working\n";
-  for(auto &v : vecFiles){
-  
-    for(auto &p : fs::directory_iterator(path)){
-      if(v.first == p.path().filename().generic_string()){
-        ftime = std::filesystem::last_write_time(p);
-        auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
-
-        // difftime = cftime - v.second;
-        // if(difftime > etalon){
-        //   vecChangedFiles.push_back(v.first);//если попался, то сюда
-        //   pEvent->SetEvent(1010);//wrong name
-        //   pEvent->Signal();
-        // }
-
-          try{
-            difftime = cftime - v.second;            
-            pExcep->ChangedFiles(difftime);//bool was changed file
-          }catch(char const * error){
-            vecChangedFiles.push_back(v.first);//если попался, то сюда
-            cout << pExcep->errors();
-          }
-
-      }
-    }
-  }
+  // trigNumbFiles = false;
   }
 }
 
@@ -301,6 +301,10 @@ bool Server::Ready(){
     ReadInfoResourcesFiles();//данные о файлах в вектор vecFiles
     clConvJSON = new ConverterJSON();
     clInvInd = new InvertedIndex();
+    // clConvJSON->prepareReqFile();
+    // const char* fname1 = "requests.txt";
+    // clConvJSON->PrepareQueries(fname1);
+
   if(!start && keyApp == 103){
       Service();
   }
@@ -308,15 +312,15 @@ bool Server::Ready(){
     clConvJSON->SetObjExcep(pExcep);
     clInvInd->SetObjEvent(pEvent);
     pExcep->SetObjEvent(pEvent);
+    // const char* fname1 = "requests.txt";
+    // clConvJSON->PrepareQueries(fname1);
     clConvJSON->ReadJsonfile(fConfJSON.c_str());
     jConf = clConvJSON->GetJSON();
-    // cout << eventException << endl;
     GetConfig();
     run = true;
   }
   delete clConvJSON;
     MyWaitTh();
-  // ThChange->detach();
   return run;
 }
 
@@ -324,60 +328,10 @@ size_t& Server::GetException(){
   return eventException;
 }
 
-void Server::listening(size_t& eventException, size_t& srvEvent){
-  unique_lock<std::mutex> lck(global);
-
-  // while (!ready) cv.wait(lck);//выключаю
-  while(eventException == 0){  }
-
-  if(eventException > 0){
-    // return;
-    cout << "listening - was signal!\n";
-    // --eventException;
-
-
-    switch(srvEvent){
-      case 100 : {
-        cout << "files wrong name!\n";
-        srvEvent = 0;
-        --eventException;
-        break;
-      }
-      case 1010 : {
-        //запустить метод по обработке события
-        // ChangedResourcesFiles();
-        srvEvent = 0;
-        --eventException;
-        break;
-      }
-      case 1011 : {
-        srvEvent = 0;
-        --eventException;
-        break;
-      }
-      default : {cout << "something wrong!?\n";
-                break;
-      }
-    }
-    if(eventException < 0)
-      eventException = 0;
-    }
-
-    // for(;;);
-
-    ready=false;
-    cout << "srvEvent=" << srvEvent << endl;
-    
-    
-}
-
 void Server::MyWaitTh(){
-  // thread Th(listening,this,ref(eventException));
-  // Th = new thread(listening,this,ref(eventException),ref(srvEvent));
   ThChange = new thread(EventChangedFiles,this);
   ThCnangeRq = new thread(EventChangedRequest,this);
-  // ThChange = new thread(EventChangedFilesWithoutThrow,this);//EventChangedFilesWithoutThrow
-  // Th->detach();
+  ThNumbFilesFolder = new thread(EventChangedNumbersFiles,this);
 }
 
 void Server::go(){
@@ -397,22 +351,16 @@ void Server::Signal(size_t& event){
   ++eventException;
   cout << "event " << event << endl;
   if(event == 1010){
-    // cout << "event " << event << endl;
     pEvent->Exceptions(pExcep);
     // ThChange->detach();
   }else if(event == 100){
-    // cout << "event " << event << endl;
     pEvent->Exceptions(pExcep);//wrong names
   }else if(event == 1011){
     pEvent->Exceptions(pExcep);//wrong names
+  }else if(event == 1012){
+    pEvent->Exceptions(pExcep);//wrong names
   }
 
-  // cout << "Signal! Working now!\n";
-  // pEvent->Exceptions(pExcep);
-
-  // Th->detach();//ломается после события 1010
-  // go();
-  // cout << "go\n";
 }
 
 void Server::Service(){
@@ -481,10 +429,6 @@ void Server::SaveFile(const int& respFiles){
   fout.close();
 }
 
-void Server::Help(){
-
-}
-
 string& Server::ViewValue(json::iterator itV, string& key){
     json::iterator itj, itsJ;
     json subJ;
@@ -545,7 +489,7 @@ void Server::GetConfig(){
   string data, key;
   json::iterator it=jConf.begin();
   key = "max_responses"; 
-  confApp.responses = stoi(ViewValue(it,key));
+  confApp.responses = (size_t)stoi(ViewValue(it,key));
   key = "name";
   confApp.appName = ViewValue(it,key);
   key = "version";
@@ -560,23 +504,15 @@ void Server::GetConfig(){
     }
   data.clear();//стоку можно очистить
   numbFiles = vecFNamesFoldResource.size();//для метода void InvertedIndex::PrepareDocs()
-  #if(do_this == do_not)
-  for(auto &s : vecFNamesFoldResource){
-    cout << s << " ";
-  }
-  cout << endl;
-  #endif
+}
+
+size_t& Server::GetResponse(){
+  return confApp.responses;
 }
 
 vector<string>& Server::GetDocs(){
   return vecFNamesFoldResource;
 }
-
-// shared_ptr<Service>_shrdPtrServ = make_shared<Service>(argc, argv); 
-
-// shared_ptr<InvertedIndex> Server::GetObjectInvInd(){
-//   return sPtrInvInd;
-// }
 
 //TEST
 void Server::SetObj(InvertedIndex* ptr){
@@ -613,8 +549,6 @@ void Server::Run(){
   clSearchServ = new SearchService();
   clConvJSON = new ConverterJSON();
   
-    // MyWaitTh();
-  // clInvInd->SetObjEvent(pEvent);
   switch(keyApp){
     case (101):{
       cout << "finded key " << "/e" << endl;
@@ -636,20 +570,23 @@ void Server::Run(){
         clInvInd->SetObjExcep(pExcep);
         clConvJSON->SetObjEvent(pEvent);
         clConvJSON->SetObjExcep(pExcep);
+        clConvJSON->prepareReqFile();
+        const char* fname1 = "requests.txt";
+        clConvJSON->PrepareQueries(fname1);
+        clConvJSON->SetObjServ(this);
         clInvInd->PrepareDocs(this);
         ThChange->detach();
         ThCnangeRq->detach();
+        ThNumbFilesFolder->detach();
         prepare = true;
       }
       vector<string>queries;
-        //start here main code
       while(true){
 
         if(!ready){
 
         clInvInd->UpdateDocumentBase1();//запускается для тестов, записываются файлы freq_dictionary.map freq_dictionaryTh.map для проверки!!!
         clInvInd->UpdateDocumentBaseThreads();
-        // clSearchServ->PrepareMap(clInvInd);
         refMapTh = GetMap();//работаем с reference map полученной от работы потоков
         if(refMapTh.get()->size() > 0){
 
@@ -657,20 +594,12 @@ void Server::Run(){
           clSearchServ->GetInvIndDocs();
           clSearchServ->GetInvIndMap();//
 
-//одиночный поиск ответов на запрос 
-          // vector<string>queries={"moscow is the capital of russia"};
-          // result = clSearchServ->search(queries);//result - 
-
-      clConvJSON->prepareReqFile();
-      const char* fname1 = "requests.txt";
-      clConvJSON->PrepareQueries(fname1);
-      queries = clConvJSON->GetRequest();
+          queries = clConvJSON->GetRequest();
       
 
       vector<vector<RelativeIndex>>result;//вектор ответов
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-      result = clSearchServ->searchTh(queries);//поточный метод!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      result = clSearchServ->searchTh(queries);//поточный метод
+
       cout << "size vector result is " << result.size() << endl;
       clSearchServ->SaveVector();//для проверки глазами
       clConvJSON->Answers(result);//запись ответов в файл answers.json      
@@ -684,7 +613,6 @@ void Server::Run(){
             string fTmpBefore, fTmpAfter;
             vector<string>LastDocs = clInvInd->GetDocs();//тексты!!! предидущие документы, чтобы посмотреть что изменилось
 
-            // while(bChange){
             size_t cnt = 0;
             while(vecChngFlsNumb.size() == 0){
               
@@ -712,15 +640,12 @@ void Server::Run(){
               bChange = false;//когда все закончится
               clSearchServ->ClearVecRelIdx();
               cout << "was changes!\n";
-              // break;
             }
-            // }
-
-                // ready = false;
 
           }else if(srvEvent == 1011){
-            // clConvJSON->prepareReqFile();
             bool bQueries = false;
+            clConvJSON->ClearRequest();
+            clConvJSON->prepareReqFile();
             const char* fname1 = "requests.txt";
             clConvJSON->PrepareQueries(fname1);
             vector<string>newQueries = clConvJSON->GetRequest();
@@ -746,10 +671,9 @@ void Server::Run(){
             }else{          
             clInvInd->ClearDocs();
             clInvInd->PrepareDocs(this);//получаем документы и смотрим файл который изменился
-clSearchServ->ClearVecRelIdx();
-              ready = false;
+            clSearchServ->ClearVecRelIdx();
+            ready = false;
             }
-
           }
         }
       }
@@ -764,25 +688,4 @@ clSearchServ->ClearVecRelIdx();
     }
   }
   
-
-  // clConvJSON->JfileRead();
-  // if(appName != nullptr){
-    // string s;s.assign(appname,(sizeof(appname)/sizeof(char*)));
-    // string s;s.assign(appname,(sizeof(*appname)));
-  // cout << "Application " << appname << endl;
-
-  // }
 }
-
-
-// bool Server::filExist(string f){
-//   fileConfError = false;
-//   // cout << "file is " << f << endl;
-//   fstream fp;
-//   fp.open(f, ios::in);
-//   if(!fp.is_open()){    
-//     fileConfError = true;
-//     // throw runtime_error("Config file is missing");
-//   }
-//   return fileConfError;
-// }
