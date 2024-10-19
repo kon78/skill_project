@@ -18,6 +18,7 @@ void MyEvent::Exceptions(MyException* pObjExcep){
     }
     case 1012 : {
       cout << "was changed number files!\n";
+      evCode = 0;
       break;
     }
     case 100 : {//wrong name

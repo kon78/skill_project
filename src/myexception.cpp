@@ -58,16 +58,16 @@ void MyException::ChangedFiles(const time_t& difftime){
 }
 
 void MyException::DiffFilesresources(const size_t& numb1,const size_t& numb2){
-  if(numb1 == numb2){
+  if(numb1 == numb2){/*(numb1 > numb2) || (numb1 < numb2)*/
+    bnfc = false;
+    error = "";
+    return;
+  }else{
     error = "Number of files has changed.\n";
     bnfc = true;//bool number files changed
     pEvent->SetEvent(1012);//changed number files at folder
     pEvent->Signal();
     throw errors();
-  }else{
-    bnfc = false;
-    error = "";
-    return;
   }
 }
 

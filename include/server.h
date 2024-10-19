@@ -93,6 +93,7 @@ void EditConfig(string& s);
 string makeRegExp();
 size_t& GetException();
 size_t numbFiles;
+  size_t number_of_files_in_directory(filesystem::path path);
 // bool filExist(string f);
 
 private:
@@ -131,7 +132,7 @@ private:
   shared_ptr< map< string, vector<Entry> >> refMap;
   shared_ptr< map< string, vector<Entry> >>refMapTst;
   bool ready;
-  mutex global,globalReq;
+  mutex global,globalReq,globalFiles;
   condition_variable cv;
   // thread* Th=nullptr;
   thread* ThChange=nullptr;

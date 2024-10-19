@@ -192,36 +192,45 @@ void Server::EventChangedRequest(){
   }
 }
 
+size_t Server::number_of_files_in_directory(filesystem::path path){
+  return (size_t)distance(filesystem::directory_iterator{path},filesystem::directory_iterator{});
+}
+
 void Server::EventChangedNumbersFiles(){
-  // cout << "EventChangedNumbersFiles() - run!\n";
-  unique_lock<std::mutex> lck(global);
-  string path = "C:\\develop\\skill_project\\resources";  
-  size_t numbFilesResources = 0;
+  cout << "EventChangedNumbersFiles() - run!\n";
+  unique_lock<std::mutex> lck(globalFiles);
+  string path = "C:\\develop\\skill_project\\resources";
+  size_t numbFilesResources;
+  // size_t memNumbFiles = number_of_files_in_directory(path);
   size_t memNumbFiles;
-  vector<string>vecFilesChanged;
+  // vector<string>vecFilesChanged;
   bool trigNumbFiles = true;
   while(true){
-    for(auto &p : fs::directory_iterator(path)){
-      // if(trigNumbFiles){
-        ++numbFilesResources;
-        vecFilesChanged.push_back(p.path().filename().generic_string());
-      // }
-    }
+    numbFilesResources = distance(filesystem::directory_iterator{path},filesystem::directory_iterator{});
+    // for(auto &p : fs::directory_iterator(path)){
+    //   // if(trigNumbFiles){
+    //     ++numbFilesResources;
+    //     vecFilesChanged.push_back(p.path().filename().generic_string());
+    //   // }
+    // }
 
-    // if(trigNumbFiles)
+    if(trigNumbFiles)
         memNumbFiles = numbFilesResources;
-
-    // trigNumbFiles = false;
+    trigNumbFiles = false;
 
     try{
+
       pExcep->DiffFilesresources(numbFilesResources,memNumbFiles);
-      numbFilesResources = 0;
-      vecFilesChanged.clear();
-      // trigNumbFiles = true;
+      // pExcep->DiffFilesresources(1,2);
+      // numbFilesResources = 0;
+      // vecFilesChanged.clear();
     }catch(char const * error){
+      trigNumbFiles = true;
+      // memNumbFiles = number_of_files_in_directory(path);
       cout << "was changed number files!\n";
     }
   }
+  this_thread::sleep_for(10ms);
 }
 
 void Server::EventChangedFiles(){
@@ -346,21 +355,22 @@ void Server::SetExcep(MyException* ptr){
 }
 
 void Server::Signal(size_t& event){
-
-  srvEvent = event;
-  ++eventException;
   cout << "event " << event << endl;
-  if(event == 1010){
+  srvEvent = event;
+
+  if(srvEvent == 1010){
     pEvent->Exceptions(pExcep);
     // ThChange->detach();
-  }else if(event == 100){
+  }else if(srvEvent == 100){
     pEvent->Exceptions(pExcep);//wrong names
-  }else if(event == 1011){
+  }else if(srvEvent == 1011){
     pEvent->Exceptions(pExcep);//wrong names
-  }else if(event == 1012){
+  }else if(srvEvent == 1012){
     pEvent->Exceptions(pExcep);//wrong names
+  }else{
+    srvEvent = 0;
   }
-
+  ++eventException;
 }
 
 void Server::Service(){
@@ -672,8 +682,13 @@ void Server::Run(){
             clInvInd->ClearDocs();
             clInvInd->PrepareDocs(this);//получаем документы и смотрим файл который изменился
             clSearchServ->ClearVecRelIdx();
-            ready = false;
+            ready = false;//начинаем пересчет
             }
+          }else if(srvEvent == 1012){
+            cout << "was changed space folder resources\n";
+            srvEvent = 0;//clear event
+            // for(;;);
+            ready = true;
           }
         }
       }
