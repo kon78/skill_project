@@ -651,9 +651,10 @@ void Server::Run(){
               clSearchServ->ClearVecRelIdx();
               cout << "was changes!\n";
             }
+            srvEvent = 0;//clear event
 
-          }else if(srvEvent == 1011){
-            bool bQueries = false;
+          }else if(srvEvent == 1011/*|| srvEvent == 1012*/){
+            // bool bQueries = false;
             clConvJSON->ClearRequest();
             clConvJSON->prepareReqFile();
             const char* fname1 = "requests.txt";
@@ -683,12 +684,16 @@ void Server::Run(){
             clInvInd->PrepareDocs(this);//получаем документы и смотрим файл который изменился
             clSearchServ->ClearVecRelIdx();
             ready = false;//начинаем пересчет
+            srvEvent = 0;//clear event
             }
           }else if(srvEvent == 1012){
-            cout << "was changed space folder resources\n";
+            cout << "changed space folder /resources\n";
+          }else{
+            cout << "Waiting for tasks...\n";
+            ready = true;
+            while(srvEvent != 0);
             srvEvent = 0;//clear event
             // for(;;);
-            ready = true;
           }
         }
       }
