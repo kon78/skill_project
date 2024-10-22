@@ -27,6 +27,10 @@ string& MyException::GetWrongNames(){
   return fileWrong;
 }
 
+size_t& MyException::GetDiffNumbFile(){
+  return fNumbDiff;
+}
+
 void MyException::ChangedFile(const time_t& difftime){
   const time_t etalon = 0;
   if(difftime > etalon){
@@ -42,11 +46,12 @@ void MyException::ChangedFile(const time_t& difftime){
 }
 }
 
-void MyException::ChangedFiles(const time_t& difftime){
+void MyException::ChangedFiles(const time_t& difftime, const size_t& fnumb){
   const time_t etalon = 0;
   if(difftime > etalon){
     error = "was changed file.\n";
     bwcf = true;//event
+    fNumbDiff = fnumb;
     pEvent->SetEvent(1010);//changed files in folder resources
     pEvent->Signal();
   throw errors();

@@ -17,6 +17,7 @@ class MyException : public exception{
 private:
     string fname;
     string fileWrong,filenone;
+    size_t fNumbDiff;
     char * error;
     bool bfex;//bool file exist
     bool bwfn;//bool wrong file name
@@ -45,7 +46,8 @@ public:
     bool ReadDocument(const string& doc);
     bool readjson(const char* fname);
     string& GetWrongNames();
-    void ChangedFiles(const time_t& difftime);
+    size_t& GetDiffNumbFile();
+    void ChangedFiles(const time_t& difftime,const size_t& fnumb);
     void DiffFilesresources(const size_t& numb1,const size_t& numb2);
     void ChangedFile(const time_t& difftime);
     const char* what() const noexcept override;

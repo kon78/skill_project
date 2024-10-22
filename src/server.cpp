@@ -197,7 +197,7 @@ size_t Server::number_of_files_in_directory(filesystem::path path){
 }
 
 void Server::EventChangedNumbersFiles(){
-  cout << "EventChangedNumbersFiles() - run!\n";
+  // cout << "EventChangedNumbersFiles() - run!\n";
   unique_lock<std::mutex> lck(globalFiles);
   string path = "C:\\develop\\skill_project\\resources";
   size_t numbFilesResources;
@@ -234,48 +234,75 @@ void Server::EventChangedNumbersFiles(){
 }
 
 void Server::EventChangedFiles(){
-  unique_lock<std::mutex> lck(global);
+  unique_lock<std::mutex> lckEvntChngFls(globalRes);
   time_t difftime;
   filesystem::file_time_type ftime;
   string path = "C:\\develop\\skill_project\\resources";
-  string fileNumb;
   size_t numb;
+  string fileNumb;
+  string fNameLambda;
   // size_t numbFilesResources = 0;
   // size_t memNumbFiles;
   // bool trigNumbFiles = true;
+  
+  // while (!readyThResFls) cvResFiles.wait(lckEvntChngFls);
+
   while(true){    
   for(auto &v : vecFiles){
-  
+    fNameLambda = v.first;
     for(auto &p : fs::directory_iterator(path)){
       // ++numbFilesResources;//считаем файлы
       if(v.first == p.path().filename().generic_string()){
         ftime = std::filesystem::last_write_time(p);
         auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
 
+    (numb = [&fNameLambda](){
+      string fNmb;
+      size_t nf;
+      fNmb = fNameLambda;
+      string::size_type pos = fNmb.find(".txt");
+      fNmb.erase(pos,fNmb.length());
+      fNmb.erase(0,4);
+      if(fNmb.length() == 3)
+        nf = stoi(fNmb);
+      else
+        nf = 1000000;//error
+        return nf;
+    }());
+
           try{
             difftime = cftime - v.second;
-            pExcep->ChangedFiles(difftime);//bool was changed file
+            pExcep->ChangedFiles(difftime,numb);//bool was changed file
             // pExcep->DiffFilesresources(numbFilesResources,memNumbFiles);//DiffFilesresources(const size_t& numb1,const size_t& numb2);
           }catch(char const * error){
             vecChangedFiles.push_back(v.first);//если попался, то сюда
             // ChangedResourcesFiles();
 
   for(auto &f : vecChangedFiles){
-    fileNumb = f;
-    string::size_type pos = fileNumb.find(".txt");
-    fileNumb.erase(pos,fileNumb.length());
-    fileNumb.erase(0,4);
-    // cout << fileNumb << endl;
-    if(fileNumb.length() == 3){
+    (numb = [f](){
+      string fNmb;
+      size_t nf;
+      fNmb = f;
+      string::size_type pos = fNmb.find(".txt");
+      fNmb.erase(pos,fNmb.length());
+      fNmb.erase(0,4);
+      if(fNmb.length() == 3)
+        nf = stoi(fNmb);
+      else
+        nf = 1000000;//error
+        return nf;
+    }());
+    if(numb == 1000000){
+      cout << "error!" << endl;      
+    }
+    else{
       //good
-      numb = stoi(fileNumb);//перевод в число
+      // numb = stoi(fileNumb);//перевод в число
       cout << vecFiles[numb-1].first << " this file was changed!\n";
       auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
       vecFiles[numb-1].second = cftime;//здесь обовляем время
+      NumbFlsChngd = numb-1;
       vecChngFlsNumb.push_back(numb-1);//вместо имени файла его номер
-    }
-    else{
-      cout << "error!" << endl;
     }
   }
             cout << pExcep->errors();
@@ -290,6 +317,7 @@ void Server::EventChangedFiles(){
   }
   // trigNumbFiles = false;
   }
+      // this_thread::sleep_for(10ms);
 }
 
 void Server::ReadyTest(){
@@ -344,9 +372,15 @@ void Server::MyWaitTh(){
 }
 
 void Server::go(){
-  std::unique_lock<std::mutex> lck(global);
-  ready = true;
-  cv.notify_all();
+  std::unique_lock<std::mutex> lck1(global1);
+  readyThResFls = true;
+  cvResFiles.notify_all();
+}
+
+void Server::wait(){
+  std::unique_lock<std::mutex> lck2(global1);
+  readyThResFls = false;
+  cvResFiles.notify_all();
 }
 
 void Server::SetExcep(MyException* ptr){
@@ -585,7 +619,11 @@ void Server::Run(){
         clConvJSON->PrepareQueries(fname1);
         clConvJSON->SetObjServ(this);
         clInvInd->PrepareDocs(this);
+
+//здесь запускаем поток и разблокируем его
         ThChange->detach();
+        go();
+
         ThCnangeRq->detach();
         ThNumbFilesFolder->detach();
         prepare = true;
@@ -605,8 +643,7 @@ void Server::Run(){
           clSearchServ->GetInvIndMap();//
 
           queries = clConvJSON->GetRequest();
-      
-
+   
       vector<vector<RelativeIndex>>result;//вектор ответов
       result = clSearchServ->searchTh(queries);//поточный метод
 
@@ -619,26 +656,46 @@ void Server::Run(){
           //здесь смотрим что изменилось - файлы, задания и т.д. и принимаем решение о выполнении нового расчета
           if(srvEvent == 1010){
             bool bChange = true;
+            
+            vector<size_t>vecHistoryRequests;
             //работаем над измененным файлом
             string fTmpBefore, fTmpAfter;
             vector<string>LastDocs = clInvInd->GetDocs();//тексты!!! предидущие документы, чтобы посмотреть что изменилось
 
-            size_t cnt = 0;
-            while(vecChngFlsNumb.size() == 0){
-              
-              ++cnt;};
-            cout << "counter " << cnt << endl;
+            while(vecChngFlsNumb.size() == 0);//ждем ответа от обработсика события
 
-            for(auto &f : vecChngFlsNumb){
-              fTmpBefore = LastDocs[f];//получаем предыдущий файл           
-            }
+            // wait();
+
+            size_t ind;
+            ind = vecChngFlsNumb.size();
+
+            // for(auto &v : vecChngFlsNumb)
+            //   cout << v << " ";
+            // cout << endl;
+            size_t fNmb;
+            if(vecChngFlsNumb.size() > 0)
+              fNmb = pExcep->GetDiffNumbFile();
+              // docNumbChanged = NumbFlsChngd;//из потока
+            // for(auto &f : vecChngFlsNumb){
+            //   fTmpBefore = LastDocs[f];//получаем предыдущий файл           
+            // }
+              // fTmpBefore = LastDocs[vecChngFlsNumb[ind-1]];
+              fTmpBefore = LastDocs[vecChngFlsNumb[fNmb]];
+            
+            
             LastDocs.clear();
             clInvInd->ClearDocs();
             clInvInd->PrepareDocs(this);//получаем документы и смотрим файл который изменился
+
             LastDocs = clInvInd->GetDocs();//смотрим что после прочтения документов
-            for(auto &f : vecChngFlsNumb){
-              fTmpAfter = LastDocs[f];//получаем предыдущий файл           
-            }
+            
+            if(vecChngFlsNumb.size() > 0)
+              fTmpAfter = LastDocs[vecChngFlsNumb[fNmb]];         
+              // fTmpAfter = LastDocs[vecChngFlsNumb[ind-1]];//получаем новый файл  
+            
+            vecHistoryRequests.push_back(docNumbChanged);
+
+            // fTmpAfter = LastDocs.back();//берем последний элемент сверху
             if(fTmpBefore == fTmpAfter){
               cout << fTmpBefore << " " << fTmpAfter << endl;
               //есть изменения в содержании
@@ -651,7 +708,14 @@ void Server::Run(){
               clSearchServ->ClearVecRelIdx();
               cout << "was changes!\n";
             }
-            srvEvent = 0;//clear event
+
+            // go();
+
+            fTmpBefore.clear();
+            fTmpAfter.clear();
+            // cout << "vector vecChngFlsNumb size is " << vecChngFlsNumb.size() << endl;
+            // vecChngFlsNumb.clear();
+            // srvEvent = 0;//clear event
 
           }else if(srvEvent == 1011/*|| srvEvent == 1012*/){
             // bool bQueries = false;
@@ -684,17 +748,20 @@ void Server::Run(){
             clInvInd->PrepareDocs(this);//получаем документы и смотрим файл который изменился
             clSearchServ->ClearVecRelIdx();
             ready = false;//начинаем пересчет
-            srvEvent = 0;//clear event
+            // srvEvent = 0;//clear event
             }
           }else if(srvEvent == 1012){
             cout << "changed space folder /resources\n";
-          }else{
-            cout << "Waiting for tasks...\n";
             ready = true;
-            while(srvEvent != 0);
             srvEvent = 0;//clear event
-            // for(;;);
           }
+          
+          // else{
+          //   cout << "Waiting for tasks...\n";
+          //   // ready = true;
+          //   while(srvEvent != 0);
+          //   // for(;;);
+          // }
         }
       }
       break;

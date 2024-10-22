@@ -45,7 +45,7 @@ class Server{
 public:
 Server() = default;
 Server(int argc, char* argv[]):argumc(argc),start(false),startfName(false),stop(true),run(false),eventException(0),srvEvent(0),ready(false),
-                              prepare(false),brfwc(false){
+                              prepare(false),brfwc(false),readyThResFls(false){
   fConfJSON = "config.json"; fRequestsJSON = "requests.json"; fTestFile = "text.txt";
 
   ArgumSet(argv);
@@ -56,6 +56,7 @@ Server(int argc, char* argv[]):argumc(argc),start(false),startfName(false),stop(
 }
 string makeRegExpKey();
 void go();
+void wait();
 void ArgumSet(char* argv[]);
 void examination(const string& fname);
 void TouchFile(const char* fname);
@@ -99,6 +100,7 @@ size_t numbFiles;
 private:
   // shared_ptr<InvertedIndex> sPtrInvInd;
   int argumc;
+  size_t docNumbChanged;
   size_t eventException;
   size_t srvEvent;
   string mssg;
@@ -131,9 +133,9 @@ private:
   shared_ptr< map< string, vector<EntryThreads> >> refMapThTst;
   shared_ptr< map< string, vector<Entry> >> refMap;
   shared_ptr< map< string, vector<Entry> >>refMapTst;
-  bool ready;
-  mutex global,globalReq,globalFiles;
-  condition_variable cv;
+  bool ready,readyThResFls;
+  mutex global1,globalRes,globalReq,globalFiles;
+  condition_variable cvResFiles;
   // thread* Th=nullptr;
   thread* ThChange=nullptr;
   thread* ThCnangeRq=nullptr;
@@ -142,5 +144,6 @@ private:
   vector<pair<string,time_t>>vecReq;//requests
   vector<string>vecChangedFiles;//was changed files folder resources
   vector<size_t>vecChngFlsNumb;
+  size_t NumbFlsChngd;
 };
 #endif
