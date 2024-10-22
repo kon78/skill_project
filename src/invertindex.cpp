@@ -136,17 +136,20 @@ void InvertedIndex::ClearDocs(){
   if(docs.size() > 0)
     docs.clear();
 }
+
+void InvertedIndex::SetPath(const string& path){
+  assert(path != "");
+  mainPath = path;
+}
+
 //1000 words 100 symbols
 void InvertedIndex::PrepareDocs(Server* pServObj){
   assert(pServObj != nullptr);//проверка на нулевой указатель
-  // MyException myexcep;
-  // pExcep->SetObjEvent(pEvent);
-  // pExcep->SetObjServ(pServObj);
   bool bNone, bWrongName, bDocs;
   fstream fp;
   string temp,temp1;
   vecFNames = pServObj->GetDocs();
-  
+  mainPath = pServObj->GetMainPath();
   size_t i = 0;
 
   for(auto &d : vecFNames){
@@ -154,7 +157,6 @@ void InvertedIndex::PrepareDocs(Server* pServObj){
     bNone = false;
     bDocs = false;
     try{
-      // bWrongName = pExcep->fDocsNames(d);
       pExcep->fDocsNames(d);
       bNone = pExcep->fDocsExist(d);
     }catch (char const * error){
@@ -165,7 +167,11 @@ void InvertedIndex::PrepareDocs(Server* pServObj){
   //читаем документы в вектор docs
     if(bNone){
       // for(auto &d : vecFNames){
-        string fn = "C:\\develop\\skill_project\\resources\\";
+        // string fn = "C:\\develop\\skill_project\\resources\\";
+
+        string fn = mainPath + "/resources/";
+        // cout << fn << endl;
+        // string fn = mainPath + "/resources";
         fn += d;
 
         fp.open(fn, ios::in);
@@ -194,13 +200,6 @@ void InvertedIndex::PrepareDocs(Server* pServObj){
       cout << "This files are none " << ((none!="")?none:"- empty") << endl;
 }
     }
-
-#if(do_this == do_not)
-  for(auto &d : docs){
-    cout << d << endl;
-  }
-  cout << endl;
-#endif
 }
 
 vector<string>& InvertedIndex::GetDocs(){  
@@ -287,8 +286,6 @@ void InvertedIndex::UpdateDocumentBaseThreads(){
   for (auto& t: vecThDocBase) {
     t.join();
     }
- 
-  // cout << "size freq_dictionaryTh is " << freq_dictionaryTh.size() << endl;
 
 //здесь определяем число повторений в map freq_dictionaryTh
   vector<string> vDubl;

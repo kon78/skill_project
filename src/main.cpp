@@ -45,6 +45,7 @@ MyException* myexcep = new MyException;
     Server* clServ = new Server(argc,argv);
     clServ->SetObjEvent(myevent);
     clServ->SetExcep(myexcep);
+    myexcep->SetObjEvent(myevent);
     myevent->SetObjServ(clServ);
 
     if(clServ->Ready()){

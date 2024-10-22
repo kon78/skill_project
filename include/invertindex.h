@@ -109,6 +109,7 @@ class InvertedIndex{
                                     // map<string, vector<EntryThreads>> freq_dictionaryTh, 
                                     /*const vector<string> &docs*/);
     void ThreadSleep();
+    void SetPath(const string& path);
     void go();
     // void Hello();
     bool MapIsEqual();
@@ -118,6 +119,7 @@ class InvertedIndex{
 
   private:
   vector<string> vecFNames;
+  string mainPath;
   vector<string>docs;
   map<string, vector<Entry>> freq_dictionary;
   map<string, vector<EntryThreads>> freq_dictionaryTh;

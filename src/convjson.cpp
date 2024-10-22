@@ -68,7 +68,6 @@ void ConverterJSON::ClearRequest(){
 }
 
 void ConverterJSON::prepareReqFile(){
-  cout << "Prepare file requests.json!\n";
   jRequestsJSON = {
     {"requests",{
     }
@@ -157,11 +156,7 @@ void ConverterJSON::Answers(vector<vector<RelativeIndex>>& ridx){
   jAnswJSON = {{"answers",{}}};
   json jfield;
   json::iterator it = jAnswJSON.begin();
-  // size_t vecInd = 0;//для формирования ответов из результатов vecRelIdx
-  //число ответов
-  // size_t i, ind;
   size_t ind;
-  // size_t ind=0;
   ind = 1;
   for(auto &vec : ridx){
   string field = "request";
@@ -188,7 +183,6 @@ void ConverterJSON::Answers(vector<vector<RelativeIndex>>& ridx){
       json j;
       json jr;
       json::iterator itRel = jr.begin();
-      // assert(pServ != nullptr);
       size_t maxRespFls = (pServ->GetResponse() - 1);
       size_t i = 0;
       for(auto &r : vec){  
@@ -216,12 +210,3 @@ void ConverterJSON::Answers(vector<vector<RelativeIndex>>& ridx){
 
   SaveJSON(jAnswJSON,fname);
 }
-
-void ConverterJSON::ParamApp(){
-  // shrdPtrServ.get()->Start();
-  // shrdPtrServ.get()->AppReady();
-}
-
-// void ConverterJSON::SetObjServ(shared_ptr<Service> _shrdPtrServ){
-  // shrdPtrServ = _shrdPtrServ;
-// }

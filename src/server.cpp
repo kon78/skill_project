@@ -34,16 +34,14 @@ void Server::KeyApplication(){
 }
 
 void Server::examination(const string& fname){
-      MyException myexcep;
-      // myexcep.SetObjServ(this);
         try{
   cout << "examination file " << fname << ". ";
-          startfName = myexcep.SetFName(fname);
-          start = myexcep.filExist();
+          startfName = pExcep->SetFName(fname);
+          start = pExcep->filExist();
+          cout << "file exist " << boolalpha << not(start) << endl;
           start ? stop = true:stop = false;
-          start ? cout << boolalpha << start << " file exist!\n":cout << endl;
       } catch (char const * error){
-          cout << myexcep.errors();
+          cout << pExcep->errors();
       }
 }
 
@@ -80,22 +78,22 @@ void Server::ChangedResourcesFiles(){
 
 
 void Server::GetResourcesInfo(){
-  string fname = "C:\\develop\\skill_project\\resfiles.inf";
+  string fname = mainPath + "/resfiles.inf";
   TouchFile(fname.c_str());
   ViewFolder(fname);
-  string fNameReq = "C:\\develop\\skill_project\\requests.inf";
+  MainPath();
+  string fNameReq = mainPath + "/requests.inf";
   TouchFile(fNameReq.c_str());
   ReadInfoRequest();
 }
 
 void Server::ReadInfoRequest(){
   filesystem::file_time_type ftime;
-  string path = "C:\\develop\\skill_project";
+  MainPath();
   string fName = "requests.txt";
-  // string fName = "requests.json";
   string fdata;
   pair<string,time_t>prFileDate;
-  for(auto &p : fs::directory_iterator(path)){
+  for(auto &p : fs::directory_iterator(mainPath)){
     if(p.path().filename().generic_string() == fName){
       prFileDate.first = p.path().filename().generic_string();
       ftime = std::filesystem::last_write_time(p);
@@ -114,16 +112,24 @@ void Server::ReadInfoRequest(){
   fout.reset();
 }
 
+void Server::MainPath(){
+  mainPath = fs::current_path().generic_string();
+}
+
+string& Server::GetMainPath(){
+  return mainPath;
+}
+
 void Server::ViewFolder(string& fname){
+  string path = "/resources";
   filesystem::file_time_type ftime;
-  vector<string>vecFold;
   vector<pair<string,time_t>>vecFilesInfoTime;
   pair<string,time_t>prFileDate;
   string fdata;
 
-  string path = "C:\\develop\\skill_project\\resources";
+  mainPath += path;
     
-  for(auto &p : fs::directory_iterator(path)){
+  for(auto &p : fs::directory_iterator(mainPath)){
     vecFold.push_back(p.path().filename().generic_string());
     prFileDate.first = p.path().filename().generic_string();
     ftime = std::filesystem::last_write_time(p);
@@ -144,11 +150,13 @@ void Server::ViewFolder(string& fname){
   }
   fout.get()->close();
   fout.reset();
+
 }
 
 void Server::ReadInfoResourcesFiles(){
   fstream fp;
-  string fname = "C:\\develop\\skill_project\\resfiles.inf";
+  MainPath();
+  string fname = mainPath + "/resfiles.inf";
   pair<string,time_t>prFileDate;
     string temp;
     string fn;
@@ -168,13 +176,12 @@ void Server::ReadInfoResourcesFiles(){
         }
       }
     }
-    cout << "size vecFiles is " << vecFiles.size() << endl;
 }
 
 void Server::EventChangedRequest(){
   unique_lock<std::mutex> lck(globalReq);
-  string pathReq = "C:\\develop\\skill_project\\requests.txt";
-  // string pathReq = "C:\\develop\\skill_project\\requests.json";
+  MainPath();
+  string pathReq = mainPath + "/requests.txt";
   time_t difftime;
   filesystem::file_time_type ftime;
   while(true){
@@ -197,22 +204,14 @@ size_t Server::number_of_files_in_directory(filesystem::path path){
 }
 
 void Server::EventChangedNumbersFiles(){
-  // cout << "EventChangedNumbersFiles() - run!\n";
   unique_lock<std::mutex> lck(globalFiles);
-  string path = "C:\\develop\\skill_project\\resources";
+  MainPath();
+  string path = mainPath + "/resources";
   size_t numbFilesResources;
-  // size_t memNumbFiles = number_of_files_in_directory(path);
   size_t memNumbFiles;
-  // vector<string>vecFilesChanged;
   bool trigNumbFiles = true;
   while(true){
     numbFilesResources = distance(filesystem::directory_iterator{path},filesystem::directory_iterator{});
-    // for(auto &p : fs::directory_iterator(path)){
-    //   // if(trigNumbFiles){
-    //     ++numbFilesResources;
-    //     vecFilesChanged.push_back(p.path().filename().generic_string());
-    //   // }
-    // }
 
     if(trigNumbFiles)
         memNumbFiles = numbFilesResources;
@@ -221,37 +220,29 @@ void Server::EventChangedNumbersFiles(){
     try{
 
       pExcep->DiffFilesresources(numbFilesResources,memNumbFiles);
-      // pExcep->DiffFilesresources(1,2);
-      // numbFilesResources = 0;
-      // vecFilesChanged.clear();
     }catch(char const * error){
       trigNumbFiles = true;
-      // memNumbFiles = number_of_files_in_directory(path);
       cout << "was changed number files!\n";
     }
   }
-  this_thread::sleep_for(10ms);
+  this_thread::sleep_for(1ms);
 }
 
 void Server::EventChangedFiles(){
-  unique_lock<std::mutex> lckEvntChngFls(globalRes);
+  unique_lock<std::mutex> lck(globalRes);
   time_t difftime;
   filesystem::file_time_type ftime;
-  string path = "C:\\develop\\skill_project\\resources";
+  MainPath();
+  string path = mainPath + "/resources";
+
   string fileNumb;
   size_t numb;
   string fNameLambda;
-  // size_t numbFilesResources = 0;
-  // size_t memNumbFiles;
-  // bool trigNumbFiles = true;
-
-  while (!readyThResFls) cvResFiles.wait(lckEvntChngFls);
 
   while(true){    
   for(auto &v : vecFiles){
   
     for(auto &p : fs::directory_iterator(path)){
-      // ++numbFilesResources;//считаем файлы
       if(v.first == p.path().filename().generic_string()){
         ftime = std::filesystem::last_write_time(p);
         auto cftime = std::chrono::system_clock::to_time_t(std::chrono::file_clock::to_sys(ftime));
@@ -274,10 +265,8 @@ void Server::EventChangedFiles(){
           try{
             difftime = cftime - v.second;
             pExcep->ChangedFiles(difftime,numb);//bool was changed file
-            // pExcep->DiffFilesresources(numbFilesResources,memNumbFiles);//DiffFilesresources(const size_t& numb1,const size_t& numb2);
           }catch(char const * error){
             vecChangedFiles.push_back(v.first);//если попался, то сюда
-            // ChangedResourcesFiles();
 
   for(auto &f : vecChangedFiles){
     fileNumb = f;
@@ -301,13 +290,7 @@ void Server::EventChangedFiles(){
           }
       }
     }
-    //запоминаем и сюда больше не заходим
-    // if(trigNumbFiles)
-    //   memNumbFiles = numbFilesResources;
-
-    // numbFilesResources = 0;//обнуляем
   }
-  // trigNumbFiles = false;
   }}
 
 void Server::ReadyTest(){
@@ -323,6 +306,8 @@ void Server::ReadyTest(){
 }
 
 bool Server::Ready(){
+    examination(fConfJSON);
+    MainPath();
     KeyApplication();
     GetResourcesInfo();//resfiles.inf - информация о файлах ресурсов files001.txt и т.д. датаи время создания
     ReadInfoResourcesFiles();//данные о файлах в вектор vecFiles
@@ -359,18 +344,6 @@ void Server::MyWaitTh(){
   ThChange = new thread(EventChangedFiles,this);
   ThCnangeRq = new thread(EventChangedRequest,this);
   ThNumbFilesFolder = new thread(EventChangedNumbersFiles,this);
-}
-
-void Server::go(){
-  std::unique_lock<std::mutex> lck1(global1);
-  readyThResFls = true;
-  cvResFiles.notify_all();
-}
-
-void Server::wait(){
-  std::unique_lock<std::mutex> lck2(global1);
-  readyThResFls = false;
-  cvResFiles.notify_all();
 }
 
 void Server::SetExcep(MyException* ptr){
@@ -434,7 +407,8 @@ void Server::Service(){
 }
 
 void Server::PrepareNameFilesVec(){
-  string path = "C:\\develop\\skill_project\\resources";
+  MainPath();
+  string path = mainPath + "/resources";
   for(auto &p : fs::directory_iterator(path)){
     vecFNamesFoldResource.push_back(p.path().filename().generic_string());
   }
@@ -604,21 +578,23 @@ void Server::Run(){
         clInvInd->SetObjExcep(pExcep);
         clConvJSON->SetObjEvent(pEvent);
         clConvJSON->SetObjExcep(pExcep);
+
         clConvJSON->prepareReqFile();
         const char* fname1 = "requests.txt";
         clConvJSON->PrepareQueries(fname1);
         clConvJSON->SetObjServ(this);
+        MainPath();
         clInvInd->PrepareDocs(this);
 
 //здесь запускаем поток и разблокируем его
         ThChange->detach();
-        go();
-
         ThCnangeRq->detach();
         ThNumbFilesFolder->detach();
         prepare = true;
       }
+
       vector<string>queries;
+
       while(true){
 
         if(!ready){
@@ -626,8 +602,8 @@ void Server::Run(){
         clInvInd->UpdateDocumentBase1();//запускается для тестов, записываются файлы freq_dictionary.map freq_dictionaryTh.map для проверки!!!
         clInvInd->UpdateDocumentBaseThreads();
         refMapTh = GetMap();//работаем с reference map полученной от работы потоков
-        if(refMapTh.get()->size() > 0){
 
+        if(refMapTh.get()->size() > 0){
           clSearchServ->SetObjInvInd(clInvInd);
           clSearchServ->GetInvIndDocs();
           clSearchServ->GetInvIndMap();//
@@ -637,7 +613,6 @@ void Server::Run(){
       vector<vector<RelativeIndex>>result;//вектор ответов
       result = clSearchServ->searchTh(queries);//поточный метод
 
-      cout << "size vector result is " << result.size() << endl;
       clSearchServ->SaveVector();//для проверки глазами
       clConvJSON->Answers(result);//запись ответов в файл answers.json      
     }
@@ -659,39 +634,31 @@ void Server::Run(){
             size_t ind;
             ind = vecChngFlsNumb.size();
 
-            // for(auto &v : vecChngFlsNumb)
-            //   cout << v << " ";
-            // cout << endl;
             size_t fNmb;
             if(vecChngFlsNumb.size() > 0)
               fNmb = pExcep->GetDiffNumbFile()-1;
-              // docNumbChanged = NumbFlsChngd;//из потока
-            // for(auto &f : vecChngFlsNumb){
-            //   fTmpBefore = LastDocs[f];//получаем предыдущий файл           
-            // }
-              // fTmpBefore = LastDocs[vecChngFlsNumb[ind-1]];
 
-              // fTmpBefore = LastDocs[vecChngFlsNumb[0]];//error!!!
               fTmpBefore = LastDocs[fNmb];
             
             
             LastDocs.clear();
             clInvInd->ClearDocs();
+            MainPath();
             clInvInd->PrepareDocs(this);//получаем документы и смотрим файл который изменился
+            // clInvInd->SetPath(mainPath);
 
             LastDocs = clInvInd->GetDocs();//смотрим что после прочтения документов
             
             if(vecChngFlsNumb.size() > 0)
-              // fTmpAfter = LastDocs[vecChngFlsNumb[0]];//error!!!
               fTmpAfter = LastDocs[fNmb];
-              // fTmpAfter = LastDocs[vecChngFlsNumb[ind-1]];//получаем новый файл  
+
+
             
             vecHistoryRequests.push_back(docNumbChanged);
 
-            // fTmpAfter = LastDocs.back();//берем последний элемент сверху
             if(fTmpBefore == fTmpAfter){
               cout << fTmpBefore << " " << fTmpAfter << endl;
-              //есть изменения в содержании
+
               ready = true;//ничего не делаем
               cout << "no changes!\n";
             }else{
@@ -702,16 +669,9 @@ void Server::Run(){
               cout << "was changes!\n";
             }
 
-            // go();
-
             fTmpBefore.clear();
             fTmpAfter.clear();
-            // cout << "vector vecChngFlsNumb size is " << vecChngFlsNumb.size() << endl;
-            // vecChngFlsNumb.clear();
-            // srvEvent = 0;//clear event
-
-          }else if(srvEvent == 1011/*|| srvEvent == 1012*/){
-            // bool bQueries = false;
+          }else if(srvEvent == 1011){
             clConvJSON->ClearRequest();
             clConvJSON->prepareReqFile();
             const char* fname1 = "requests.txt";
@@ -755,6 +715,7 @@ void Server::Run(){
             }else{          
             cout << "was changes!\n";
             clInvInd->ClearDocs();
+            MainPath();
             clInvInd->PrepareDocs(this);//получаем документы и смотрим файл который изменился
             clSearchServ->ClearVecRelIdx();
             srvEvent = 0;//clear event
@@ -762,16 +723,29 @@ void Server::Run(){
             }
           }else if(srvEvent == 1012){
             cout << "changed space folder /resources\n";
-            ready = true;
+            //смотрим что было удалено или добавлено и можно ли с этим работать
+
+            copy(vecFold.begin(), vecFold.end(),back_inserter(vecFoldLast));//сохраняем предыдущее значение вектора (до прерывания)
+
+            MainPath();
+            string fname = mainPath + "/resfiles.inf";
+            TouchFile(fname.c_str());
+            ViewFolder(fname);
+
+            int sz = abs((int)(vecFoldLast.size() - vecFold.size()));
+
+            if(sz != 0){
+              cout << "difference between two vectors is " << sz << endl;
+              clInvInd->ClearDocs();
+              MainPath();
+              clInvInd->PrepareDocs(this);//получаем документы и смотрим файл который изменился
+              clSearchServ->ClearVecRelIdx();
+              ready = false;//начинаем пересчет
+            }else{
+              ready = true;//ничего не делаем
+            }
             srvEvent = 0;//clear event
           }
-          
-          // else{
-          //   cout << "Waiting for tasks...\n";
-          //   // ready = true;
-          //   while(srvEvent != 0);
-          //   // for(;;);
-          // }
         }
       }
       break;
