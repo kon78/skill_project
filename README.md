@@ -132,10 +132,10 @@ struct EntryThreads{
 ## class_Server
 
 ## Key_Application
-SkillboxSearchEngine.exe /r - поиск документов по запросу
-SkillboxSearchEngine.exe /s - сервис, подготовка [CONFIG.JSON](#Configjson)
-SkillboxSearchEngine.exe /e - удалить файлы из папки resources/
-SkillboxSearchEngine.exe /h - краткая справка по приложению
+- SkillboxSearchEngine.exe /r - поиск документов по запросу.
+- SkillboxSearchEngine.exe /s - сервис, подготовка [CONFIG.JSON](#Configjson)
+- SkillboxSearchEngine.exe /e - удалить файлы из папки resources/
+- SkillboxSearchEngine.exe /h - краткая справка по приложению
 
 ## class_MyException
 
