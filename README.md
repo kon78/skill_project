@@ -77,9 +77,26 @@ result - true / false,
 docid - идентификатор документа из папки  /resorces/fileXXX.txt и т.д.
 
 ## Organization
-Программа тематически разбита на основные классы. [InvertedIndex](#class_InvertedIndex).  Проихзводит обработку входных документов, хранение и индексирование документов.  
-В поточном методе
-Основной код работы программы происходит в методе класса Server::Run().
+Программа тематически разбита на основные классы.
+[InvertedIndex](#class_InvertedIndex)
+[ConverterJSON](#class ConverterJSON)
+[SearchService](#class SearchService)
+[Server](#class Server)
+[MyException](#class MyException)
+[MyEvent](#class MyEvent)
+
+Приложение запускается при проверке готовности на наличие файла config.json. Если такого нет, то запуск приложения невозможен. Файл config.json можно создать командой
+SkillboxSearchEngine.exe /s, при условии, что есть папка resources, если папки нет, то приложение также не запустится, о чем будет выдано сообщение. Проверки этих условий
+происходят в классах MyException и MyEvent.
+Если все условия выполнены, то приложение начинает работать, в виде цикла.
+```cpp
+    if(clServ->Ready()){
+      while(true)
+        clServ->Run();  
+  }
+  }
+```
+Основной код работы программы происходит в методе класса Server::Run(). 
 ```cpp
 void Server::Run(){
 ///...
