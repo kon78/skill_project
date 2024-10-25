@@ -1,0 +1,14 @@
+----------------------------------------HELP-----------------------------------------
+Launching the application.
+SkillboxSearchEngine.exe /r
+The requests.txt file contains the search request. It may be empty.
+requests.json reiterates that it contains the search request.
+
+SkillboxSearchEngine.exe /s
+Application setup. config.json file is created. Without it, launch is not possible.
+
+SkillboxSearchEngine.exe /e
+Deleting contents of resources folder.
+
+SkillboxSearchEngine.exe /h
+this help!

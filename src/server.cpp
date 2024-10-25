@@ -21,7 +21,9 @@ void Server::KeyApplication(){
     std::ptrdiff_t const countWord(distance(sregex_iterator(argumv.begin(), argumv.end(), findRegCntWord),sregex_iterator()));
   sregex_iterator itrgx(argumv.begin(), argumv.end(), findRegCntWord);
 
-    if(countWord != 0 && itrgx->str() == "/s"){
+    if(countWord != 0 && itrgx->str() == "/e"){
+      keyApp = 101;
+    }else if(countWord != 0 && itrgx->str() == "/s"){
       keyApp = 103;
     }
     else if(countWord != 0 && itrgx->str() == "/r"){
@@ -29,7 +31,7 @@ void Server::KeyApplication(){
     }else if(countWord != 0 && itrgx->str() == "/h"){
       keyApp = 105;
     }else{
-      cout << "wrong key! uses only /r /h /s\n";
+      cout << "wrong key! uses only /r /h /s /e\n";
     }
 }
 
@@ -553,6 +555,53 @@ shared_ptr< map<string,vector<Entry>> > Server::GetMap1Tst(){
   return refMapTst;
 }
 
+void Server::ReadHelp(){
+  fstream fp;
+  string temp;
+  MainPath();
+  string fname = mainPath + "/help.txt";
+  fp.open(fname.c_str(), ios::in);
+  if(fp.is_open()){
+    while(!fp.eof()){
+      getline(fp,temp);
+      help += temp + "\n";
+    }
+  }
+  temp.clear();
+}
+
+void Server::Erase(){
+  MainPath();
+  string path = mainPath + "/resources/";
+  size_t numbFilesResources;
+  size_t n=0;
+  char k;
+
+  // cout << "path is " << path << endl;
+  numbFilesResources = distance(filesystem::directory_iterator{path},filesystem::directory_iterator{});
+  // std::uintmax_t n{fs::remove_all(path)};//удаляет весь каталог и содержимое
+  for(auto &p : fs::directory_iterator(path)){
+    cout << "file " << p.path().filename().generic_string() << " delete y/n?";
+    cin >> k;
+    switch (k){
+      case 'y' : {
+        if(remove((p.path().filename().generic_string()).c_str()) == 0)
+          ++n;
+        break;
+      }
+      case 'n' : {
+        break;
+      }
+    }
+    
+  }
+  if(numbFilesResources == n){
+    cout << "was deleted all " << n << " files!" << endl;
+  }else{
+    cout << "was deleted " << n << " files, " << (numbFilesResources-n) << " left!" << endl;
+  }
+}
+
 void Server::Run(){
   clSearchServ = new SearchService();
   clConvJSON = new ConverterJSON();
@@ -560,6 +609,9 @@ void Server::Run(){
   switch(keyApp){
     case (101):{
       cout << "finded key " << "/e" << endl;
+      cout << "Erase all resources.\n";
+      Erase();
+      exit(0);
       break;
     }
     case (102):{
@@ -586,7 +638,7 @@ void Server::Run(){
         MainPath();
         clInvInd->PrepareDocs(this);
 
-//здесь запускаем поток и разблокируем его
+//здесь запускаем потоки
         ThChange->detach();
         ThCnangeRq->detach();
         ThNumbFilesFolder->detach();
@@ -598,8 +650,9 @@ void Server::Run(){
       while(true){
 
         if(!ready){
-
+      //начальный запуск приложения
         clInvInd->UpdateDocumentBase1();//запускается для тестов, записываются файлы freq_dictionary.map freq_dictionaryTh.map для проверки!!!
+
         clInvInd->UpdateDocumentBaseThreads();
         refMapTh = GetMap();//работаем с reference map полученной от работы потоков
 
@@ -617,61 +670,59 @@ void Server::Run(){
       clConvJSON->Answers(result);//запись ответов в файл answers.json      
     }
         ready = true;//останавливаемся и ждем событий
+
         }else{
-          //здесь смотрим что изменилось - файлы, задания и т.д. и принимаем решение о выполнении нового расчета
+      //запуск приложения в зависимости от условий событий
+
+          //здесь смотрим что изменилось - задания(файлы) и принимаем решение о выполнении нового расчета
           if(srvEvent == 1010){
-            bool bChange = true;
+            // bool bChange = true;
             
-            vector<size_t>vecHistoryRequests;
+            vector<size_t>vecHistoryRequests;//история запросов
             //работаем над измененным файлом
             string fTmpBefore, fTmpAfter;
             vector<string>LastDocs = clInvInd->GetDocs();//тексты!!! предидущие документы, чтобы посмотреть что изменилось
 
-            while(vecChngFlsNumb.size() == 0);//ждем ответа от обработсика события
-
-            // wait();
-
-            size_t ind;
-            ind = vecChngFlsNumb.size();
+            while(vecChngFlsNumb.size() == 0);//ждем ответа от обработчика события
 
             size_t fNmb;
             if(vecChngFlsNumb.size() > 0)
               fNmb = pExcep->GetDiffNumbFile()-1;
-
-              fTmpBefore = LastDocs[fNmb];
             
+            vecHistoryRequests.push_back(fNmb);
+
+            fTmpBefore = LastDocs[fNmb];          
             
             LastDocs.clear();
             clInvInd->ClearDocs();
+
             MainPath();
             clInvInd->PrepareDocs(this);//получаем документы и смотрим файл который изменился
-            // clInvInd->SetPath(mainPath);
 
             LastDocs = clInvInd->GetDocs();//смотрим что после прочтения документов
-            
+
             if(vecChngFlsNumb.size() > 0)
               fTmpAfter = LastDocs[fNmb];
 
-
-            
-            vecHistoryRequests.push_back(docNumbChanged);
-
             if(fTmpBefore == fTmpAfter){
               cout << fTmpBefore << " " << fTmpAfter << endl;
-
+              srvEvent = 0;//clear event
               ready = true;//ничего не делаем
               cout << "no changes!\n";
             }else{
               cout << fTmpBefore << " " << fTmpAfter << endl;
+              srvEvent = 0;//clear event
               ready = false;//начинаем новый расчет
-              bChange = false;//когда все закончится
+              // bChange = false;//когда все закончится
               clSearchServ->ClearVecRelIdx();
               cout << "was changes!\n";
             }
 
             fTmpBefore.clear();
             fTmpAfter.clear();
+
           }else if(srvEvent == 1011){
+
             clConvJSON->ClearRequest();
             clConvJSON->prepareReqFile();
             const char* fname1 = "requests.txt";
@@ -713,13 +764,13 @@ void Server::Run(){
               srvEvent = 0;//clear event
               ready = true;//ничего не делаем
             }else{          
-            cout << "was changes!\n";
-            clInvInd->ClearDocs();
-            MainPath();
-            clInvInd->PrepareDocs(this);//получаем документы и смотрим файл который изменился
-            clSearchServ->ClearVecRelIdx();
-            srvEvent = 0;//clear event
-            ready = false;//начинаем пересчет
+              cout << "was changes!\n";
+              clInvInd->ClearDocs();
+              MainPath();
+              clInvInd->PrepareDocs(this);//получаем документы и смотрим файл который изменился
+              clSearchServ->ClearVecRelIdx();
+              srvEvent = 0;//clear event
+              ready = false;//начинаем пересчет
             }
           }else if(srvEvent == 1012){
             cout << "changed space folder /resources\n";
@@ -735,27 +786,37 @@ void Server::Run(){
             int sz = abs((int)(vecFoldLast.size() - vecFold.size()));
 
             if(sz != 0){
-              cout << "difference between two vectors is " << sz << endl;
+              // cout << "difference between two vectors is " << sz << endl;
               clInvInd->ClearDocs();
               MainPath();
-              clInvInd->PrepareDocs(this);//получаем документы и смотрим файл который изменился
+              clInvInd->PrepareDocs(this);
               clSearchServ->ClearVecRelIdx();
+              srvEvent = 0;//clear event
               ready = false;//начинаем пересчет
             }else{
+              srvEvent = 0;//clear event
               ready = true;//ничего не делаем
             }
-            srvEvent = 0;//clear event
           }
+
         }
       }
       break;
     }
     case (105):{
       cout << "finded key " << "/h" << endl;
+      
+      if(help.length() == 0)
+        ReadHelp();
+      
+      cout << help << endl;
+      exit(0);
+      break;
     }
     default:{
       cout << "wrong key!" << endl;
       break;
+      exit(0);
     }
   }
   

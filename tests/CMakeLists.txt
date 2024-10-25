@@ -38,4 +38,4 @@ target_link_libraries(TestApplication
 
   include(GoogleTest)
     gtest_discover_tests(TestApplication)
-# add_test(TestApplication "./TestApplication")
+# add_test()

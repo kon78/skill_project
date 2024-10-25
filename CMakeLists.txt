@@ -12,7 +12,7 @@ set(NILS_LIB ${CMAKE_SOURCE_DIR}/nlohmann_json/include)#true
 
 set(MY_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 
-# enable_testing()#true
+enable_testing()#true
 # загрузка с удаленного контента
 include(FetchContent)
 FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)

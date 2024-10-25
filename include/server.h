@@ -15,6 +15,7 @@
 #include<vector>
 #include<filesystem>
 #include<condition_variable>
+#include<cstdio>
 #include"invertindex.h"
 #include"myexception.h"
 #include"convjson.h"
@@ -84,6 +85,8 @@ void SetObjEvent(MyEvent* ptr);
 void Signal(size_t& event);
 void SetExcep(MyException* ptr);
 void MyWaitTh();
+void ReadHelp();
+void Erase();
 shared_ptr< map< string, vector<EntryThreads> >> GetMap();//freq_dictionaryTh
 shared_ptr< map< string, vector<EntryThreads> >> GetMapTst();//freq_dictionaryTh
 shared_ptr< map< string, vector<Entry> >> GetMap1();//freq_dictionary
@@ -120,6 +123,7 @@ private:
   json jConf,jConfJSON;//file config.json
   size_t keyApp;
   string argumv;
+  string help;
   vector<string>vecFNamesFoldResource;
   bool start;//общий старт
   bool startfName;//проверка имен файлов

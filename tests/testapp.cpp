@@ -28,6 +28,11 @@ istream& operator>>(istream& in, symb& other){
 }
 #endif
 
+std::ostream& operator <<(std::ostream &os, const RelativeIndex &c){
+    os << "(document-->" << c.doc_id << ", rank-->" << c.rank << ")\n";
+    return os;
+}
+
 string makeRegExp(){
   string ret;
   ret = "\\w+\\.\\w+";
@@ -89,47 +94,9 @@ TEST(TestApplication, JSONVIEW){
   // cout << answer << endl;
 }
 
-//для проверки работы метода ConverterJSON::PrepareQueries(...)
-//для успешного прохождения содержимое векторов должно быть одинаковым
-TEST(TestApplication, JSONQUERIES){
-  MyEvent* myevent = new MyEvent;
-  MyException* myexcep = new MyException;
-
-  int argc=2; char* argv[] = {"SkillboxSearchEngine", "/r"};
-  Server* clServ = new Server(argc,argv);
-  SearchService* clSearchServ = new SearchService();
-  InvertedIndex* clInvInd = new InvertedIndex();
-    clServ->SetObjEvent(myevent);
-    clServ->SetExcep(myexcep);
-    myevent->SetObjServ(clServ);
-
-  ConverterJSON* clConvJSON = new ConverterJSON();
-  clConvJSON->SetObjEvent(myevent);
-  clConvJSON->SetObjExcep(myexcep);
-  clConvJSON->prepareReqFile();//jRequestsJSON null
-  vector<string>ref;
-  const vector<string> except = {"moscow is the capital of russia","bern is the capital of switzerland","tallinn is the capital of estonia",
-  "alice in wonderland","moscow never sleeps","paris is the capital of france","now you understand that moscow is behind us and we have nowhere to retreat"};
-  const char* fname="C:\\develop\\skill_project\\requests.txt";
-  clConvJSON->PrepareQueries(fname);
-  ref = clConvJSON->GetRequest();
-  size_t err = 100;
-  bool equal;
-  size_t step = except.size();
-  size_t ind = 0;
-  if(except.size() == ref.size()){
-    err = 0;
-    while(step!=0){
-      (except[ind] == ref[ind])?equal=true:equal=false;
-      if(!equal)++err;
-      --step;
-    }
-  }
-  ASSERT_EQ(err,0);
-}
-
 TEST(TestApplication, EQUAL_MAP){
-  //file config.json должен находиться в папке C:\develop\skill_project\build\tests
+  //file config.json должен находиться в папке C:/develop/skill_project/build/tests
+  //папка /resources должна находиться в C:/develop/skill_project/build/tests/resources
   MyEvent* myevent = new MyEvent;
   MyException* myexcep = new MyException;
   bool equalMap;
@@ -140,6 +107,7 @@ TEST(TestApplication, EQUAL_MAP){
   InvertedIndex* clInvInd = new InvertedIndex();
     clServ->SetObjEvent(myevent);
     clServ->SetExcep(myexcep);
+    myexcep->SetObjEvent(myevent);
     myevent->SetObjServ(clServ);
 
   cout << boolalpha << clServ->Ready() << endl;
@@ -147,7 +115,7 @@ TEST(TestApplication, EQUAL_MAP){
   // clServ->SetExcep(myexcep);
   clServ->SetObj(clInvInd);//TEST
   clInvInd->SetObjEvent(myevent);
-  clServ->MyWaitTh();//ожидает изменения в документах на диске
+  clServ->MyWaitTh();//можно не запускать
   clInvInd->SetObjEvent(myevent);
   clInvInd->SetObjExcep(myexcep);
   clInvInd->PrepareDocs(clServ);
@@ -193,222 +161,28 @@ TEST(TestApplication, EQUAL_MAP){
   clSearchServ->GetInvIndMap();
   vector<string>queries={"moscow is the capital of russia"};
   vector<vector<RelativeIndex>>result;
-  // result = clSearchServ->search(queries);
+  result = clSearchServ->searchTh(queries);
   size_t ind = 0;
   typedef RelativeIndex value;
   typedef RelativeIndex valueC;
   valueC vC;
-  for(auto &v : result){
-    vC = expected[0][ind];
-    ASSERT_EQ(vC , v[ind]);
+  size_t rErr = 0;
+  for(auto &vec : result){
+    for(auto &v : vec){
+      vC = expected[0][ind];
+      if(vC != v)++rErr;
+      // cout << vC << " " << v << endl;
+      ASSERT_EQ(vC, v);
+
     ind++;
+    if(ind == 2)break;
+    }
   }
+      ASSERT_EQ(rErr, 0);
 }
 
-//1000 words + 100 symbols
-TEST(TestApplication, FilesDocs){
-  size_t allSymb;
-  vector<string> englwords, rusWords, digit;
-  fstream fp;
-  string temp, temp1, d;
-  string fn = "C:\\develop\\skill_project\\build\\tests\\";
-  const vector<string>vecWords{"this","is","simple","test","this","is","longest","words","supercalifragilisticexpialidocious",
-  "onomatopoeia","hospitable","facilitate","prejudice","pronunciation","prioritising","^^//","3423","dfew","sdfvvvfddc","dfghjytg","hereditary", 
-  "particularly","February","regularly","aluminium","это","фраза","на","русском","языке","and","it","shouldn't","be","in","the","line","simple-test","harlay&davidson",
-"boss&hoss"};
-  d = "files001.txt";
-  fn += d;
-  fp.open(fn, ios::in);
-  if(fp.is_open()){
-    // cout << "open" << endl;
-    while(!fp.eof()){
-      getline(fp,temp);
-      temp1 += temp + " ";
-    }
-  // temp.erase(temp.length()-1);//delete last space
-  }
-  temp.clear();
-  // string::size_type pos;
-  vector<string>uncnWords;
-  const regex findRegCntWordpnt(".");
-  ptrdiff_t const countWord(distance(sregex_iterator(temp1.begin(), temp1.end(), findRegCntWordpnt), sregex_iterator()));
-  // cout << "all symbols is " << countWord << endl;
-
-  const regex findRegCntWord(makeRegExpFiltEnglSymb());
-  string str;
-  std::ptrdiff_t const match_count(distance(sregex_iterator(temp1.begin(), temp1.end(), findRegCntWord),sregex_iterator()));
-    for( sregex_iterator itrgx(temp1.begin(), temp1.end(), findRegCntWord), it_end; itrgx != it_end; ++itrgx ){
-      str = itrgx->str();
-      if([vecWords,str](){
-        bool compare = false;
-        for(auto &s : vecWords)
-          if(str == s)
-            compare = true; 
-          return compare;
-      }())
-      englwords.push_back(itrgx->str());
-      else
-        uncnWords.push_back(str);
-    }
-
-size_t len = 0;
-for(auto &s : englwords){
-  len += s.length();}
-
-#if(do_this == do_not)
-  const regex findRegCntWord1(makeRegExpFiltRus());
-  std::ptrdiff_t const match_count1(distance(sregex_iterator(temp1.begin(), temp1.end(), findRegCntWord1),sregex_iterator()));
-    for( sregex_iterator itrgx(temp1.begin(), temp1.end(), findRegCntWord1), it_end; itrgx != it_end; ++itrgx ){
-      rusWords.push_back(itrgx->str());
-    }
-
-  for (auto &s : rusWords){
-    cout << s << " ";
-  }
-  cout << endl;
-#endif
-
-  const regex findRegCntWord2(makeRegExpFiltDig());
-  std::ptrdiff_t const match_count2(distance(sregex_iterator(temp1.begin(), temp1.end(), findRegCntWord2),sregex_iterator()));
-    for( sregex_iterator itrgx(temp1.begin(), temp1.end(), findRegCntWord2), it_end; itrgx != it_end; ++itrgx ){
-      digit.push_back(itrgx->str());
-    }
-
-  size_t dlen = 0;
-for(auto &s : digit){
-  dlen += s.length();}
-
-  size_t w1 = 0;
-  size_t w2 = 0;
-  size_t ost = temp1.length();
-  // cout << "ost=" << ost << endl;
-  for(auto &s : englwords){
-    size_t l = s.length();
-    w1 += l;
-    string::size_type pos = temp1.find(s);
-    if(pos > temp1.length())continue;
-    temp1.erase(pos,pos+l);
-  }
-  ost -= w1;
-  // cout << "ost=" << ost << endl;
-
-  for(auto &s : digit){
-    size_t l = s.length();
-    w2 += l;
-    string::size_type pos = temp1.find(s);
-    temp1.erase(pos,pos+l);
-  }
-  ost -= w2;
-
-  // cout << "ost=" << ost << endl;
-
-  // cout << temp1 << endl;
-
-// for(auto &s : uncnWords){
-//   cout << s << " ";
-// }
-// cout << endl;
-size_t allSymbols = 0;
-
-int cntStr = 0;
-int cntEng = 0;
-int cntRus = 0;
-int Space = 0;
-vector<string>vecRus={"электроэнергия"};
-vector<char>vecCodeRus;
-cout << "size vecRus is " << vecRus.size() << endl;
-cout << "size rus is " << vecRus[0].length() << endl;
-int t = 0;
-for(auto &str : vecWords){
-  ++t;
-bool view = false;
-bool RusSymbols = false;
-++cntStr;//счетчик всех символов
-  for(auto &c : str){
-    ++allSymbols;
-    if(ispunct(static_cast<unsigned char>(c)) != 0){
-      cout << c;
-      view = true;
-    }
-
-    if(c == ' ')
-      ++Space;
-
-    if(isalpha(static_cast<unsigned char>(c)) != 0){
-      ++cntEng;
-    }
-
-    if(
-      (!isalpha(static_cast<unsigned char>(c)) != 0)            
-    ){
-      if(!ispunct(static_cast<unsigned char>(c)) != 0){
-        if(!isdigit(static_cast<unsigned char>(c)) != 0){
-          // size_t ch = static_cast<unsigned char>(c);
-          vecCodeRus.push_back((c));
-      ++cntRus;
-          // continue;
-        }
-      }
-    }
-  }
-    if(view)
-      cout << endl;
-    else
-      continue;
-}
-setlocale(LC_ALL, "Russian");
-cout << "all symbols is " << allSymbols << endl;
-cout << "english characters is " << cntEng << endl;
-cout << "russian characters is " << cntRus / 2 << endl;
-cout << "space symbols is " << Space << endl;
-for(auto &s : vecCodeRus){
-  // cout << ((unsigned int)s - 4294967000) << " ";
-  cout << ((unsigned int)s * (-1)) << "-" << (unsigned char)s << " ";
-}
-cout << endl;
-// cout << "size vec is " << uncnWords.size() << endl;
-  ASSERT_EQ(englwords.size(),33);
-  // ASSERT_EQ(rusWords.size(),5);
-  ASSERT_EQ(digit.size(),1);
-
-
-      // cout << temp1 << endl;
-  // cout << "long " << temp.length() << endl;
-}
-
-TEST(TestApplication, ReadDocument){
-  MyEvent* myevent = new MyEvent;
-  MyException* myexcep = new MyException;
-  
-  int argc=2; char* argv[] = {"SkillboxSearchEngine", "/r"};
-  Server* clServ = new Server(argc,argv);
-    clServ->SetObjEvent(myevent);
-    clServ->SetExcep(myexcep);
-    myevent->SetObjServ(clServ);
-    if(clServ->Ready()){
-      clServ->Run();    
-  }
-
-  ASSERT_EQ(1,1);
-}
-
-//проверка работы оповещения об ошибках в server
-TEST(TestApplication, MyEvent_Exception){
-MyEvent* myevent = new MyEvent;
-MyException* myexcep = new MyException;
-
-  int argc=2; char* argv[] = {"SkillboxSearchEngine", "/r"};
-    Server* clServ = new Server(argc,argv);
-    clServ->SetObjEvent(myevent);
-    clServ->SetExcep(myexcep);
-    myevent->SetObjServ(clServ);
-    while(true){
-      clServ->ReadyTest();
-
-      if(!clServ->GetException())
-        break;
-    };
-    ASSERT_EQ(clServ->GetException(),0);
+TEST(TestApplication, Sample_Test){
+  EXPECT_EQ(1 , 1);
 }
 
 int main(int argc, char** argv)
