@@ -107,7 +107,7 @@ SkillboxSearchEngine.exe /s, при условии, что есть папка r
 После успешного заполнения вектора документов, то по нему можно осуществлять поиск. В этом случае поисковый движок считывает запросы из файла requests.json и после начинает расчет релевантности для каждого слова
 из запроса.
 
-Расчет релевантносте поточный метод и выполняется в методе класса vector<vector<RelativeIndex>> [SearchService](#class_SearchService)::searchTh(const vector<string>& queries_input).
+Расчет релевантносте выполняется в методе класса vector<vector<RelativeIndex>> [SearchService](#class_SearchService)::searchTh(const vector<string>& queries_input).
 
 
 После выдачи результатов приложение переходит в режим ожидания. При изменении содержимого папки ../resources/, удалении или добавления файла, а также его редактировании и последующем сохранении
@@ -153,6 +153,11 @@ doc_id - номер документа, count - сколько раз слово
 ## class_ConverterJSON
 
 ## class_SearchService
+Краткое описание класса SearchService.
+
+Для своей работы класс принимает подготовленные данные от классов [InvertedIndex](#class_InvertedIndex) и [ConverterJSON](#class_ConverterJSON).
+
+Полученные данные обрабатываются в поточном методе void CalculateRelative(size_t& fieldQueries, const vector<string>& queries_input, vector<string>& vecUncnownWord)
 
 ## class_Server
 
