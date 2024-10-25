@@ -97,26 +97,7 @@ SkillboxSearchEngine.exe /s, при условии, что есть папка r
   }
 ```
 Основной код работы программы происходит в методе класса Server::Run(). 
-```cpp
-void Server::Run(){
-///...
-case 104 : {
-if(!prepare){
-///...подготовительная часть
-}
-while(true){
-///основной цикл
-
-if(!ready){
-///поиск полсе первого старта программы при подготовленных входных данных 
-}else{
-///поиск по событиям, изменили файл ресурса с документом или изменили посиковый запрос
-}
-}
-break;
-}
-}
-```
+При старте приложения для поиска по базе документов используется ключ [key](#Key_Application) /r, 
  
 
 ## Relative
@@ -149,6 +130,12 @@ struct EntryThreads{
 ## class_SearchService
 
 ## class_Server
+
+## Key_Application
+SkillboxSearchEngine.exe /r - поиск документов по запросу
+SkillboxSearchEngine.exe /s - сервис, подготовка [CONFIG.JSON](#Configjson)
+SkillboxSearchEngine.exe /e - удалить файлы из папки resources/
+SkillboxSearchEngine.exe /h - краткая справка по приложению
 
 ## class_MyException
 
