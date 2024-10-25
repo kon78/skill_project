@@ -62,6 +62,7 @@
 ## Answersjson
 В него записываются результаты работы поискового движка.
 Формат файла:
+```cpp
 {"answers":["requestNNN",["result",true/false],{"relevance":[
 {"doc_id": ,"rank":},
 {"doc_id":,"rank":},
@@ -70,6 +71,8 @@
 {"doc_id":,"rank":}
 ...
 ]}]}
+```
+
 ## Organization
 Основной код работы программы происходит в методе Run() класса class Server.
 ```cpp
