@@ -78,12 +78,12 @@ docid - идентификатор документа из папки  /resorces
 
 ## Organization
 Программа тематически разбита на основные классы.
-[InvertedIndex](#class_InvertedIndex)
-[ConverterJSON](#class ConverterJSON)
-[SearchService](#class SearchService)
-[Server](#class Server)
-[MyException](#class MyException)
-[MyEvent](#class MyEvent)
+- [InvertedIndex](#class_InvertedIndex)
+- [ConverterJSON](#class_ConverterJSON)
+- [SearchService](#class_SearchService)
+- [Server](#class_Server)
+- [MyException](#class_MyException)
+- [MyEvent](#class_MyEvent)
 
 Приложение запускается при проверке готовности на наличие файла config.json. Если такого нет, то запуск приложения невозможен. Файл config.json можно создать командой
 SkillboxSearchEngine.exe /s, при условии, что есть папка resources, если папки нет, то приложение также не запустится, о чем будет выдано сообщение. Проверки этих условий
@@ -143,3 +143,13 @@ struct EntryThreads{
 };
 ```
  doc_id - номер документа, count - сколько раз слово встретилось в документе.
+
+## class_ConverterJSON
+
+## class_SearchService
+
+## class_Server
+
+## class_MyException
+
+## class_MyEvent
