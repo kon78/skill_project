@@ -2,6 +2,5 @@ build/
 nlohmann_json/
 resource_back/
 resource_back2/
-resources/
 header_back.h
 header.h
