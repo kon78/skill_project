@@ -2,7 +2,7 @@
 <h2 align="center">
 <img src="https://badges.frapsoft.com/os/v1/open-source.svg?v=103" >
 <img src="https://badgen.net/badge/icon/windows?icon=windows&label">
-<img src="https://img.shields.io/badge/--181717?logo=github&logoColor=ffffff">
+<img src="https://img.shields.io/badge/--181717?logo=github&logoColor=ffffff"></h2>
 
 <p align="center">
 <img src="https://media.giphy.com/media/v2xIous7mnEYg/giphy.gif" width="80%"></p>
