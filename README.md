@@ -166,6 +166,14 @@ doc_id - номер документа, count - сколько раз слово
 к меньшему) и записываются в файл [ANSWERS.JSON](#Answersjson).
 
 ## class_Server
+Краткое описание класса Server.
+
+Все логика работы программы связывается и управляется классом Server.
+Два основных метода класса - это метод Server::Ready() и Server::Run().
+Метод Ready(). Подготовка приложения к запуску:
+- проврека файла конфигурации метод void Server::examination(const string& fname);
+- определние режима работы приложения void Server::KeyApplication();
+- 
 
 ## Key_Application
 - SkillboxSearchEngine.exe /r - поиск документов по запросу.
