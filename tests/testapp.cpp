@@ -15,19 +15,6 @@ using namespace std;
 
 using namespace nlohmann::json_abi_v3_11_3;
 
-#if(do_this == run_test_cin)
-typedef vector<char> symb;
-symb s{'a','y','[','(','.','n'};
-istream& operator>>(istream& in, symb& other){
-  char ch;
-  for(auto &c : other){
-    ch = c;
-    in.get(ch);
-    return in;
-  }
-}
-#endif
-
 std::ostream& operator <<(std::ostream &os, const RelativeIndex &c){
     os << "(document-->" << c.doc_id << ", rank-->" << c.rank << ")\n";
     return os;
@@ -91,7 +78,6 @@ TEST(TestApplication, JSONVIEW){
     int cntWrd = (int)countWord;//количество слов в строке
 
   ASSERT_EQ(24,cntWrd);
-  // cout << answer << endl;
 }
 
 TEST(TestApplication, EQUAL_MAP){
@@ -111,8 +97,6 @@ TEST(TestApplication, EQUAL_MAP){
     myevent->SetObjServ(clServ);
 
   cout << boolalpha << clServ->Ready() << endl;
-  // clServ->SetObjEvent(myevent);
-  // clServ->SetExcep(myexcep);
   clServ->SetObj(clInvInd);//TEST
   clInvInd->SetObjEvent(myevent);
   clServ->MyWaitTh();//можно не запускать
@@ -125,7 +109,6 @@ TEST(TestApplication, EQUAL_MAP){
 
   shared_ptr< map< string, vector<EntryThreads> >>shrdMapThrd = clServ->GetMapTst();
   shared_ptr< map< string, vector<Entry> >>shrdMap = clServ->GetMap1Tst();
-  // cout << shrdMapThrd.get()->size() << " " << shrdMap.get()->size() << endl;
   ASSERT_EQ(shrdMapThrd.get()->size(),shrdMap.get()->size());
   MyMapTh::iterator it;
     EditMyMapTh edMyMapTh(*shrdMapThrd.get());
@@ -171,7 +154,6 @@ TEST(TestApplication, EQUAL_MAP){
     for(auto &v : vec){
       vC = expected[0][ind];
       if(vC != v)++rErr;
-      // cout << vC << " " << v << endl;
       ASSERT_EQ(vC, v);
 
     ind++;

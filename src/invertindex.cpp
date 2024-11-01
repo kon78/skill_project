@@ -64,13 +64,6 @@ void SearchSubStrng::GetVector() {
     copyStr.erase(0, posB + 1);
     result.push_back(subCopy);
   }
-#if(do_this == do_not)
-    for(auto &s : result){
-      cout << s << " ";
-    cout << endl;
-    }
-    std::getchar();
-#endif
 }
 
 string& SearchSubStrng::GetString(){

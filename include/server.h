@@ -50,16 +50,15 @@ Server(int argc, char* argv[]):argumc(argc),start(false),startfName(false),stop(
                             prepare(false),brfwc(false),readyThResFls(false){
   fConfJSON = "config.json"; fRequestsJSON = "requests.json"; fTestFile = "text.txt";
   ArgumSet(argv);
-  // examination(fConfJSON);
 }
 ~Server(){
-  delete clConvJSON;
+  if(clConvJSON != nullptr)
+    delete clConvJSON;
+
 }
 string makeRegExpKey();
 void MainPath();
 string& GetMainPath();
-// void go();
-// void wait();
 void ArgumSet(char* argv[]);
 void examination(const string& fname);
 void TouchFile(const char* fname);
@@ -91,7 +90,6 @@ shared_ptr< map< string, vector<EntryThreads> >> GetMap();//freq_dictionaryTh
 shared_ptr< map< string, vector<EntryThreads> >> GetMapTst();//freq_dictionaryTh
 shared_ptr< map< string, vector<Entry> >> GetMap1();//freq_dictionary
 shared_ptr< map<string,vector<Entry>> > GetMap1Tst();
-// shared_ptr<InvertedIndex> GetObjectInvInd();
 vector<string>& GetDocs();
 string& ViewValue(json::iterator itValue, string& key);
 string& ViewValueFiles(json::iterator itValue, string& key);
@@ -100,10 +98,8 @@ string makeRegExp();
 size_t& GetException();
 size_t numbFiles;
   size_t number_of_files_in_directory(filesystem::path path);
-// bool filExist(string f);
 
 private:
-  // shared_ptr<InvertedIndex> sPtrInvInd;
   int argumc;
   string mainPath;
   size_t docNumbChanged;
@@ -143,7 +139,6 @@ private:
   bool ready,readyThResFls;
   mutex global1,globalRes,globalReq,globalFiles;
   condition_variable cvResFiles;
-  // thread* Th=nullptr;
   thread* ThChange=nullptr;
   thread* ThCnangeRq=nullptr;
   thread* ThNumbFilesFolder=nullptr;

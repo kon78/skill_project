@@ -10,10 +10,6 @@
 using namespace std;
 using namespace nlohmann::json_abi_v3_11_3;
 
-#define do_this 1
-#define do_not 0
-#define execute 1
-
 struct RelativeIndex;
 class MyEvent;
 class MyException;

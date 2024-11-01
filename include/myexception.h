@@ -18,7 +18,8 @@ private:
     string fname;
     string fileWrong,filenone;
     size_t fNumbDiff;
-    char * error;
+    // char * error;
+    string error;
     bool bfex;//bool file exist
     bool bwfn;//bool wrong file name
     bool bfnr;//bool file name request
@@ -35,9 +36,7 @@ public:
     string& GetWrongName();
     void SetObjServ(Server* ptrObj);
     void SetObjEvent(MyEvent* ptr);
-    // shared_ptr<Server*> spObj;
-    // MyException();
-    char * errors();
+    const char * errors();
     bool filExist();
     bool SetFName(string fn);
     bool fDocsExist(string fn);

@@ -20,7 +20,6 @@ return bwfn;
 void MyException::SetObjServ(Server* ptrObj){
   assert(ptrObj != nullptr);
   pServObj = ptrObj;
-  // pServObj->Signal();
 }
 
 string& MyException::GetWrongNames(){
@@ -96,12 +95,10 @@ void MyException::fDocsNames(string fn){
   if(fn == ""){
     error = "no file name\n";
     bfwn = true;//error
-    // throw errors();//throw временно выключил
   }else if(extension != "txt"){
     error = "wrong file name\n";
     bfwn = true;//error
     fileWrong += fn + " ";
-    // myevent->Exceptions(this);
     pEvent->SetEvent(100);//wrong name
     pEvent->Signal();
     // throw errors();
@@ -111,8 +108,6 @@ void MyException::fDocsNames(string fn){
     return;
   }
   throw errors();
-
-  // return bfwn;
 }
 
 bool MyException::filExist(){
@@ -121,8 +116,6 @@ bool MyException::filExist(){
   if(!fp.is_open()){    
     bfex = true;
     error = "Config file is missing.\n";
-    // throw "Config file is missing.\n";
-    // pServObj->SetExcep(this);
     pEvent->SetEvent(0);//wrong name
     pEvent->Signal();
     throw errors();
@@ -151,7 +144,6 @@ bool MyException::fDocsExist(string fn){
     bfdoc = false;
     filenone += fn + " ";//отсутствующие файлы по условиям задания
     throw errors();
-    // errors();
   }
   return bfdoc;
 }
@@ -192,7 +184,6 @@ bool MyException::ReadRequests(const string& req){
 }
 
 bool MyException::ReadDocument(const string& doc){
-  // vector<string> englwords;
   bool longWord = false;//good < 100
   bool countWord = false;//good < 1000
   bool bEnglWrds = false;
@@ -205,7 +196,6 @@ bool MyException::ReadDocument(const string& doc){
         countWord = true;
         throw errors();
         }
-      // englwords.push_back(itrgx->str());
     }
   // if(englwords.size() > 1000){
   if((size_t)match_count > 1000){
@@ -239,10 +229,10 @@ const char* MyException::nonefiles(){
   return filenone.c_str();
 }
 
-char * MyException::errors() {
-    return error;
+const char * MyException::errors() {
+    return error.c_str();
 }
 
 const char* MyException::what() const noexcept{
-  return error;
+  return error.c_str();
 }

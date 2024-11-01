@@ -7,19 +7,14 @@
 #include "event.h"
 #include "myexception.h"
 
-#define do_this 1
-#define do_not 0
-#define execute 1
-
 namespace fs = filesystem;
 using namespace std;
 
 char Bunner[] = "Usage: SkillboxSearchEngine [keys /r]";
-char keys[] = "\n/r run\n \n/h help\n \n/s service\n";
+char keys[] = "\n/r run\n \n/h help\n \n/s service\n /e erase\n";
 
 int main(int argc, char *argv[]){
-  // EventChangedNumbersFiles();
-#if(do_this == execute)
+
 MyEvent* myevent = new MyEvent;
 MyException* myexcep = new MyException;
 
@@ -36,8 +31,12 @@ MyException* myexcep = new MyException;
       while(true)
         clServ->Run();  
   }
+    //end;
+    delete clServ;
   }
-#endif
+
+  delete myevent;
+  delete myexcep;
 
   return 0;
 }

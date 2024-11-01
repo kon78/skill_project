@@ -53,7 +53,6 @@ void Server::TouchFile(const char* fname){
 }
 
 void Server::ChangedResourcesFiles(){
-  // unique_lock<std::mutex> lck(global);
   filesystem::file_time_type ftime;
   cout << "ChangedResourcesFiles()\n";
   string fileNumb;
@@ -275,7 +274,6 @@ void Server::EventChangedFiles(){
     string::size_type pos = fileNumb.find(".txt");
     fileNumb.erase(pos,fileNumb.length());
     fileNumb.erase(0,4);
-    // cout << fileNumb << endl;
     if(fileNumb.length() == 3){
       //good
       numb = stoi(fileNumb);//перевод в число
@@ -303,8 +301,6 @@ void Server::ReadyTest(){
   clConvJSON->SetObjExcep(pExcep);
   clConvJSON->SetObjServ(this);
   clConvJSON->ReadTextfile(fTestFile.c_str());
-
-  // pEvent->Exceptions(pExcep);
 }
 
 bool Server::Ready(){
@@ -315,9 +311,6 @@ bool Server::Ready(){
     ReadInfoResourcesFiles();//данные о файлах в вектор vecFiles
     clConvJSON = new ConverterJSON();
     clInvInd = new InvertedIndex();
-    // clConvJSON->prepareReqFile();
-    // const char* fname1 = "requests.txt";
-    // clConvJSON->PrepareQueries(fname1);
 
   if(!start && keyApp == 103){
       Service();
@@ -326,8 +319,6 @@ bool Server::Ready(){
     clConvJSON->SetObjExcep(pExcep);
     clInvInd->SetObjEvent(pEvent);
     pExcep->SetObjEvent(pEvent);
-    // const char* fname1 = "requests.txt";
-    // clConvJSON->PrepareQueries(fname1);
     clConvJSON->ReadJsonfile(fConfJSON.c_str());
     jConf = clConvJSON->GetJSON();
     GetConfig();
@@ -359,7 +350,6 @@ void Server::Signal(size_t& event){
 
   if(srvEvent == 1010){
     pEvent->Exceptions(pExcep);
-    // ThChange->detach();
   }else if(srvEvent == 100){
     pEvent->Exceptions(pExcep);//wrong names
   }else if(srvEvent == 1011){

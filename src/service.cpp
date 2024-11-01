@@ -3,10 +3,6 @@
 void Service::examination(char* fname){
       string temp(fname);
       cout << "filename is " << temp << endl;
-      // if( argumc > 1 && (argumv.find("/")) < argumv.length() ){
-        // string::size_type pos;
-        // pos = argumv.find("/");
-        // pos += 1;
         while(start && !fileConfError){
         try{
          filExist(temp);
@@ -14,14 +10,7 @@ void Service::examination(char* fname){
           cout << "file " << temp << ". " << ex.what() << "!\n";
       }
       }
-      // }
 }
-
-// string Service::makeRegExpSpace(){
-//   string ret;
-//   ret =  "(\\b(?! )\\w+)";
-//   return ret;
-// }
 
 vector<string>* Service::FilterWordsSpaces(const string& words){
 vector<string>* ptrRet = &ret;
@@ -58,55 +47,43 @@ void Service::ArgumSet(char* argv[]){
 }
 
 string Service::GetInfo(){
-  // string ret((int)start + " " + (int)stop + " " + (int)fileConfError);
   string ret;
   ret = ((start)?"true ":"false ");
   ret +=((stop)?"true ":"false ");
   ret +=((fileConfError)?"true ":"false ");
 
-  // ret = start + " " + stop + " " + fileConfError;
   return ret;
 }
 
 void Service::Start(){
-  // cout << "Start " << endl;
   while(start){
-    // cout << "Start while!" << endl;
     if(fileConfError){
       start = false; stop = true;
-      // break;
 
     if( argumc > 1 && (argumv.find("/")) < argumv.length() ){
       string::size_type pos;
       pos = argumv.find("/");
       pos += 1;
       if(argumv[pos] == 's'){
-        // cout << "finded /s" << endl;
         pos = argumv.find(fConfJSON);
         if(pos < argumv.length() ){
-          // cout << "json file exist!\n";
           serviceKey = true;  
         }else{
           serviceKey = false;  
         }
-        // serviceKey = true; 
         serviceKeyError = false;
         codeKey = int('s');
       }else if(argumv[pos] == 'c'){
-        // cout << "finded /c" << endl;
         serviceKey = true; serviceKeyError = false;
         codeKey = int('c');
       }else if(argumv[pos] == 'i'){
-        // cout << "finded /i" << endl;
         serviceKey = true; serviceKeyError = false;
         codeKey = int('i');
       }else if(argumv[pos] == 'r'){
-        // cout << "finded /r" << endl;
         serviceKey = false; serviceKeyError = false;
         fileConfError = false;
         codeKey = int('r');
       }else if(argumv[pos] == 'h'){
-        // cout << "finded /h" << endl;
         serviceKey = true; serviceKeyError = false;
         codeKey = int('h');
       }else{

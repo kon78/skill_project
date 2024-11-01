@@ -15,11 +15,6 @@
 
 using namespace std;
 
-#define do_this 1
-#define do_not 0
-#define execute 1
-
-
 struct Entry {
   size_t doc_id, count;
   int GetDocId(){return (int)doc_id;}

@@ -2,7 +2,6 @@
 #include"myexception.h"
 
 void ConverterJSON::ReadJsonfile(const char* fname){
-  // MyException myexcep;
   assert(pExcep != nullptr);
   assert(fname != nullptr);
   try{
@@ -36,7 +35,6 @@ void ConverterJSON::ClearAnswers(){
 }
 
 void ConverterJSON::ReadTextfile(const char* fname){
-  // MyException myexcep;
   bool res;
   pExcep->SetObjEvent(pEvent);
   assert(fname != nullptr);
@@ -58,10 +56,6 @@ void ConverterJSON::TestRead(const char* fname){
 json ConverterJSON::GetJSON(){
   return jData;
 }
-
-// void ConverterJSON::Hello(){
-//   cout << "Hello from class ConverterJSON!\n";
-// }
 
 void ConverterJSON::ClearRequest(){
   jRequestsJSON.clear();
